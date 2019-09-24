@@ -6,7 +6,7 @@ import { BAD_REQUEST, CREATED, OK, UNAUTHORIZED } from 'http-status-codes';
 import { Response, SuperTest, Test } from 'supertest';
 import { IUser, User, UserRoles } from '@entities';
 import { pErr, pwdSaltRounds, jwtCookieProps, loginFailedErr } from '@shared';
-import { UserDao } from '@daos';
+import { UserDao } from 'src/daos/User/UserDao.mock';
 
 
 describe('UserRouter', () => {
@@ -38,7 +38,7 @@ describe('UserRouter', () => {
                 email: 'jsmith@gmail.com',
                 password: 'Password@1',
             };
-            const role = UserRoles.Standard;
+            const role = UserRoles.Investor;
             const pwdHash = hashPwd(creds.password);
             const loginUser = new User('john smith', creds.email, role, pwdHash);
             spyOn(UserDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
@@ -79,7 +79,7 @@ describe('UserRouter', () => {
                 email: 'jsmith@gmail.com',
                 password: 'someBadPassword',
             };
-            const role = UserRoles.Standard;
+            const role = UserRoles.Homeowner;
             const pwdHash = hashPwd('Password@1');
             const loginUser = new User('john smith', creds.email, role, pwdHash);
             spyOn(UserDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));

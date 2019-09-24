@@ -5,7 +5,7 @@ export interface IUserDao<T extends IUser> {
     getOne: (email: string) => Promise<T | null>;
     getAll: () => Promise<T[]>;
     add: (user: T) => Promise<void>;
-    delete: (id: number) => Promise<void>;
+    delete: (email: string) => Promise<void>;
 }
 
 export class UserDao implements IUserDao<IUser> {
@@ -43,7 +43,7 @@ export class UserDao implements IUserDao<IUser> {
      *
      * @param id
      */
-    public async delete(id: number): Promise<void> {
+    public async delete(email: string): Promise<void> {
         // TODO
         return {} as any;
     }

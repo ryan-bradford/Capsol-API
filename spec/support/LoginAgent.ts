@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import { SuperTest, Test } from 'supertest';
-import { UserDao } from '@daos';
 import { User, UserRoles } from '@entities';
-import { pwdSaltRounds } from '@shared';
+import { pwdSaltRounds, logger } from '@shared';
+import { UserDao } from 'src/daos/User/UserDao.mock';
 
 
 const creds = {

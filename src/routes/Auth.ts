@@ -24,6 +24,7 @@ const jwtService = new JwtService();
 
 router.post('/login', async (req: Request, res: Response) => {
     try {
+        logger.info(Object.keys(req.body));
         // Check email and password present
         const { email, password } = req.body;
         if (!(email && password)) {
@@ -60,6 +61,14 @@ router.post('/login', async (req: Request, res: Response) => {
         });
     }
 });
+
+/******************************************************************************
+ *                      Login - "GET /api/auth/login"
+ ******************************************************************************/
+router.get('/login', async (req: Request, res: Response) => {
+    res.render('login');
+});
+
 
 
 /******************************************************************************

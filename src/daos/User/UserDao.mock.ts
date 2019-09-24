@@ -44,11 +44,11 @@ export class UserDao extends MockDaoMock implements IUserDao<IUser> {
     }
 
 
-    public async delete(id: number): Promise<void> {
+    public async delete(email: string): Promise<void> {
         try {
             const db = await super.openDb();
             for (let i = 0; i < db.users.length; i++) {
-                if (db.users[i].id === id) {
+                if (db.users[i].email === email) {
                     db.users.splice(i, 1);
                     await super.saveDb(db);
                     return;

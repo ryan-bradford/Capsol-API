@@ -1,14 +1,12 @@
 import { IUser, User, TUserRoles } from './User';
-import { IContract, Contract } from '../investment/Contract';
+import { IContract } from '../investment/Contract';
 
 export interface IHomeowner extends IUser {
     contract?: IContract;
-    createContract(amount: number, length: number): IContract;
 }
 
 export class Homeowner extends User implements IHomeowner {
-
-    public contract?: IContract | undefined;
+    public contract?: IContract;
 
 
     constructor(
@@ -16,14 +14,10 @@ export class Homeowner extends User implements IHomeowner {
         email?: string,
         role?: TUserRoles,
         pwdHash?: string,
+        id?: number,
+        contract?: IContract,
     ) {
-        super(nameOrUser, email, role, pwdHash);
-    }
-
-
-    public createContract(amount: number, length: number): IContract {
-        const toCreate = new Contract(amount, length, (.04 + 1 / length) * amount);
-        this.contract = toCreate;
-        return toCreate;
+        super(nameOrUser, email, role, pwdHash, id);
+        this.contract = contract;
     }
 }

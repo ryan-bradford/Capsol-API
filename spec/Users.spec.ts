@@ -3,19 +3,18 @@ import supertest from 'supertest';
 
 import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
 import { Response, SuperTest, Test } from 'supertest';
-import { IUser, User, UserRoles } from '@entities';
-import { UserDao } from '@daos';
+import { IUser, User, UserRoles, Investor, IInvestor } from '@entities';
 import { login } from './support/LoginAgent';
-import { pErr, paramMissingError, jwtCookieProps } from '@shared';
+import { pErr, paramMissingError, logger } from '@shared';
+import { UserDao } from 'src/daos/User/UserDao.mock';
 
 
-describe('UserRouter', () => {
+describe('InvestorRouter', () => {
 
-    const usersPath = '/api/users';
-    const getUsersPath = `${usersPath}/all`;
-    const addUsersPath = `${usersPath}/add`;
-    const updateUserPath = `${usersPath}/update`;
-    const deleteUserPath = `${usersPath}/delete/:id`;
+    const usersPath = '/api/investors';
+    const getUsersPath = `${usersPath}/`;
+    const addUsersPath = `${usersPath}/`;
+    const deleteUserPath = `${usersPath}/:id`;
 
     let agent: SuperTest<Test>;
     let jwtCookie: string;
@@ -24,6 +23,7 @@ describe('UserRouter', () => {
     beforeAll((done) => {
         agent = supertest.agent(app);
         login(agent, (cookie: string) => {
+            logger.info(cookie);
             jwtCookie = cookie;
             done();
         });
@@ -41,9 +41,9 @@ describe('UserRouter', () => {
             request was successful.`, (done) => {
             // Setup Dummy Data
             const users = [
-                new User('Sean Maxwell', 'sean.maxwell@gmail.com'),
-                new User('John Smith', 'john.smith@gmail.com'),
-                new User('Gordan Freeman', 'gordan.freeman@gmail.com'),
+                new Investor('Sean Maxwell', 'sean.maxwell@gmail.com', UserRoles.Investor, undefined, 1),
+                new Investor('John Smith', 'john.smith@gmail.com', UserRoles.Investor, undefined, 2),
+                new Investor('Gordan Freeman', 'gordan.freeman@gmail.com', UserRoles.Investor, undefined, 3),
             ];
             spyOn(UserDao.prototype, 'getAll').and.returnValue(Promise.resolve(users));
             // Call API
@@ -52,8 +52,8 @@ describe('UserRouter', () => {
                     pErr(err);
                     expect(res.status).toBe(OK);
                     // Caste instance-objects to 'User' objects
-                    const retUsers = res.body.users.map((user: IUser) => {
-                        return new User(user);
+                    const retUsers = res.body.investors.map((user: IInvestor) => {
+                        return new Investor(user);
                     });
                     expect(retUsers).toEqual(users);
                     expect(res.body.error).toBeUndefined();
@@ -86,7 +86,7 @@ describe('UserRouter', () => {
         };
 
         const userData = {
-            user: new User('Gordan Freeman', 'gordan.freeman@gmail.com'),
+            user: new User('Gordan Freeman', 'gordan.freeman@gmail.com', UserRoles.Investor),
         };
 
 
@@ -125,58 +125,6 @@ describe('UserRouter', () => {
                     pErr(err);
                     expect(res.status).toBe(BAD_REQUEST);
                     expect(res.body.error).toBe(errMsg);
-                    done();
-                });
-        });
-    });
-
-
-    describe(`"PUT:${updateUserPath}"`, () => {
-
-        const callApi = (reqBody: object) => {
-            return agent.put(updateUserPath).set('Cookie', jwtCookie).type('form').send(reqBody);
-        };
-
-        const userData = {
-            user: new User('Gordan Freeman', 'gordan.freeman@gmail.com'),
-        };
-
-
-        it(`should return a status code of "${OK}" if the request was successful.`, (done) => {
-            spyOn(UserDao.prototype, 'update').and.returnValue(Promise.resolve());
-            callApi(userData)
-                .end((err: Error, res: Response) => {
-                    pErr(err);
-                    expect(res.status).toBe(OK);
-                    expect(res.body.error).toBeUndefined();
-                    done();
-                });
-        });
-
-
-        it(`should return a JSON object with an error message of "${paramMissingError}" and a
-            status code of "${BAD_REQUEST}" if the user param was missing.`, (done) => {
-            callApi({})
-                .end((err: Error, res: Response) => {
-                    pErr(err);
-                    expect(res.status).toBe(BAD_REQUEST);
-                    expect(res.body.error).toBe(paramMissingError);
-                    done();
-                });
-        });
-
-
-        it(`should return a JSON object with an error message and a status code of "${BAD_REQUEST}"
-            if the request was unsuccessful.`, (done) => {
-            // Setup Dummy Data
-            const updateErrMsg = 'Could not update user.';
-            spyOn(UserDao.prototype, 'update').and.throwError(updateErrMsg);
-            // Call API
-            callApi(userData)
-                .end((err: Error, res: Response) => {
-                    pErr(err);
-                    expect(res.status).toBe(BAD_REQUEST);
-                    expect(res.body.error).toBe(updateErrMsg);
                     done();
                 });
         });

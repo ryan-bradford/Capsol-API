@@ -1,15 +1,17 @@
 import { IInvestment, Investment } from './Investment';
 import { IInvestor } from '../user/Investor';
+import { getRandomInt } from '@shared';
 
 export interface IContract {
+    id: number;
     saleAmount: number;
     length: number;
     monthlyPayment: number;
     investments: IInvestment[];
+    userId: number;
     readonly isFulfilled: boolean;
     readonly yearsPassed: number;
     readonly depreciationValue: number;
-    buyContract(percentage: number, investor: IInvestor): IInvestment;
 }
 
 export class Contract implements IContract {
@@ -17,13 +19,17 @@ export class Contract implements IContract {
     public length: number;
     public monthlyPayment: number;
     public investments: IInvestment[];
+    public id: number;
+    public userId: number;
 
 
-    constructor(saleAmount: number, length: number, monthlyPayment: number) {
+    constructor(saleAmount: number, length: number, monthlyPayment: number, userId: number, id?: number) {
         this.saleAmount = saleAmount;
         this.length = length;
         this.monthlyPayment = monthlyPayment;
         this.investments = [];
+        this.id = id ? id : getRandomInt();
+        this.userId = userId;
     }
 
 
@@ -46,13 +52,5 @@ export class Contract implements IContract {
 
     get depreciationValue(): number {
         return this.saleAmount / this.length;
-    }
-
-
-    public buyContract(percentage: number, investor: IInvestor): IInvestment {
-        const toReturn = new Investment(percentage, this);
-        this.investments.push(toReturn);
-        investor.addInvestment(toReturn);
-        return toReturn;
     }
 }
