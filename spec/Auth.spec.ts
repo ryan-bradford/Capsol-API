@@ -6,7 +6,7 @@ import { BAD_REQUEST, CREATED, OK, UNAUTHORIZED } from 'http-status-codes';
 import { Response, SuperTest, Test } from 'supertest';
 import { IUser, User, UserRoles } from '@entities';
 import { pErr, pwdSaltRounds, jwtCookieProps, loginFailedErr } from '@shared';
-import { UserDao } from 'src/daos/User/UserDao.mock';
+import { UserDao } from 'src/services/User/UserDao.mock';
 
 
 describe('UserRouter', () => {

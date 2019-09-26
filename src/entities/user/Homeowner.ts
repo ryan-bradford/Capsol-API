@@ -1,11 +1,14 @@
 import { IUser, User, TUserRoles } from './User';
-import { IContract } from '../investment/Contract';
+import { IContract, Contract } from '../investment/Contract';
+import { OneToOne, BaseEntity } from 'typeorm';
 
 export interface IHomeowner extends IUser {
     contract?: IContract;
 }
 
 export class Homeowner extends User implements IHomeowner {
+
+    @OneToOne((type) => Contract, (contract) => contract.homeowner)
     public contract?: IContract;
 
 

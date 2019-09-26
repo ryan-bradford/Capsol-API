@@ -6,7 +6,6 @@ import { Response, SuperTest, Test } from 'supertest';
 import { IUser, User, UserRoles, Investor, IInvestor } from '@entities';
 import { login } from './support/LoginAgent';
 import { pErr, paramMissingError, logger } from '@shared';
-import { UserDao } from 'src/daos/User/UserDao.mock';
 
 
 describe('InvestorRouter', () => {

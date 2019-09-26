@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { SuperTest, Test } from 'supertest';
 import { User, UserRoles } from '@entities';
 import { pwdSaltRounds, logger } from '@shared';
-import { UserDao } from 'src/daos/User/UserDao.mock';
+import { UserDao } from 'src/services/User/UserDao.mock';
 
 
 const creds = {

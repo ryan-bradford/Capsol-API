@@ -2,14 +2,14 @@ import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
-import { UserDaoFactory, ContractDaoFactory } from '@daos';
 import { UserRoles, Homeowner } from '@entities';
+import { HomeownerService, ContractService } from 'src/services';
 
 
 // Init shared
 const router = Router();
-const userDao = UserDaoFactory();
-const contractDao = ContractDaoFactory();
+const homeownerService = new HomeownerService();
+const contractService = new ContractService();
 
 
 /******************************************************************************
@@ -18,20 +18,8 @@ const contractDao = ContractDaoFactory();
 
 router.get('', adminMW, async (req: Request, res: Response) => {
     try {
-        const users = await userDao.getAll();
-        const investors = await Promise.all(users
-            .filter((user) => user.role === UserRoles.Homeowner)
-            .map((user) => {
-                if (!user.id) {
-                    return null;
-                } else {
-                    contractDao.getContracts(user.id).then((contracts) => {
-                        return new Homeowner(user, undefined, undefined, undefined, undefined, contracts[0]);
-                    });
-                }
-            })
-            .filter((user) => user !== null));
-        return res.status(OK).json({ investors });
+        const users = await homeownerService.getAll();
+        return res.status(OK).json({ users });
     } catch (err) {
         logger.error(err.message, err);
         return res.status(BAD_REQUEST).json({
@@ -51,7 +39,7 @@ router.post('', adminMW, async (req: Request, res: Response) => {
         }
         // Add new user
         user.role = UserRoles.Investor;
-        await userDao.add(user);
+        await homeownerService.add(user);
         return res.status(CREATED).end();
     } catch (err) {
         logger.error(err.message, err);
@@ -64,12 +52,9 @@ router.post('', adminMW, async (req: Request, res: Response) => {
 router.get('/:email', adminMW, async (req: Request, res: Response) => {
     try {
         const { email } = req.params as ParamsDictionary;
-        const user = await userDao.getOne(email);
+        const user = await homeownerService.getOne(email);
         if (user && user.id) {
-            const homeowner = await contractDao.getContracts(user.id).then((contracts) => {
-                return new Homeowner(user, undefined, undefined, undefined, undefined, contracts[0]);
-            });
-            return res.status(OK).json(homeowner);
+            return res.status(OK).json(user);
         } else {
             throw new Error('Bad user');
         }
@@ -84,7 +69,7 @@ router.get('/:email', adminMW, async (req: Request, res: Response) => {
 router.delete('/:email', adminMW, async (req: Request, res: Response) => {
     try {
         const { email } = req.params as ParamsDictionary;
-        await userDao.delete(email);
+        await homeownerService.delete(email);
         return res.status(OK).end();
     } catch (err) {
         logger.error(err.message, err);
@@ -98,9 +83,9 @@ router.put('/:email/home', adminMW, async (req: Request, res: Response) => {
     try {
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
-        const user = await userDao.getOne(email);
+        const user = await homeownerService.getOne(email);
         if (user && user.id) {
-            await contractDao.createContract(10000, 0.04, 20, user.id);
+            await contractService.createContract(10000, 0.04, 20, user.id);
             return res.status(OK).end();
         } else {
             throw new Error('Bad user');

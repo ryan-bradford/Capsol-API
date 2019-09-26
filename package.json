@@ -24,8 +24,11 @@
     "jsonwebtoken": "^8.5.1",
     "module-alias": "^2.2.1",
     "morgan": "^1.9.1",
+    "mysql2": "^1.7.0",
     "pug": "^2.0.4",
     "randomstring": "^1.1.5",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.2.19",
     "winston": "^3.2.1"
   },
   "devDependencies": {
@@ -38,7 +41,7 @@
     "@types/jsonfile": "^5.0.0",
     "@types/jsonwebtoken": "^8.3.3",
     "@types/morgan": "^1.7.37",
-    "@types/node": "^12.7.5",
+    "@types/node": "^12.7.7",
     "@types/randomstring": "^1.1.6",
     "@types/supertest": "^2.0.8",
     "find": "^0.3.0",

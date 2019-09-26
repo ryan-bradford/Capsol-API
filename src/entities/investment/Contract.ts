@@ -1,6 +1,7 @@
 import { IInvestment, Investment } from './Investment';
-import { IInvestor } from '../user/Investor';
 import { getRandomInt } from '@shared';
+import { Column, OneToMany, PrimaryColumn, OneToOne, BaseEntity } from 'typeorm';
+import { Homeowner, IHomeowner } from '../user/Homeowner';
 
 export interface IContract {
     id: number;
@@ -8,28 +9,41 @@ export interface IContract {
     length: number;
     monthlyPayment: number;
     investments: IInvestment[];
-    userId: number;
+    homeowner: IHomeowner;
     readonly isFulfilled: boolean;
     readonly yearsPassed: number;
     readonly depreciationValue: number;
 }
 
-export class Contract implements IContract {
-    public saleAmount: number;
-    public length: number;
-    public monthlyPayment: number;
-    public investments: IInvestment[];
+export class Contract extends BaseEntity implements IContract {
+
+    @PrimaryColumn()
     public id: number;
-    public userId: number;
+
+    @Column()
+    public saleAmount: number;
+
+    @Column()
+    public length: number;
+
+    @Column()
+    public monthlyPayment: number;
+
+    @OneToMany((type) => Investment, (investment) => investment.contract)
+    public investments: Investment[];
+
+    @OneToOne((type) => Homeowner, (homeowner) => homeowner.contract)
+    public homeowner: Homeowner;
 
 
-    constructor(saleAmount: number, length: number, monthlyPayment: number, userId: number, id?: number) {
+    constructor(saleAmount: number, length: number, monthlyPayment: number, homeowner: Homeowner, id?: number) {
+        super();
         this.saleAmount = saleAmount;
         this.length = length;
         this.monthlyPayment = monthlyPayment;
         this.investments = [];
         this.id = id ? id : getRandomInt();
-        this.userId = userId;
+        this.homeowner = homeowner;
     }
 
 

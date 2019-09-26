@@ -2,14 +2,14 @@ import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
-import { InvestmentDaoFactory, UserDaoFactory } from '@daos';
 import { UserRoles, Investor } from '@entities';
+import { InvestorService, InvestmentService } from 'src/services';
 
 
 // Init shared
 const router = Router();
-const userDao = UserDaoFactory();
-const investmentDao = InvestmentDaoFactory();
+const investorService = new InvestorService();
+const investmentService = new InvestmentService();
 
 
 /******************************************************************************
@@ -18,21 +18,8 @@ const investmentDao = InvestmentDaoFactory();
 
 router.get('', adminMW, async (req: Request, res: Response) => {
     try {
-        const users = await userDao.getAll();
-        const investors = await Promise.all(users
-            .filter((user) => user.role === UserRoles.Investor)
-            .map((user) => {
-                if (!user.id) {
-                    return null;
-                } else {
-                    const investments = investmentDao.getInvestments(user.id);
-                    return investments.then((realInvestments) => {
-                        return new Investor(user, undefined, undefined, undefined, undefined, realInvestments);
-                    });
-                }
-            })
-            .filter((user) => user !== null));
-        return res.status(OK).json({ investors });
+        const users = await investorService.getAll();
+        return res.status(OK).json({ users });
     } catch (err) {
         logger.error(err.message, err);
         return res.status(BAD_REQUEST).json({
@@ -52,7 +39,7 @@ router.post('', adminMW, async (req: Request, res: Response) => {
         }
         // Add new user
         user.role = UserRoles.Investor;
-        await userDao.add(user);
+        await investorService.add(user);
         return res.status(CREATED).end();
     } catch (err) {
         logger.error(err.message, err);
@@ -65,12 +52,9 @@ router.post('', adminMW, async (req: Request, res: Response) => {
 router.get('/:email', adminMW, async (req: Request, res: Response) => {
     try {
         const { email } = req.params as ParamsDictionary;
-        const user = await userDao.getOne(email);
+        const user = await investorService.getOne(email);
         if (user && user.id) {
-            const investor = await investmentDao.getInvestments(user.id).then((investments) => {
-                return new Investor(user, undefined, undefined, undefined, undefined, investments);
-            });
-            return res.status(OK).json(investor);
+            return res.status(OK).json(user);
         } else {
             throw new Error('Bad user');
         }
@@ -85,7 +69,7 @@ router.get('/:email', adminMW, async (req: Request, res: Response) => {
 router.delete('/:email', adminMW, async (req: Request, res: Response) => {
     try {
         const { email } = req.params as ParamsDictionary;
-        await userDao.delete(email);
+        await investorService.delete(email);
         return res.status(OK).end();
     } catch (err) {
         logger.error(err.message, err);
@@ -99,9 +83,9 @@ router.put('/:email/investment', adminMW, async (req: Request, res: Response) =>
     try {
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
-        const user = await userDao.getOne(email);
+        const user = await investorService.getOne(email);
         if (user && user.id) {
-            await investmentDao.addFunds(user.id, amount);
+            await investmentService.addFunds(user.id, amount);
             return res.status(OK).end();
         } else {
             throw new Error('Bad user');

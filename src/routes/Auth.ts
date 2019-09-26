@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, OK, UNAUTHORIZED } from 'http-status-codes';
-import { UserDaoFactory } from '@daos';
 import { UserRoles } from '@entities';
 
 import {
@@ -11,10 +10,12 @@ import {
     jwtCookieProps,
     JwtService,
 } from '@shared';
+import { InvestorService, HomeownerService } from 'src/services';
 
 
 const router = Router();
-const userDao = UserDaoFactory();
+const investorService = new InvestorService();
+const homeownerService = new HomeownerService();
 const jwtService = new JwtService();
 
 
@@ -33,7 +34,9 @@ router.post('/login', async (req: Request, res: Response) => {
             });
         }
         // Fetch user
-        const user = await userDao.getOne(email);
+        const homeowner = await homeownerService.getOne(email);
+        const investor = await investorService.getOne(email);
+        const user = investor ? investor : homeowner;
         if (!user) {
             return res.status(UNAUTHORIZED).json({
                 error: loginFailedErr,

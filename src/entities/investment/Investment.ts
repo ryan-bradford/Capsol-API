@@ -1,24 +1,35 @@
-import { IContract } from './Contract';
+import { IContract, Contract } from './Contract';
+import { ManyToOne, Column, BaseEntity } from 'typeorm';
+import { Investor, IInvestor } from '../user/Investor';
 
 export interface IInvestment {
     contract: IContract;
     percentage: number;
-    ownerId: number;
+    owner: IInvestor;
     forSale: boolean;
     readonly value: number;
 }
 
-export class Investment implements IInvestment {
+export class Investment extends BaseEntity implements IInvestment {
+
+    @ManyToOne((type) => Contract, (contract) => contract.investments)
     public contract: IContract;
+
+    @Column()
     public percentage: number;
-    public ownerId: number;
+
+    @ManyToOne((type) => Investor, (investor) => investor.investments)
+    public owner: IInvestor;
+
+    @Column()
     public forSale: boolean;
 
 
-    constructor(percentage: number, contract: IContract, ownerId: number, forSale: boolean) {
+    constructor(percentage: number, contract: IContract, owner: IInvestor, forSale: boolean) {
+        super();
         this.percentage = percentage;
         this.contract = contract;
-        this.ownerId = ownerId;
+        this.owner = owner;
         this.forSale = forSale;
     }
 

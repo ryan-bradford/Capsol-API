@@ -1,18 +1,24 @@
 import { IUser, User, TUserRoles } from './User';
-import { IInvestment } from '../investment/Investment';
+import { IInvestment, Investment } from '../investment/Investment';
 import { IPurchaseRequest } from '../investment/PurchaseRequest';
 import { ISellRequest } from '../investment/SellRequest';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from 'typeorm';
 
 export interface IInvestor extends IUser {
     investments: IInvestment[];
-    purchaseRequests: IPurchaseRequest[];
-    sellRequests: ISellRequest[];
+    // purchaseRequests: IPurchaseRequest[];
+    // sellRequests: ISellRequest[];
 }
 
+@Entity()
 export class Investor extends User implements IInvestor {
+
+    @OneToMany((type) => Investment, (investment) => investment.owner)
     public investments: IInvestment[];
-    public purchaseRequests: IPurchaseRequest[];
-    public sellRequests: ISellRequest[];
+
+
+    // public purchaseRequests: IPurchaseRequest[];
+    // public sellRequests: ISellRequest[];
 
 
     constructor(
@@ -28,12 +34,12 @@ export class Investor extends User implements IInvestor {
         super(nameOrUser, email, role, pwdHash, id);
         if (nameOrUser !== undefined && isInvestor(nameOrUser)) {
             this.investments = nameOrUser.investments ? nameOrUser.investments : [];
-            this.purchaseRequests = nameOrUser.purchaseRequests ? nameOrUser.purchaseRequests : [];
-            this.sellRequests = nameOrUser.sellRequests ? nameOrUser.sellRequests : [];
+            // this.purchaseRequests = nameOrUser.purchaseRequests ? nameOrUser.purchaseRequests : [];
+            // this.sellRequests = nameOrUser.sellRequests ? nameOrUser.sellRequests : [];
         } else {
             this.investments = investments ? investments : [];
-            this.purchaseRequests = purchaseRequests ? purchaseRequests : [];
-            this.sellRequests = sellRequests ? sellRequests : [];
+            // this.purchaseRequests = purchaseRequests ? purchaseRequests : [];
+            // this.sellRequests = sellRequests ? sellRequests : [];
         }
     }
 }

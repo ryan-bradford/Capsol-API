@@ -1,4 +1,5 @@
 import { getRandomInt } from '@shared';
+import { PrimaryColumn, Column, BaseEntity } from 'typeorm';
 
 export enum UserRoles {
     Homeowner,
@@ -21,12 +22,21 @@ export interface IUser {
 }
 
 
-export class User implements IUser {
+export class User extends BaseEntity implements IUser {
 
-    public id?: number;
+    @PrimaryColumn()
+    public id: number;
+
+    @Column()
     public name: string;
+
+    @Column()
     public email: string;
+
+    @Column()
     public role: TUserRoles;
+
+    @Column()
     public pwdHash: string;
 
 
@@ -37,6 +47,7 @@ export class User implements IUser {
         pwdHash?: string,
         id?: number,
     ) {
+        super();
         if (typeof nameOrUser === 'string' || typeof nameOrUser === 'undefined') {
             this.name = nameOrUser || '';
             this.email = email || '';
@@ -48,7 +59,7 @@ export class User implements IUser {
             this.email = nameOrUser.email;
             this.role = nameOrUser.role;
             this.pwdHash = nameOrUser.pwdHash;
-            this.id = nameOrUser.id;
+            this.id = nameOrUser.id ? nameOrUser.id : getRandomInt();
         }
     }
 }
