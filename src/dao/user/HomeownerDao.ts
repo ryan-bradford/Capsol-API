@@ -1,7 +1,7 @@
-import { IUserDao } from './UserService';
+import { IUserDao } from './UserDao';
 import { IUser, IHomeowner, Homeowner } from '@entities';
 
-export class HomeownerService implements IUserDao<IHomeowner> {
+export class SqlHomeownerDao implements IUserDao<IHomeowner> {
 
 
     /**
@@ -24,7 +24,7 @@ export class HomeownerService implements IUserDao<IHomeowner> {
      *
      * @param user
      */
-    public async add(homeowner: IHomeowner): Promise<Homeowner> {
+    public async add(homeowner: IHomeowner): Promise<IHomeowner> {
         const newHomeowner = new Homeowner(homeowner);
         return newHomeowner.save();
     }

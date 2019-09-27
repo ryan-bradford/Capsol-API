@@ -12,7 +12,8 @@ Overall Architecture Design:
 /env -> stores configuration stuff
 /db -> stores the schema and all migration scripts
 /spec -> where all the tests lie
-/src/services -> stores all the classes for interacting with the database. Here is where business logic will go.
+/src/dao -> stores the classes that interact with the database, whatever that may be.
+/src/services -> stores important business processes that are tangential to database or entity. Here is where business logic will go.
 /src/entities -> all the entities that this app will use. Here is where the validation will go.
 /src/public -> any publicly accessible scripts (CSS, JS, ect);
 /src/routes -> links the views to the entities/DAOS

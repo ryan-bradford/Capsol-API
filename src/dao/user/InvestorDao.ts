@@ -1,7 +1,7 @@
-import { IUserDao } from './UserService';
+import { IUserDao } from './UserDao';
 import { IUser, IInvestor, Investor } from '@entities';
 
-export class InvestorService implements IUserDao<IInvestor> {
+export class SqlInvestorDao implements IUserDao<IInvestor> {
 
 
     /**

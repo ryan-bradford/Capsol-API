@@ -36,13 +36,13 @@ export class Contract extends BaseEntity implements IContract {
     public homeowner: Homeowner;
 
 
-    constructor(saleAmount: number, length: number, monthlyPayment: number, homeowner: Homeowner, id?: number) {
+    constructor(saleAmount: number, length: number, monthlyPayment: number, homeowner: Homeowner) {
         super();
         this.saleAmount = saleAmount;
         this.length = length;
         this.monthlyPayment = monthlyPayment;
         this.investments = [];
-        this.id = id ? id : getRandomInt();
+        this.id = getRandomInt();
         this.homeowner = homeowner;
     }
 

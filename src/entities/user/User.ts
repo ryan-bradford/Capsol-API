@@ -22,7 +22,7 @@ export interface IUser {
 }
 
 
-export class User extends BaseEntity implements IUser {
+export abstract class User extends BaseEntity implements IUser {
 
     @PrimaryColumn()
     public id: number;
