@@ -30,13 +30,13 @@ export class Contract extends BaseEntity implements IContract {
     public monthlyPayment: number;
 
     @OneToMany((type) => Investment, (investment) => investment.contract)
-    public investments: Investment[];
+    public investments: IInvestment[];
 
     @OneToOne((type) => Homeowner, (homeowner) => homeowner.contract)
-    public homeowner: Homeowner;
+    public homeowner: IHomeowner;
 
 
-    constructor(saleAmount: number, length: number, monthlyPayment: number, homeowner: Homeowner) {
+    constructor(saleAmount: number, length: number, monthlyPayment: number, homeowner: IHomeowner) {
         super();
         this.saleAmount = saleAmount;
         this.length = length;

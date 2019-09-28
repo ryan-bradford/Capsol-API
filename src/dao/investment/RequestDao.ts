@@ -1,16 +1,52 @@
-import { PurchaseRequest } from 'src/entities/investment/PurchaseRequest';
+import {
+    PurchaseRequest, IRequest, IPurchaseRequest,
+    ISellRequest, SellRequest,
+} from 'src/entities/investment/Request';
 
-export interface IRequestDao {
+export interface IRequestDao<T extends IRequest> {
 
-    getPurchaseReqests(): Promise<PurchaseRequest>;
+    getRequests(): Promise<T[]>;
+    createRequest(toCreate: T): Promise<void>;
+    deleteRequest(toDelete: T): Promise<void>;
 
 }
 
-export class SqlRequestDao implements IRequestDao {
+export class SqlPurchaseRequestDao implements IRequestDao<IPurchaseRequest> {
 
 
-    getPurchaseReqests(): Promise<PurchaseRequest> {
-        throw new Error("Method not implemented.");
+    public getRequests(): Promise<IPurchaseRequest[]> {
+        return PurchaseRequest.find();
     }
 
+
+    public createRequest(toCreate: IPurchaseRequest): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+
+
+    public async deleteRequest(toDelete: IPurchaseRequest): Promise<void> {
+        // tslint:disable-next-line: no-empty
+        await PurchaseRequest.delete(toDelete.id);
+    }
+}
+
+
+// tslint:disable-next-line: max-classes-per-file
+export class SqlSellRequestDao implements IRequestDao<ISellRequest> {
+
+
+    public getRequests(): Promise<ISellRequest[]> {
+        return SellRequest.find();
+    }
+
+
+    public createRequest(toCreate: IPurchaseRequest): Promise<void> {
+        throw new Error('Method not implemented.');
+    }
+
+
+    public async deleteRequest(toDelete: ISellRequest): Promise<void> {
+        // tslint:disable-next-line: no-empty
+        await SellRequest.delete(toDelete.id);
+    }
 }

@@ -1,4 +1,5 @@
-import { IContract, Contract, Homeowner } from '@entities';
+import { IContract, Contract, Homeowner, IHomeowner } from '@entities';
+import { IContractDao, IUserDao } from 'src/dao';
 
 export interface IContractService {
     createContract(amount: number, interestRate: number, years: number, userId: number): Promise<IContract>;
@@ -7,9 +8,12 @@ export interface IContractService {
 export class ContractService implements IContractService {
 
 
+    constructor(private homeownerDao: IUserDao<IHomeowner>) { }
+
+
     public async createContract(amount: number, interestRate: number, years: number, userId: number):
         Promise<IContract> {
-        const homeowner = await Homeowner.findOne(userId);
+        const homeowner = await this.homeownerDao.getOne(userId);
         if (!homeowner) {
             throw new Error('Not found');
         }

@@ -1,6 +1,7 @@
-import { PurchaseRequest } from 'src/entities/investment/PurchaseRequest';
-import { UserRoles, Investor, Homeowner, IUser, Contract, Investment, IInvestor, IInvestment } from '@entities';
-import { SellRequest } from 'src/entities/investment/SellRequest';
+import { PurchaseRequest, ISellRequest, IPurchaseRequest, SellRequest } from 'src/entities/investment/Request';
+import { UserRoles, Investor, Homeowner, IUser, Contract, Investment, IInvestor, IInvestment, IHomeowner } from '@entities';
+import { IRequestDao } from 'src/dao/investment/RequestDao';
+import { IUserDao } from 'src/dao';
 
 interface IRequestService {
 
@@ -12,8 +13,15 @@ interface IRequestService {
 export class RequestService implements IRequestService {
 
 
+    constructor(
+        private sellRequestDao: IRequestDao<ISellRequest>,
+        private purchaseRequestDao: IRequestDao<IPurchaseRequest>,
+        private investorDao: IUserDao<IInvestor>,
+        private homeownerDao: IUserDao<IHomeowner>) { }
+
+
     public async createPurchaseRequest(userId: number, amount: number): Promise<void> {
-        const investor = await Investor.findOne(userId);
+        const investor = await this.investorDao.getOne(userId);
         if (!investor) {
             throw new Error('Not Found');
         }
@@ -25,8 +33,8 @@ export class RequestService implements IRequestService {
 
     public async createSellRequest(userId: number, amount: number): Promise<void> {
         // Literally only creates a sell request with the user ID and amount
-        const investor = await Investor.findOne(userId);
-        const homeowner = await Homeowner.findOne(userId);
+        const investor = await this.investorDao.getOne(userId);
+        const homeowner = await this.homeownerDao.getOne(userId);
         const user = investor ? investor : homeowner;
         if (!user) {
             throw new Error('Not Found');
@@ -40,7 +48,8 @@ export class RequestService implements IRequestService {
     private async handleRequests(): Promise<void> {
         // Matches purchase requests to sell requests based on age
         // When a match is made, looks into sellers portfolio and determines what to transfer
-        const [allPurchaseRequests, allSellRequests] = await Promise.all([PurchaseRequest.find(), SellRequest.find()]);
+        const [allPurchaseRequests, allSellRequests] =
+            await Promise.all([this.purchaseRequestDao.getRequests(), this.sellRequestDao.getRequests()]);
         allPurchaseRequests.sort((a, b) => a.dateCreated.getTime() - b.dateCreated.getTime());
         allSellRequests.sort((a, b) => a.dateCreated.getTime() - b.dateCreated.getTime());
         let currentPurchase = allPurchaseRequests.pop();
@@ -51,15 +60,15 @@ export class RequestService implements IRequestService {
                 currentPurchase.amount -= currentSell.amount;
                 currentSell.amount = 0;
                 await this.takeAssets(currentSell.amount, currentSell.user, currentPurchase.user);
-                SellRequest.delete(currentSell);
+                this.sellRequestDao.deleteRequest(currentSell);
                 currentSell = allSellRequests.pop();
             } else if (currentPurchase.amount === currentSell.amount) {
                 // Transfer sell request to purchaser and delete both.
                 currentPurchase.amount = 0;
                 currentSell.amount = 0;
                 await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user);
-                SellRequest.delete(currentSell);
-                PurchaseRequest.delete(currentPurchase);
+                this.sellRequestDao.deleteRequest(currentSell);
+                this.purchaseRequestDao.deleteRequest(currentPurchase);
                 currentPurchase = allPurchaseRequests.pop();
                 currentSell = allSellRequests.pop();
             } else if (currentPurchase.amount < currentSell.amount) {
@@ -67,7 +76,7 @@ export class RequestService implements IRequestService {
                 currentSell.amount -= currentPurchase.amount;
                 currentPurchase.amount = 0;
                 await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user);
-                PurchaseRequest.delete(currentPurchase);
+                this.purchaseRequestDao.deleteRequest(currentPurchase);
                 currentPurchase = allPurchaseRequests.pop();
             }
         }

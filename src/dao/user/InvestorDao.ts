@@ -7,8 +7,9 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
     /**
      * @param email
      */
-    public async getOne(email: string): Promise<IInvestor | null> {
-        return Investor.findOne({ email }).then((result) => result ? result : null);
+    public async getOne(emailOrId: string | number): Promise<IInvestor | null> {
+        return Investor.findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
+            .then((result) => result ? result : null);
     }
 
 

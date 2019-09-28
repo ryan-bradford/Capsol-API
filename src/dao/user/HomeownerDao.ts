@@ -7,8 +7,9 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
     /**
      * @param email
      */
-    public async getOne(email: string): Promise<IHomeowner | null> {
-        return Homeowner.findOne({ email }).then((result) => result ? result : null);
+    public async getOne(emailOrId: string | number): Promise<IHomeowner | null> {
+        return Homeowner.findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
+            .then((result) => result ? result : null);
     }
 
 

@@ -4,12 +4,15 @@ import logger from 'morgan';
 import path from 'path';
 import BaseRouter from './routes';
 
-import { Request, Response } from 'express';
-import { jwtCookieProps } from '@shared';
+import { SqlHomeownerDao } from './dao';
+import { ContractService } from '@daos';
 
 
 // Init express
 const app = express();
+
+const homeownerDao = new SqlHomeownerDao();
+const contractService = new ContractService(homeownerDao);
 
 
 // Add middleware/settings/routes to express.
@@ -18,7 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('', BaseRouter);
+app.use('', BaseRouter(homeownerDao, contractService));
 
 
 /**
@@ -29,15 +32,6 @@ app.set('views', viewsDir);
 const staticDir = path.join(__dirname, 'public');
 app.use(express.static(staticDir));
 app.set('view engine', 'pug');
-
-app.get('/users', (req: Request, res: Response) => {
-    const jwt = req.signedCookies[jwtCookieProps.key];
-    if (!jwt) {
-        res.redirect('/login');
-    } else {
-        res.sendFile('users', { root: viewsDir });
-    }
-});
 
 
 // Export express instance

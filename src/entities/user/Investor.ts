@@ -1,7 +1,6 @@
 import { IUser, User, TUserRoles } from './User';
 import { IInvestment, Investment } from '../investment/Investment';
-import { IPurchaseRequest } from '../investment/PurchaseRequest';
-import { ISellRequest } from '../investment/SellRequest';
+import { IPurchaseRequest, ISellRequest } from '../investment/Request';
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from 'typeorm';
 
 export interface IInvestor extends IUser {
