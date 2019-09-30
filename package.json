@@ -6,12 +6,14 @@
     "lint": "tslint --project \"tsconfig.json\"",
     "start": "cross-env ENV_FILE=production node -r ./env -r module-alias/register ./dist/start.js",
     "start-dev": "nodemon --config \"./util/nodemon.json\"",
-    "test": "nodemon --config \"./util/nodemon.test.json\""
+    "test": "nodemon --config \"./util/nodemon.test.json\"",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js"
   },
   "_moduleAliases": {
     "@daos": "dist/daos",
     "@entities": "dist/entities",
     "@shared": "dist/shared",
+    "@services": "dist/services",
     "@server": "dist/Server"
   },
   "dependencies": {

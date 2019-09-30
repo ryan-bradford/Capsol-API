@@ -14,7 +14,7 @@
     "moduleResolution": "node",
     "paths": {
       "@daos": [
-        "src/services"
+        "src/daos"
       ],
       "@entities": [
         "src/entities"
@@ -24,6 +24,9 @@
       ],
       "@server": [
         "src/Server"
+      ],
+      "@services": [
+        "src/services"
       ]
     },
     "types": [

@@ -1,5 +1,5 @@
 import { IUser } from '@entities';
-import { Column, PrimaryColumn, OneToMany, BaseEntity } from 'typeorm';
+import { Column, PrimaryColumn, OneToMany, BaseEntity, Entity } from 'typeorm';
 import { User } from '../user/User';
 import { getRandomInt } from '@shared';
 import { IInvestor, Investor } from '../user/Investor';
@@ -13,7 +13,7 @@ export interface IRequest {
 
 }
 
-export abstract class ARequest extends BaseEntity implements IRequest {
+export abstract class ARequest implements IRequest {
 
     @PrimaryColumn()
     public id: number;
@@ -31,7 +31,6 @@ export abstract class ARequest extends BaseEntity implements IRequest {
 
 
     constructor(amount: number, user: IUser) {
-        super();
         this.id = getRandomInt();
         this.amount = amount;
         this.user = user;
@@ -49,6 +48,7 @@ export interface IPurchaseRequest extends IRequest {
 export interface ISellRequest extends IRequest { }
 
 // tslint:disable-next-line: max-classes-per-file
+@Entity('PURCHASE_REQUEST')
 export class PurchaseRequest extends ARequest implements IPurchaseRequest {
 
 
@@ -63,4 +63,5 @@ export class PurchaseRequest extends ARequest implements IPurchaseRequest {
 }
 
 // tslint:disable-next-line: max-classes-per-file
+@Entity('SELL_REQUEST')
 export class SellRequest extends ARequest implements ISellRequest { }

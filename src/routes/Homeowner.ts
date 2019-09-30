@@ -3,8 +3,8 @@ import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
 import { UserRoles, IHomeowner } from '@entities';
-import { IUserDao } from 'src/dao';
-import { IContractService } from 'src/services/Investment/ContractService';
+import { IUserDao } from '@daos';
+import { IContractService } from '@services';
 
 
 export default (homeownerDao: IUserDao<IHomeowner>, contractService: IContractService) => {

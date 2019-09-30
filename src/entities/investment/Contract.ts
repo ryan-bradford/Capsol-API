@@ -1,6 +1,6 @@
 import { IInvestment, Investment } from './Investment';
 import { getRandomInt } from '@shared';
-import { Column, OneToMany, PrimaryColumn, OneToOne, BaseEntity } from 'typeorm';
+import { Column, OneToMany, PrimaryColumn, OneToOne, BaseEntity, Entity } from 'typeorm';
 import { Homeowner, IHomeowner } from '../user/Homeowner';
 
 export interface IContract {
@@ -15,7 +15,8 @@ export interface IContract {
     readonly depreciationValue: number;
 }
 
-export class Contract extends BaseEntity implements IContract {
+@Entity('CONTRACT')
+export class Contract implements IContract {
 
     @PrimaryColumn()
     public id: number;
@@ -37,7 +38,6 @@ export class Contract extends BaseEntity implements IContract {
 
 
     constructor(saleAmount: number, length: number, monthlyPayment: number, homeowner: IHomeowner) {
-        super();
         this.saleAmount = saleAmount;
         this.length = length;
         this.monthlyPayment = monthlyPayment;

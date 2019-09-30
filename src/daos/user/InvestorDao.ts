@@ -1,5 +1,6 @@
 import { IUserDao } from './UserDao';
 import { IUser, IInvestor, Investor } from '@entities';
+import { getRepository } from 'typeorm';
 
 export class SqlInvestorDao implements IUserDao<IInvestor> {
 
@@ -8,7 +9,8 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
      * @param email
      */
     public async getOne(emailOrId: string | number): Promise<IInvestor | null> {
-        return Investor.findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
+        return getRepository(Investor)
+            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
             .then((result) => result ? result : null);
     }
 
@@ -17,7 +19,7 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
      *
      */
     public async getAll(): Promise<IInvestor[]> {
-        return Investor.find();
+        return (getRepository(Investor)).find();
     }
 
 
@@ -27,7 +29,7 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
      */
     public async add(user: IInvestor): Promise<Investor> {
         const newInvestor = new Investor(user);
-        return Investor.save(newInvestor);
+        return (getRepository(Investor)).save(newInvestor);
     }
 
 
@@ -36,11 +38,11 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
      * @param id
      */
     public async delete(email: string): Promise<void> {
-        return Investor.findOne({ email }).then((result) => {
+        return (getRepository(Investor)).findOne({ email }).then((result) => {
             if (!result) {
                 throw new Error('Not found');
             }
-            Investor.delete(result.id);
+            (getRepository(Investor)).delete(result.id);
         });
     }
 }

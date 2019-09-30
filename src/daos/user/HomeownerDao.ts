@@ -1,5 +1,6 @@
 import { IUserDao } from './UserDao';
 import { IUser, IHomeowner, Homeowner } from '@entities';
+import { createConnection, Connection, getRepository } from 'typeorm';
 
 export class SqlHomeownerDao implements IUserDao<IHomeowner> {
 
@@ -8,7 +9,8 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
      * @param email
      */
     public async getOne(emailOrId: string | number): Promise<IHomeowner | null> {
-        return Homeowner.findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
+        return (getRepository(Homeowner))
+            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
             .then((result) => result ? result : null);
     }
 
@@ -17,7 +19,7 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
      *
      */
     public async getAll(): Promise<IHomeowner[]> {
-        return Homeowner.find();
+        return (getRepository(Homeowner)).find();
     }
 
 
@@ -27,7 +29,7 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
      */
     public async add(homeowner: IHomeowner): Promise<IHomeowner> {
         const newHomeowner = new Homeowner(homeowner);
-        return newHomeowner.save();
+        return (getRepository(Homeowner)).save(newHomeowner);
     }
 
 
@@ -36,11 +38,11 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
      * @param id
      */
     public async delete(email: string): Promise<void> {
-        return Homeowner.findOne({ email }).then((result) => {
+        return (getRepository(Homeowner)).findOne({ email }).then((result) => {
             if (!result) {
                 throw new Error('Not found');
             }
-            Homeowner.delete(result.id);
+            (getRepository(Homeowner)).delete(result.id);
         });
     }
 }

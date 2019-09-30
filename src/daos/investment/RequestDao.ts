@@ -2,6 +2,7 @@ import {
     PurchaseRequest, IRequest, IPurchaseRequest,
     ISellRequest, SellRequest,
 } from 'src/entities/investment/Request';
+import { getRepository } from 'typeorm';
 
 export interface IRequestDao<T extends IRequest> {
 
@@ -15,7 +16,7 @@ export class SqlPurchaseRequestDao implements IRequestDao<IPurchaseRequest> {
 
 
     public getRequests(): Promise<IPurchaseRequest[]> {
-        return PurchaseRequest.find();
+        return getRepository(PurchaseRequest).find();
     }
 
 
@@ -26,7 +27,7 @@ export class SqlPurchaseRequestDao implements IRequestDao<IPurchaseRequest> {
 
     public async deleteRequest(toDelete: IPurchaseRequest): Promise<void> {
         // tslint:disable-next-line: no-empty
-        await PurchaseRequest.delete(toDelete.id);
+        await getRepository(PurchaseRequest).delete(toDelete.id);
     }
 }
 
@@ -36,7 +37,7 @@ export class SqlSellRequestDao implements IRequestDao<ISellRequest> {
 
 
     public getRequests(): Promise<ISellRequest[]> {
-        return SellRequest.find();
+        return getRepository(SellRequest).find();
     }
 
 
@@ -47,6 +48,6 @@ export class SqlSellRequestDao implements IRequestDao<ISellRequest> {
 
     public async deleteRequest(toDelete: ISellRequest): Promise<void> {
         // tslint:disable-next-line: no-empty
-        await SellRequest.delete(toDelete.id);
+        await getRepository(SellRequest).delete(toDelete.id);
     }
 }

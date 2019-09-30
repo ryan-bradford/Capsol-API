@@ -7,7 +7,7 @@ import { IUser, User, UserRoles, Investor, IInvestor } from '@entities';
 import { login } from './support/LoginAgent';
 import { pErr, paramMissingError, logger } from '@shared';
 
-
+/*
 describe('InvestorRouter', () => {
 
     const usersPath = '/api/investors';
@@ -166,4 +166,4 @@ describe('InvestorRouter', () => {
         });
     });
 });
-
+*/

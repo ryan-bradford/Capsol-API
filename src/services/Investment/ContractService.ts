@@ -1,5 +1,5 @@
 import { IContract, Contract, Homeowner, IHomeowner } from '@entities';
-import { IContractDao, IUserDao } from 'src/dao';
+import { IContractDao, IUserDao } from '@daos';
 
 export interface IContractService {
     createContract(amount: number, interestRate: number, years: number, userId: number): Promise<IContract>;

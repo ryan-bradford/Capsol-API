@@ -1,5 +1,5 @@
 import { getRandomInt } from '@shared';
-import { PrimaryColumn, Column, BaseEntity } from 'typeorm';
+import { PrimaryColumn, Column, BaseEntity, Entity } from 'typeorm';
 
 export enum UserRoles {
     Homeowner,
@@ -21,8 +21,8 @@ export interface IUser {
     role: TUserRoles;
 }
 
-
-export abstract class User extends BaseEntity implements IUser {
+@Entity('USER')
+export abstract class User implements IUser {
 
     @PrimaryColumn()
     public id: number;
@@ -47,7 +47,6 @@ export abstract class User extends BaseEntity implements IUser {
         pwdHash?: string,
         id?: number,
     ) {
-        super();
         if (typeof nameOrUser === 'string' || typeof nameOrUser === 'undefined') {
             this.name = nameOrUser || '';
             this.email = email || '';

@@ -10,12 +10,12 @@ import {
     jwtCookieProps,
     JwtService,
 } from '@shared';
-import { InvestorService, HomeownerService } from 'src/services';
+import { SqlInvestorDao, SqlHomeownerDao } from '@daos';
 
 
 const router = Router();
-const investorService = new InvestorService();
-const homeownerService = new HomeownerService();
+const investorService = new SqlInvestorDao();
+const homeownerService = new SqlHomeownerDao();
 const jwtService = new JwtService();
 
 

@@ -1,5 +1,5 @@
 import { IContract, Contract } from './Contract';
-import { ManyToOne, Column, BaseEntity, PrimaryColumn } from 'typeorm';
+import { ManyToOne, Column, BaseEntity, PrimaryColumn, Entity } from 'typeorm';
 import { Investor, IInvestor } from '../user/Investor';
 import { getRandomInt } from '@shared';
 
@@ -12,7 +12,8 @@ export interface IInvestment {
     readonly value: number;
 }
 
-export class Investment extends BaseEntity implements IInvestment {
+@Entity('INVESTMENT')
+export class Investment implements IInvestment {
 
     @PrimaryColumn()
     public id: number;
@@ -31,7 +32,6 @@ export class Investment extends BaseEntity implements IInvestment {
 
 
     constructor(percentage: number, contract: IContract, owner: IInvestor, forSale: boolean) {
-        super();
         this.id = getRandomInt();
         this.percentage = percentage;
         this.contract = contract;

@@ -4,14 +4,16 @@ import bcrypt from 'bcrypt';
 
 import { BAD_REQUEST, CREATED, OK, UNAUTHORIZED } from 'http-status-codes';
 import { Response, SuperTest, Test } from 'supertest';
-import { IUser, User, UserRoles } from '@entities';
+import { IUser, User, UserRoles, Investor, IHomeowner, Homeowner, IInvestor } from '@entities';
 import { pErr, pwdSaltRounds, jwtCookieProps, loginFailedErr } from '@shared';
-import { UserDao } from 'src/services/User/UserDao.mock';
+import { SqlHomeownerDao, IUserDao } from '@daos';
+import HomeownerRoute from 'src/routes/Homeowner';
+import { ContractService, InvestmentService } from '@services';
 
 
 describe('UserRouter', () => {
 
-    const authPath = '/api/auth';
+    const authPath = '/auth';
     const loginPath = `${authPath}/login`;
     const logoutPath = `${authPath}/logout`;
 
@@ -19,7 +21,11 @@ describe('UserRouter', () => {
 
 
     beforeAll((done) => {
-        agent = supertest.agent(app);
+        agent = supertest.agent(app(
+            new MockHomeownerDao(),
+            new MockInvestorDao(),
+            (homeownerDao) => new ContractService(homeownerDao),
+            new InvestmentService()));
         done();
     });
 
@@ -40,8 +46,8 @@ describe('UserRouter', () => {
             };
             const role = UserRoles.Investor;
             const pwdHash = hashPwd(creds.password);
-            const loginUser = new User('john smith', creds.email, role, pwdHash);
-            spyOn(UserDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
+            const loginUser = new Investor('john smith', creds.email, role, pwdHash);
+            spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
             // Call API
             callApi(creds)
                 .end((err: Error, res: any) => {
@@ -60,7 +66,7 @@ describe('UserRouter', () => {
                 email: 'jsmith@gmail.com',
                 password: 'Password@1',
             };
-            spyOn(UserDao.prototype, 'getOne').and.returnValue(Promise.resolve(null));
+            spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(null));
             // Call API
             callApi(creds)
                 .end((err: Error, res: any) => {
@@ -81,8 +87,8 @@ describe('UserRouter', () => {
             };
             const role = UserRoles.Homeowner;
             const pwdHash = hashPwd('Password@1');
-            const loginUser = new User('john smith', creds.email, role, pwdHash);
-            spyOn(UserDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
+            const loginUser = new Investor('john smith', creds.email, role, pwdHash);
+            spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
             // Call API
             callApi(creds)
                 .end((err: Error, res: any) => {
@@ -101,7 +107,7 @@ describe('UserRouter', () => {
                 email: 'jsmith@gmail.com',
                 password: 'someBadPassword',
             };
-            spyOn(UserDao.prototype, 'getOne').and.throwError('Database query failed.');
+            spyOn(SqlHomeownerDao.prototype, 'getOne').and.throwError('Database query failed.');
             // Call API
             callApi(creds)
                 .end((err: Error, res: any) => {
@@ -132,5 +138,59 @@ describe('UserRouter', () => {
         return bcrypt.hashSync(pwd, pwdSaltRounds);
     }
 });
+
+class MockInvestorDao implements IUserDao<IInvestor> {
+
+
+    public getOne(emailOrId: string | number): Promise<IInvestor | null> {
+        if (emailOrId === 'jsmith@gmail.com') {
+            return Promise.resolve(new Investor('john smith', 'jsmith@gmail.com', UserRoles.Investor, 'hello'));
+        } else {
+            return Promise.resolve(null);
+        }
+    }
+
+
+    public getAll(): Promise<IInvestor[]> {
+        throw new Error('Not impl');
+    }
+
+
+    public add(user: IInvestor): Promise<IInvestor> {
+        throw new Error('Not impl');
+    }
+
+
+    public delete(email: string): Promise<void> {
+        throw new Error('Not impl');
+    }
+
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockHomeownerDao implements IUserDao<IHomeowner> {
+
+
+    public getOne(emailOrId: string | number): Promise<IHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getAll(): Promise<IHomeowner[]> {
+        throw new Error('Not impl');
+    }
+
+
+    public add(user: IHomeowner): Promise<IHomeowner> {
+        throw new Error('Not impl');
+    }
+
+
+    public delete(email: string): Promise<void> {
+        throw new Error('Not impl');
+    }
+
+}
+
 
 

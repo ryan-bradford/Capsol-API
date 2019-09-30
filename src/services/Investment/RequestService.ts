@@ -1,9 +1,9 @@
 import { PurchaseRequest, ISellRequest, IPurchaseRequest, SellRequest } from 'src/entities/investment/Request';
 import { UserRoles, Investor, Homeowner, IUser, Contract, Investment, IInvestor, IInvestment, IHomeowner } from '@entities';
-import { IRequestDao } from 'src/dao/investment/RequestDao';
-import { IUserDao } from 'src/dao';
+import { IRequestDao } from 'src/daos/investment/RequestDao';
+import { IUserDao, IInvestmentDao, IContractDao } from '@daos';
 
-interface IRequestService {
+export interface IRequestService {
 
     createPurchaseRequest(userId: number, amount: number): Promise<void>;
     createSellRequest(amount: number, userId: number): Promise<void>;
@@ -17,7 +17,9 @@ export class RequestService implements IRequestService {
         private sellRequestDao: IRequestDao<ISellRequest>,
         private purchaseRequestDao: IRequestDao<IPurchaseRequest>,
         private investorDao: IUserDao<IInvestor>,
-        private homeownerDao: IUserDao<IHomeowner>) { }
+        private homeownerDao: IUserDao<IHomeowner>,
+        private investmentDao: IInvestmentDao,
+        private contractDao: IContractDao) { }
 
 
     public async createPurchaseRequest(userId: number, amount: number): Promise<void> {
@@ -26,7 +28,7 @@ export class RequestService implements IRequestService {
             throw new Error('Not Found');
         }
         const newRequest = new PurchaseRequest(amount, investor);
-        PurchaseRequest.save(newRequest);
+        this.purchaseRequestDao.createRequest(newRequest);
         this.handleRequests();
     }
 
@@ -40,7 +42,7 @@ export class RequestService implements IRequestService {
             throw new Error('Not Found');
         }
         const newRequest = new SellRequest(amount, user);
-        SellRequest.save(newRequest);
+        this.sellRequestDao.createRequest(newRequest);
         this.handleRequests();
     }
 
@@ -85,13 +87,12 @@ export class RequestService implements IRequestService {
 
     private async takeAssets(amount: number, from: IUser, to: IInvestor): Promise<void> {
         if (from.role === UserRoles.Homeowner) {
-            const contracts = await Contract.find({ homeowner: from });
-            if (contracts.length !== 1) {
-                throw new Error('This homeowner does not have a contract');
+            if (!from.id) {
+                throw new Error('bad user');
             }
-            const contract = contracts[0];
+            const contract = await this.contractDao.getContract(from.id);
             const newInvestment = new Investment(amount / contract.saleAmount, contract, to, false);
-            Investment.save(newInvestment);
+            this.investmentDao.createInvestment(newInvestment);
             contract.investments.push(newInvestment);
         } else {
             // Find investments.
