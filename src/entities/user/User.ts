@@ -1,5 +1,5 @@
-import { getRandomInt } from '@shared';
-import { PrimaryColumn, Column, BaseEntity, Entity } from 'typeorm';
+import { PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { PurchaseRequest, IPurchaseRequest } from '@entities';
 
 export enum UserRoles {
     Homeowner,
@@ -19,46 +19,27 @@ export interface IUser {
     email: string;
     pwdHash: string;
     role: TUserRoles;
+    purchaseRequests: IPurchaseRequest[];
 }
 
-@Entity('USER')
 export abstract class User implements IUser {
 
     @PrimaryColumn()
-    public id: number;
+    public id!: number;
 
     @Column()
-    public name: string;
+    public name!: string;
 
     @Column()
-    public email: string;
+    public email!: string;
 
     @Column()
-    public role: TUserRoles;
+    public role!: TUserRoles;
 
     @Column()
-    public pwdHash: string;
+    public pwdHash!: string;
 
+    @OneToMany((type) => PurchaseRequest, (request) => request.user)
+    public purchaseRequests!: IPurchaseRequest[];
 
-    constructor(
-        nameOrUser?: string | IUser,
-        email?: string,
-        role?: TUserRoles,
-        pwdHash?: string,
-        id?: number,
-    ) {
-        if (typeof nameOrUser === 'string' || typeof nameOrUser === 'undefined') {
-            this.name = nameOrUser || '';
-            this.email = email || '';
-            this.role = role || UserRoles.Investor;
-            this.pwdHash = pwdHash || '';
-            this.id = id || getRandomInt();
-        } else {
-            this.name = nameOrUser.name;
-            this.email = nameOrUser.email;
-            this.role = nameOrUser.role;
-            this.pwdHash = nameOrUser.pwdHash;
-            this.id = nameOrUser.id ? nameOrUser.id : getRandomInt();
-        }
-    }
 }

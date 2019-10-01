@@ -46,7 +46,11 @@ describe('UserRouter', () => {
             };
             const role = UserRoles.Investor;
             const pwdHash = hashPwd(creds.password);
-            const loginUser = new Investor('john smith', creds.email, role, pwdHash);
+            const loginUser = new Investor();
+            loginUser.email = creds.email;
+            loginUser.role = role;
+            loginUser.pwdHash = pwdHash;
+            loginUser.name = 'john smith';
             spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
             // Call API
             callApi(creds)
@@ -87,7 +91,11 @@ describe('UserRouter', () => {
             };
             const role = UserRoles.Homeowner;
             const pwdHash = hashPwd('Password@1');
-            const loginUser = new Investor('john smith', creds.email, role, pwdHash);
+            const loginUser = new Investor();
+            loginUser.email = creds.email;
+            loginUser.role = role;
+            loginUser.pwdHash = pwdHash;
+            loginUser.name = 'john smith';
             spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
             // Call API
             callApi(creds)
@@ -144,7 +152,12 @@ class MockInvestorDao implements IUserDao<IInvestor> {
 
     public getOne(emailOrId: string | number): Promise<IInvestor | null> {
         if (emailOrId === 'jsmith@gmail.com') {
-            return Promise.resolve(new Investor('john smith', 'jsmith@gmail.com', UserRoles.Investor, 'hello'));
+            const loginUser = new Investor();
+            loginUser.email = 'jsmith@gmail.com';
+            loginUser.role = UserRoles.Investor;
+            loginUser.pwdHash = 'hello';
+            loginUser.name = 'john smith';
+            return Promise.resolve(loginUser);
         } else {
             return Promise.resolve(null);
         }

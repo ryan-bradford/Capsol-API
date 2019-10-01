@@ -6,7 +6,7 @@ module.exports = {
     username: 'root',
     password: 'password',
     database: 'SOLAR',
-    synchronize: true,
+    synchronize: false,
     entities: ['src/entities/**/*.ts'],
     migrations: ['db/migration/*.js'],
     insecureAuth: true,

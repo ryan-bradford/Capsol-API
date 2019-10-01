@@ -17,7 +17,12 @@ export class ContractService implements IContractService {
         if (!homeowner) {
             throw new Error('Not found');
         }
-        return new Contract(amount, years, amount * interestRate, homeowner);
+        const toReturn = new Contract();
+        toReturn.saleAmount = amount;
+        toReturn.length = years;
+        toReturn.monthlyPayment = amount * interestRate;
+        toReturn.homeowner = homeowner;
+        return toReturn;
     }
 
 }

@@ -1,6 +1,7 @@
 import { IUserDao } from './UserDao';
 import { IUser, IInvestor, Investor } from '@entities';
 import { getRepository } from 'typeorm';
+import { getRandomInt } from '@shared';
 
 export class SqlInvestorDao implements IUserDao<IInvestor> {
 
@@ -19,7 +20,7 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
      *
      */
     public async getAll(): Promise<IInvestor[]> {
-        return (getRepository(Investor)).find();
+        return getRepository(Investor).find();
     }
 
 
@@ -28,8 +29,14 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
      * @param user
      */
     public async add(user: IInvestor): Promise<Investor> {
-        const newInvestor = new Investor(user);
-        return (getRepository(Investor)).save(newInvestor);
+        const newInvestor = new Investor();
+        newInvestor.email = user.email;
+        newInvestor.id = user.id ? user.id : getRandomInt();
+        newInvestor.investments = user.investments;
+        newInvestor.name = user.name;
+        newInvestor.pwdHash = user.pwdHash;
+        newInvestor.role = user.role;
+        return getRepository(Investor).save(newInvestor);
     }
 
 
@@ -38,11 +45,11 @@ export class SqlInvestorDao implements IUserDao<IInvestor> {
      * @param id
      */
     public async delete(email: string): Promise<void> {
-        return (getRepository(Investor)).findOne({ email }).then((result) => {
+        return getRepository(Investor).findOne({ email }).then((result) => {
             if (!result) {
                 throw new Error('Not found');
             }
-            (getRepository(Investor)).delete(result.id);
+            getRepository(Investor).delete(result.id);
         });
     }
 }

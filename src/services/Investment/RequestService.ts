@@ -2,6 +2,7 @@ import { PurchaseRequest, ISellRequest, IPurchaseRequest, SellRequest } from 'sr
 import { UserRoles, Investor, Homeowner, IUser, Contract, Investment, IInvestor, IInvestment, IHomeowner } from '@entities';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { IUserDao, IInvestmentDao, IContractDao } from '@daos';
+import { getRandomInt } from '@shared';
 
 export interface IRequestService {
 
@@ -27,7 +28,11 @@ export class RequestService implements IRequestService {
         if (!investor) {
             throw new Error('Not Found');
         }
-        const newRequest = new PurchaseRequest(amount, investor);
+        const newRequest = new PurchaseRequest();
+        newRequest.amount = amount;
+        newRequest.user = investor;
+        newRequest.dateCreated = new Date();
+        newRequest.id = getRandomInt();
         this.purchaseRequestDao.createRequest(newRequest);
         this.handleRequests();
     }
@@ -41,7 +46,11 @@ export class RequestService implements IRequestService {
         if (!user) {
             throw new Error('Not Found');
         }
-        const newRequest = new SellRequest(amount, user);
+        const newRequest = new SellRequest();
+        newRequest.amount = amount;
+        newRequest.user = user;
+        newRequest.dateCreated = new Date();
+        newRequest.id = getRandomInt();
         this.sellRequestDao.createRequest(newRequest);
         this.handleRequests();
     }
@@ -61,14 +70,14 @@ export class RequestService implements IRequestService {
                 // Transfer this sell request to the purchaser and split purchase request.
                 currentPurchase.amount -= currentSell.amount;
                 currentSell.amount = 0;
-                await this.takeAssets(currentSell.amount, currentSell.user, currentPurchase.user);
+                await this.takeAssets(currentSell.amount, currentSell.user, currentPurchase.user as IInvestor);
                 this.sellRequestDao.deleteRequest(currentSell);
                 currentSell = allSellRequests.pop();
             } else if (currentPurchase.amount === currentSell.amount) {
                 // Transfer sell request to purchaser and delete both.
                 currentPurchase.amount = 0;
                 currentSell.amount = 0;
-                await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user);
+                await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user as IInvestor);
                 this.sellRequestDao.deleteRequest(currentSell);
                 this.purchaseRequestDao.deleteRequest(currentPurchase);
                 currentPurchase = allPurchaseRequests.pop();
@@ -77,7 +86,7 @@ export class RequestService implements IRequestService {
                 // Split sell request and delete purchase request
                 currentSell.amount -= currentPurchase.amount;
                 currentPurchase.amount = 0;
-                await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user);
+                await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user as IInvestor);
                 this.purchaseRequestDao.deleteRequest(currentPurchase);
                 currentPurchase = allPurchaseRequests.pop();
             }
@@ -91,7 +100,12 @@ export class RequestService implements IRequestService {
                 throw new Error('bad user');
             }
             const contract = await this.contractDao.getContract(from.id);
-            const newInvestment = new Investment(amount / contract.saleAmount, contract, to, false);
+            const newInvestment = new Investment();
+            newInvestment.contract = contract;
+            newInvestment.forSale = false;
+            newInvestment.id = getRandomInt();
+            newInvestment.owner = to;
+            newInvestment.percentage = amount / contract.saleAmount;
             this.investmentDao.createInvestment(newInvestment);
             contract.investments.push(newInvestment);
         } else {

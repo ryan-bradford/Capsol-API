@@ -1,7 +1,5 @@
-import { IInvestment, Investment } from './Investment';
-import { getRandomInt } from '@shared';
-import { Column, OneToMany, PrimaryColumn, OneToOne, BaseEntity, Entity } from 'typeorm';
-import { Homeowner, IHomeowner } from '../user/Homeowner';
+import { Column, OneToMany, PrimaryColumn, OneToOne, Entity } from 'typeorm';
+import { IInvestment, IHomeowner, Investment, Homeowner } from '@entities';
 
 export interface IContract {
     id: number;
@@ -15,36 +13,26 @@ export interface IContract {
     readonly depreciationValue: number;
 }
 
-@Entity('CONTRACT')
+@Entity()
 export class Contract implements IContract {
 
     @PrimaryColumn()
-    public id: number;
+    public id!: number;
 
     @Column()
-    public saleAmount: number;
+    public saleAmount!: number;
 
     @Column()
-    public length: number;
+    public length!: number;
 
     @Column()
-    public monthlyPayment: number;
+    public monthlyPayment!: number;
 
     @OneToMany((type) => Investment, (investment) => investment.contract)
-    public investments: IInvestment[];
+    public investments!: IInvestment[];
 
     @OneToOne((type) => Homeowner, (homeowner) => homeowner.contract)
-    public homeowner: IHomeowner;
-
-
-    constructor(saleAmount: number, length: number, monthlyPayment: number, homeowner: IHomeowner) {
-        this.saleAmount = saleAmount;
-        this.length = length;
-        this.monthlyPayment = monthlyPayment;
-        this.investments = [];
-        this.id = getRandomInt();
-        this.homeowner = homeowner;
-    }
+    public homeowner!: IHomeowner;
 
 
     get isFulfilled(): boolean {
