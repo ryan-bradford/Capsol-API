@@ -119,7 +119,6 @@ describe('UserRouter', () => {
             // Call API
             callApi(creds)
                 .end((err: Error, res: any) => {
-                    pErr(err);
                     expect(res.status).toBe(BAD_REQUEST);
                     expect(res.body.error).toBeTruthy();
                     done();

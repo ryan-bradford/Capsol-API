@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import { SuperTest, Test } from 'supertest';
-import { User, UserRoles } from '@entities';
-import { pwdSaltRounds, logger } from '@shared';
-import { UserDao } from 'src/services/User/UserDao.mock';
+import { UserRoles, IHomeowner } from '@entities';
+import { pwdSaltRounds } from '@shared';
+import { SqlHomeownerDao } from '@daos';
 
 
 const creds = {
@@ -14,11 +14,17 @@ export const login = (beforeAgent: SuperTest<Test>, done: any) => {
     // Setup dummy data
     const role = UserRoles.Admin;
     const pwdHash = bcrypt.hashSync(creds.password, pwdSaltRounds);
-    const loginUser = new User('john smith', creds.email, role, pwdHash);
-    spyOn(UserDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
+    const loginUser: IHomeowner = {
+        name: 'john smith',
+        email: creds.email,
+        role,
+        pwdHash,
+        purchaseRequests: [],
+    };
+    spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
     // Call Login API
     beforeAgent
-        .post('/api/auth/login')
+        .post('/auth/login')
         .type('form')
         .send(creds)
         .end((err: Error, res: any) => {
