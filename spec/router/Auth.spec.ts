@@ -173,7 +173,7 @@ class MockInvestorDao implements IUserDao<IInvestor> {
     }
 
 
-    public delete(email: string): Promise<void> {
+    public delete(id: number): Promise<void> {
         throw new Error('Not impl');
     }
 
@@ -198,7 +198,7 @@ class MockHomeownerDao implements IUserDao<IHomeowner> {
     }
 
 
-    public delete(email: string): Promise<void> {
+    public delete(id: number): Promise<void> {
         throw new Error('Not impl');
     }
 

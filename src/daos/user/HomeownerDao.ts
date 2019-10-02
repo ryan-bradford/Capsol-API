@@ -44,12 +44,7 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
      *
      * @param id
      */
-    public async delete(email: string): Promise<void> {
-        return getRepository(Homeowner).findOne({ email }).then((result) => {
-            if (!result) {
-                throw new Error('Not found');
-            }
-            getRepository(Homeowner).delete(result.id);
-        });
+    public async delete(id: number): Promise<void> {
+        getRepository(Homeowner).delete(id);
     }
 }

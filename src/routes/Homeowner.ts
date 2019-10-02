@@ -1,10 +1,11 @@
 import { Request, Response, Router } from 'express';
-import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
+import { BAD_REQUEST, CREATED, OK, NOT_FOUND } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
 import { UserRoles, IHomeowner } from '@entities';
 import { IUserDao } from '@daos';
 import { IContractService } from '@services';
+import { NOTFOUND } from 'dns';
 
 
 export default (homeownerDao: IUserDao<IHomeowner>, contractService: IContractService) => {
@@ -45,12 +46,12 @@ export default (homeownerDao: IUserDao<IHomeowner>, contractService: IContractSe
 
     router.get('/:email', adminMW, async (req: Request, res: Response) => {
         try {
-            const { email } = req.params as ParamsDictionary;
+            const { email } = req.params;
             const user = await homeownerDao.getOne(email);
-            if (user && user.id) {
+            if (user) {
                 return res.status(OK).json(user);
             } else {
-                throw new Error('Bad user');
+                return res.status(NOT_FOUND).end();
             }
         } catch (err) {
             logger.error(err.message, err);
@@ -63,7 +64,11 @@ export default (homeownerDao: IUserDao<IHomeowner>, contractService: IContractSe
     router.delete('/:email', adminMW, async (req: Request, res: Response) => {
         try {
             const { email } = req.params as ParamsDictionary;
-            await homeownerDao.delete(email);
+            const homeowner = await homeownerDao.getOne(email);
+            if (!homeowner || !homeowner.id) {
+                return res.status(NOT_FOUND).end();
+            }
+            await homeownerDao.delete(homeowner.id);
             return res.status(OK).end();
         } catch (err) {
             logger.error(err.message, err);
@@ -77,12 +82,15 @@ export default (homeownerDao: IUserDao<IHomeowner>, contractService: IContractSe
         try {
             const { email } = req.params as ParamsDictionary;
             const { amount } = req.body;
+            if (!amount && !(typeof amount === 'number')) {
+                throw new Error('Bad amount');
+            }
             const user = await homeownerDao.getOne(email);
             if (user && user.id) {
-                await contractService.createContract(10000, 0.04, 20, user.id);
+                await contractService.createContract(amount, 0.04, 20, user);
                 return res.status(OK).end();
             } else {
-                throw new Error('Bad user');
+                return res.status(NOT_FOUND).end();
             }
         } catch (err) {
             logger.error(err.message, err);

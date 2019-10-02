@@ -1,7 +1,14 @@
 TODO:
 
-Implement Purchase and Sell Requests and corresponding service<br>
-Write tests<br>
+Write tests for routers<br>
+Fix the occasional typeorm failure<br>
+Make all npm commands do a full build<br>
+Add better error handling<br>
+Write tests for daos<br>
+Write tests for entities<br>
+Write tests for service<br>
+Make entity interfaces better (less nested for good JSON)<br>
+Comment shit<br>
 Create dashboard<br>
 Add ability to sell<br>
     Add the idea of a buy request and sell request<br>

@@ -1,8 +1,9 @@
-import { IContract, Contract, Homeowner, IHomeowner } from '@entities';
+import { IContract, Contract, Homeowner, IHomeowner, IUser } from '@entities';
 import { IContractDao, IUserDao } from '@daos';
+import { assert } from 'console';
 
 export interface IContractService {
-    createContract(amount: number, interestRate: number, years: number, userId: number): Promise<IContract>;
+    createContract(amount: number, interestRate: number, years: number, user: IHomeowner): Promise<IContract>;
 }
 
 export class ContractService implements IContractService {
@@ -11,9 +12,10 @@ export class ContractService implements IContractService {
     constructor(private homeownerDao: IUserDao<IHomeowner>) { }
 
 
-    public async createContract(amount: number, interestRate: number, years: number, userId: number):
+    public async createContract(amount: number, interestRate: number, years: number, user: IHomeowner):
         Promise<IContract> {
-        const homeowner = await this.homeownerDao.getOne(userId);
+        assert(user.id !== undefined);
+        const homeowner = await this.homeownerDao.getOne(user.id as number);
         if (!homeowner) {
             throw new Error('Not found');
         }

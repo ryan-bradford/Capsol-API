@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { BAD_REQUEST, CREATED, OK } from 'http-status-codes';
+import { BAD_REQUEST, CREATED, OK, NOT_FOUND } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
 import { UserRoles, IInvestor } from '@entities';
@@ -70,7 +70,11 @@ export default (investorDao: IUserDao<IInvestor>, investmentService: IInvestment
     router.delete('/:email', adminMW, async (req: Request, res: Response) => {
         try {
             const { email } = req.params as ParamsDictionary;
-            await investorDao.delete(email);
+            const investor = await investorDao.getOne(email);
+            if (!investor || !investor.id) {
+                return res.status(NOT_FOUND).end();
+            }
+            await investorDao.delete(investor.id);
             return res.status(OK).end();
         } catch (err) {
             logger.error(err.message, err);

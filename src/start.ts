@@ -1,7 +1,7 @@
 import app from '@server';
 import { logger } from '@shared';
 import { SqlHomeownerDao, SqlInvestorDao } from './daos';
-import { ContractService, InvestmentService } from '@daos';
+import { ContractService, InvestmentService } from '@services';
 
 // Start the server
 const port = Number(process.env.PORT || 3000);

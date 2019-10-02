@@ -1,13 +1,14 @@
 import app from '@server';
 import supertest from 'supertest';
 
-import { OK, CREATED } from 'http-status-codes';
+import { OK, CREATED, NOT_FOUND, BAD_REQUEST } from 'http-status-codes';
 import { SuperTest, Test } from 'supertest';
-import { UserRoles, Investor, IHomeowner, IInvestor, IContract } from '@entities';
+import { UserRoles, Investor, IHomeowner, IInvestor, IContract, Contract } from '@entities';
 import { pErr, logger } from '@shared';
 import { IUserDao } from '@daos';
 import { InvestmentService, IContractService } from '@services';
 import { login } from 'spec/support/LoginAgent';
+import { NOTFOUND } from 'dns';
 
 const startHomeowners = {
     users: [
@@ -72,7 +73,7 @@ describe('HomeownerRouter', () => {
             callApi()
                 .end((err: Error, res: any) => {
                     pErr(err);
-                    expect(res.status).toBe(400);
+                    expect(res.status).toBe(BAD_REQUEST);
                     done();
                 });
         });
@@ -97,7 +98,7 @@ describe('HomeownerRouter', () => {
             callApi()
                 .end((err: Error, res: any) => {
                     pErr(err);
-                    expect(res.status).toBe(400);
+                    expect(res.status).toBe(BAD_REQUEST);
                     expect(res.body.error).toBe('One or more of the required parameters was missing.');
                     done();
                 });
@@ -108,8 +109,130 @@ describe('HomeownerRouter', () => {
             callApi({ user: nextUser })
                 .end((err: Error, res: any) => {
                     pErr(err);
-                    expect(res.status).toBe(400);
+                    expect(res.status).toBe(BAD_REQUEST);
                     expect(res.body.error).toBe('Database query failed.');
+                    done();
+                });
+        });
+
+    });
+
+    describe(`"DELETE":${homeownerPath}/email`, () => {
+
+        const callApi = (email?: any) => {
+            return agent.delete(`${homeownerPath}/${email}`).set('Cookie', jwtCookie).send();
+        };
+
+        it('should give information about a single user', (done) => {
+            callApi('test@gmail.com')
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(OK);
+                    done();
+                });
+        });
+
+        it('should give 404 for not found', (done) => {
+            callApi('test2@gmail.com')
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(NOT_FOUND);
+                    done();
+                });
+        });
+
+        it('should fail if the DB fails', (done) => {
+            spyOn(MockHomeownerDao.prototype, 'delete').and.throwError('Database query failed.');
+            callApi('test@gmail.com')
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(BAD_REQUEST);
+                    expect(res.body.error).toBe('Database query failed.');
+                    done();
+                });
+        });
+
+    });
+
+    describe(`"GET":${homeownerPath}/email`, () => {
+
+        const callApi = (email?: any) => {
+            return agent.get(`${homeownerPath}/${email}`).set('Cookie', jwtCookie).send();
+        };
+
+        it('should delete a single user', (done) => {
+            callApi('test@gmail.com')
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(OK);
+                    expect(res.body).toEqual(startHomeowners.users[0]);
+                    done();
+                });
+        });
+
+        it('should give 404 for not found', (done) => {
+            callApi('test2@gmail.com')
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(NOT_FOUND);
+                    done();
+                });
+        });
+
+        it('should fail if the DB fails', (done) => {
+            spyOn(MockHomeownerDao.prototype, 'getOne').and.throwError('Database query failed.');
+            callApi('test@gmail.com')
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(BAD_REQUEST);
+                    expect(res.body.error).toBe('Database query failed.');
+                    done();
+                });
+        });
+
+    });
+
+    describe(`"PUT":${homeownerPath}/email/home`, () => {
+
+        const callApi = (email?: any, amount?: any) => {
+            return agent.put(`${homeownerPath}/${email}/home`).set('Cookie', jwtCookie)
+                .send(amount ? { amount } : undefined);
+        };
+
+        it('should add contract for a single user', (done) => {
+            callApi('test@gmail.com', 10000)
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(OK);
+                    done();
+                });
+        });
+
+        it('should give 404 for not found', (done) => {
+            callApi('test2@gmail.com', 100)
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(NOT_FOUND);
+                    done();
+                });
+        });
+
+        it('should fail if the contract service fails', (done) => {
+            spyOn(MockContractService.prototype, 'createContract').and.throwError('Database query failed.');
+            callApi('test@gmail.com', 100)
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(BAD_REQUEST);
+                    expect(res.body.error).toBe('Database query failed.');
+                    done();
+                });
+        });
+
+        it('should fail if amount is not included', (done) => {
+            callApi('test@gmail.com')
+                .end((err: Error, res: any) => {
+                    pErr(err);
+                    expect(res.status).toBe(BAD_REQUEST);
                     done();
                 });
         });
@@ -121,7 +244,7 @@ class MockInvestorDao implements IUserDao<IInvestor> {
 
 
     public getOne(emailOrId: string | number): Promise<IInvestor | null> {
-        if (emailOrId === 'jsmith@gmail.com') {
+        if (emailOrId === 'test@gmail.com') {
             const loginUser = new Investor();
             loginUser.email = 'jsmith@gmail.com';
             loginUser.role = UserRoles.Investor;
@@ -144,7 +267,7 @@ class MockInvestorDao implements IUserDao<IInvestor> {
     }
 
 
-    public delete(email: string): Promise<void> {
+    public delete(id: number): Promise<void> {
         throw new Error('Not impl');
     }
 
@@ -154,6 +277,11 @@ class MockInvestorDao implements IUserDao<IInvestor> {
 class MockHomeownerDao implements IUserDao<IHomeowner> {
 
     private examples: IHomeowner[] = Object.values(Object.assign({}, startHomeowners.users));
+
+
+    constructor() {
+        this.examples[0].id = 1;
+    }
 
 
     public getOne(emailOrId: string | number): Promise<IHomeowner | null> {
@@ -174,8 +302,11 @@ class MockHomeownerDao implements IUserDao<IHomeowner> {
     }
 
 
-    public delete(email: string): Promise<void> {
-        return Promise.resolve();
+    public delete(id: number): Promise<void> {
+        if (id === 1) {
+            return Promise.resolve();
+        }
+        throw new Error('Not found');
     }
 
 }
@@ -184,8 +315,14 @@ class MockHomeownerDao implements IUserDao<IHomeowner> {
 class MockContractService implements IContractService {
 
 
-    public createContract(amount: number, interestRate: number, years: number, userId: number): Promise<IContract> {
-        throw new Error('Method not implemented.');
+    public createContract(amount: number, interestRate: number, years: number, user: IHomeowner): Promise<IContract> {
+        const toReturn = new Contract();
+        toReturn.id = 5;
+        toReturn.homeowner = user;
+        toReturn.investments = [];
+        toReturn.length = years;
+        toReturn.saleAmount = amount;
+        return Promise.resolve(toReturn);
     }
 
 }

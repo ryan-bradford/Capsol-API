@@ -1,3 +1,5 @@
+const entities = require('./src/entities');
+
 module.exports = {
     name: 'default',
     type: 'mysql',
@@ -7,7 +9,7 @@ module.exports = {
     password: 'password',
     database: 'SOLAR',
     synchronize: false,
-    entities: ['src/entities/**/*.ts'],
+    entities: [entities.Investment, entities.Contract, entities.Investor, entities.Homeowner, entities.PurchaseRequest, entities.SellRequest],
     migrations: ['db/migration/*.js'],
     insecureAuth: true,
 }
