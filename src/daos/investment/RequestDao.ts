@@ -1,53 +1,54 @@
-import {
-    PurchaseRequest, IRequest, IPurchaseRequest,
-    ISellRequest, SellRequest,
-} from 'src/entities/investment/Request';
 import { getRepository } from 'typeorm';
+import {
+    IPersistedRequest, IStoredRequest, IPersistedPurchaseRequest,
+    IStoredPurchaseRequest, PersistedPurchaseRequest, IPersistedSellRequest,
+    IStoredSellRequest, PersistedSellRequest, IStorableRequest, IStorablePurchaseRequest, IStorableSellRequest,
+} from '@entities';
 
-export interface IRequestDao<T extends IRequest> {
+export interface IRequestDao<T extends IPersistedRequest, R extends IStorableRequest> {
 
     getRequests(): Promise<T[]>;
-    createRequest(toCreate: T): Promise<void>;
+    createRequest(toCreate: R): Promise<void>;
     deleteRequest(toDelete: T): Promise<void>;
 
 }
 
-export class SqlPurchaseRequestDao implements IRequestDao<IPurchaseRequest> {
+export class SqlPurchaseRequestDao implements IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest> {
 
 
-    public getRequests(): Promise<IPurchaseRequest[]> {
-        return getRepository(PurchaseRequest).find();
+    public getRequests(): Promise<IPersistedPurchaseRequest[]> {
+        return getRepository(PersistedPurchaseRequest).find();
     }
 
 
-    public createRequest(toCreate: IPurchaseRequest): Promise<void> {
+    public createRequest(toCreate: IStorablePurchaseRequest): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
 
-    public async deleteRequest(toDelete: IPurchaseRequest): Promise<void> {
+    public async deleteRequest(toDelete: IPersistedPurchaseRequest): Promise<void> {
         // tslint:disable-next-line: no-empty
-        await getRepository(PurchaseRequest).delete(toDelete.id);
+        await getRepository(PersistedPurchaseRequest).delete(toDelete.id);
     }
 }
 
 
 // tslint:disable-next-line: max-classes-per-file
-export class SqlSellRequestDao implements IRequestDao<ISellRequest> {
+export class SqlSellRequestDao implements IRequestDao<IPersistedSellRequest, IStorableSellRequest> {
 
 
-    public getRequests(): Promise<ISellRequest[]> {
-        return getRepository(SellRequest).find();
+    public getRequests(): Promise<IPersistedSellRequest[]> {
+        return getRepository(PersistedSellRequest).find();
     }
 
 
-    public createRequest(toCreate: IPurchaseRequest): Promise<void> {
+    public createRequest(toCreate: IStorableSellRequest): Promise<void> {
         throw new Error('Method not implemented.');
     }
 
 
-    public async deleteRequest(toDelete: ISellRequest): Promise<void> {
+    public async deleteRequest(toDelete: IPersistedSellRequest): Promise<void> {
         // tslint:disable-next-line: no-empty
-        await getRepository(SellRequest).delete(toDelete.id);
+        await getRepository(PersistedSellRequest).delete(toDelete.id);
     }
 }

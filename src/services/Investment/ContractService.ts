@@ -1,25 +1,26 @@
-import { IContract, Contract, Homeowner, IHomeowner, IUser } from '@entities';
-import { IContractDao, IUserDao } from '@daos';
+import { IPersistedHomeowner, IStoredHomeowner, IPersistedContract, PersistedContract } from '@entities';
+import { IUserDao } from '@daos';
 import { assert } from 'console';
 
 export interface IContractService {
-    createContract(amount: number, interestRate: number, years: number, user: IHomeowner): Promise<IContract>;
+    createContract(amount: number, interestRate: number, years: number, user: IPersistedHomeowner):
+        Promise<IPersistedContract>;
 }
 
 export class ContractService implements IContractService {
 
 
-    constructor(private homeownerDao: IUserDao<IHomeowner>) { }
+    constructor(private homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>) { }
 
 
-    public async createContract(amount: number, interestRate: number, years: number, user: IHomeowner):
-        Promise<IContract> {
+    public async createContract(amount: number, interestRate: number, years: number, user: IPersistedHomeowner):
+        Promise<IPersistedContract> {
         assert(user.id !== undefined);
         const homeowner = await this.homeownerDao.getOne(user.id as number);
         if (!homeowner) {
             throw new Error('Not found');
         }
-        const toReturn = new Contract();
+        const toReturn = new PersistedContract();
         toReturn.saleAmount = amount;
         toReturn.length = years;
         toReturn.monthlyPayment = amount * interestRate;

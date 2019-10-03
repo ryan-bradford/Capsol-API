@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 
 import { BAD_REQUEST, CREATED, OK, UNAUTHORIZED } from 'http-status-codes';
 import { Response, SuperTest, Test } from 'supertest';
-import { IUser, User, UserRoles, Investor, IHomeowner, Homeowner, IInvestor } from '@entities';
+import { IPersistedInvestor, IStoredInvestor, PersistedInvestor, IPersistedHomeowner, IStoredHomeowner } from '@entities';
 import { pErr, pwdSaltRounds, jwtCookieProps, loginFailedErr } from '@shared';
 import { SqlHomeownerDao, IUserDao } from '@daos';
 import HomeownerRoute from 'src/routes/Homeowner';
@@ -44,11 +44,9 @@ describe('UserRouter', () => {
                 email: 'jsmith@gmail.com',
                 password: 'Password@1',
             };
-            const role = UserRoles.Investor;
             const pwdHash = hashPwd(creds.password);
-            const loginUser = new Investor();
+            const loginUser = new PersistedInvestor();
             loginUser.email = creds.email;
-            loginUser.role = role;
             loginUser.pwdHash = pwdHash;
             loginUser.name = 'john smith';
             spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
@@ -89,11 +87,9 @@ describe('UserRouter', () => {
                 email: 'jsmith@gmail.com',
                 password: 'someBadPassword',
             };
-            const role = UserRoles.Homeowner;
             const pwdHash = hashPwd('Password@1');
-            const loginUser = new Investor();
+            const loginUser = new PersistedInvestor();
             loginUser.email = creds.email;
-            loginUser.role = role;
             loginUser.pwdHash = pwdHash;
             loginUser.name = 'john smith';
             spyOn(SqlHomeownerDao.prototype, 'getOne').and.returnValue(Promise.resolve(loginUser));
@@ -146,14 +142,13 @@ describe('UserRouter', () => {
     }
 });
 
-class MockInvestorDao implements IUserDao<IInvestor> {
+class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
 
 
-    public getOne(emailOrId: string | number): Promise<IInvestor | null> {
+    public getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
         if (emailOrId === 'jsmith@gmail.com') {
-            const loginUser = new Investor();
+            const loginUser = new PersistedInvestor();
             loginUser.email = 'jsmith@gmail.com';
-            loginUser.role = UserRoles.Investor;
             loginUser.pwdHash = 'hello';
             loginUser.name = 'john smith';
             return Promise.resolve(loginUser);
@@ -163,12 +158,12 @@ class MockInvestorDao implements IUserDao<IInvestor> {
     }
 
 
-    public getAll(): Promise<IInvestor[]> {
+    public getAll(): Promise<IPersistedInvestor[]> {
         throw new Error('Not impl');
     }
 
 
-    public add(user: IInvestor): Promise<IInvestor> {
+    public add(user: IStoredInvestor): Promise<IPersistedInvestor> {
         throw new Error('Not impl');
     }
 
@@ -180,20 +175,20 @@ class MockInvestorDao implements IUserDao<IInvestor> {
 }
 
 // tslint:disable-next-line: max-classes-per-file
-class MockHomeownerDao implements IUserDao<IHomeowner> {
+class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner> {
 
 
-    public getOne(emailOrId: string | number): Promise<IHomeowner | null> {
+    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
         return Promise.resolve(null);
     }
 
 
-    public getAll(): Promise<IHomeowner[]> {
+    public getAll(): Promise<IPersistedHomeowner[]> {
         throw new Error('Not impl');
     }
 
 
-    public add(user: IHomeowner): Promise<IHomeowner> {
+    public add(user: IStoredHomeowner): Promise<IPersistedHomeowner> {
         throw new Error('Not impl');
     }
 

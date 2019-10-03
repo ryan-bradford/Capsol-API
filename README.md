@@ -3,16 +3,17 @@ TODO:
 Write tests for routers<br>
 Fix the occasional typeorm failure<br>
 Make all npm commands do a full build<br>
-Add better error handling<br>
+Add validation to entities in routers<br>
 Write tests for daos<br>
 Write tests for entities<br>
 Write tests for service<br>
-Make entity interfaces better (less nested for good JSON)<br>
+Design better error handling<br>
 Comment shit<br>
 Create dashboard<br>
 Add ability to sell<br>
     Add the idea of a buy request and sell request<br>
 Design Database/Data Structure<br>
+Make RAML<br>
 
 
 Overall Architecture Design:<br>

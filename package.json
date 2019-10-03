@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "bcrypt": "^3.0.6",
+    "class-validator": "^0.10.1",
     "cookie-parser": "^1.4.4",
     "cross-env": "^5.2.1",
     "dotenv": "^8.1.0",

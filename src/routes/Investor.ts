@@ -2,15 +2,15 @@ import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, CREATED, OK, NOT_FOUND } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
-import { UserRoles, IInvestor } from '@entities';
 import { IUserDao } from '@daos';
 import { IInvestmentService } from '@services';
+import { IPersistedInvestor, IStoredInvestor } from '@entities';
 
 
 // Init shared
 const router = Router();
 
-export default (investorDao: IUserDao<IInvestor>, investmentService: IInvestmentService) => {
+export default (investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>, investmentService: IInvestmentService) => {
 
 
     /******************************************************************************
@@ -39,7 +39,6 @@ export default (investorDao: IUserDao<IInvestor>, investmentService: IInvestment
                 });
             }
             // Add new user
-            user.role = UserRoles.Investor;
             await investorDao.add(user);
             return res.status(CREATED).end();
         } catch (err) {

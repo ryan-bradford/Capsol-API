@@ -1,8 +1,10 @@
-import { PurchaseRequest, ISellRequest, IPurchaseRequest, SellRequest } from 'src/entities/investment/Request';
-import { UserRoles, Investor, Homeowner, IUser, Contract, Investment, IInvestor, IInvestment, IHomeowner } from '@entities';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { IUserDao, IInvestmentDao, IContractDao } from '@daos';
-import { getRandomInt } from '@shared';
+import {
+    IPersistedSellRequest, IPersistedPurchaseRequest, IPersistedInvestor, IStoredInvestor,
+    IPersistedHomeowner, IStoredHomeowner, StorablePurchaseRequest, IStorableSellRequest,
+    IStorablePurchaseRequest, StorableSellRequest, IPersistedUser, isInvestor, StorableInvestment,
+} from '@entities';
 
 export interface IRequestService {
 
@@ -15,10 +17,10 @@ export class RequestService implements IRequestService {
 
 
     constructor(
-        private sellRequestDao: IRequestDao<ISellRequest>,
-        private purchaseRequestDao: IRequestDao<IPurchaseRequest>,
-        private investorDao: IUserDao<IInvestor>,
-        private homeownerDao: IUserDao<IHomeowner>,
+        private sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>,
+        private purchaseRequestDao: IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest>,
+        private investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+        private homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
         private investmentDao: IInvestmentDao,
         private contractDao: IContractDao) { }
 
@@ -28,11 +30,7 @@ export class RequestService implements IRequestService {
         if (!investor) {
             throw new Error('Not Found');
         }
-        const newRequest = new PurchaseRequest();
-        newRequest.amount = amount;
-        newRequest.user = investor;
-        newRequest.dateCreated = new Date();
-        newRequest.id = getRandomInt();
+        const newRequest = new StorablePurchaseRequest(amount, new Date(), investor);
         this.purchaseRequestDao.createRequest(newRequest);
         this.handleRequests();
     }
@@ -46,11 +44,7 @@ export class RequestService implements IRequestService {
         if (!user) {
             throw new Error('Not Found');
         }
-        const newRequest = new SellRequest();
-        newRequest.amount = amount;
-        newRequest.user = user;
-        newRequest.dateCreated = new Date();
-        newRequest.id = getRandomInt();
+        const newRequest = new StorableSellRequest(amount, new Date(), user);
         this.sellRequestDao.createRequest(newRequest);
         this.handleRequests();
     }
@@ -70,14 +64,16 @@ export class RequestService implements IRequestService {
                 // Transfer this sell request to the purchaser and split purchase request.
                 currentPurchase.amount -= currentSell.amount;
                 currentSell.amount = 0;
-                await this.takeAssets(currentSell.amount, currentSell.user, currentPurchase.user as IInvestor);
+                await this.takeAssets(currentSell.amount, currentSell.user,
+                    currentPurchase.user as IPersistedInvestor);
                 this.sellRequestDao.deleteRequest(currentSell);
                 currentSell = allSellRequests.pop();
             } else if (currentPurchase.amount === currentSell.amount) {
                 // Transfer sell request to purchaser and delete both.
                 currentPurchase.amount = 0;
                 currentSell.amount = 0;
-                await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user as IInvestor);
+                await this.takeAssets(currentPurchase.amount, currentSell.user,
+                    currentPurchase.user as IPersistedInvestor);
                 this.sellRequestDao.deleteRequest(currentSell);
                 this.purchaseRequestDao.deleteRequest(currentPurchase);
                 currentPurchase = allPurchaseRequests.pop();
@@ -86,7 +82,8 @@ export class RequestService implements IRequestService {
                 // Split sell request and delete purchase request
                 currentSell.amount -= currentPurchase.amount;
                 currentPurchase.amount = 0;
-                await this.takeAssets(currentPurchase.amount, currentSell.user, currentPurchase.user as IInvestor);
+                await this.takeAssets(currentPurchase.amount, currentSell.user,
+                    currentPurchase.user as IPersistedInvestor);
                 this.purchaseRequestDao.deleteRequest(currentPurchase);
                 currentPurchase = allPurchaseRequests.pop();
             }
@@ -94,19 +91,14 @@ export class RequestService implements IRequestService {
     }
 
 
-    private async takeAssets(amount: number, from: IUser, to: IInvestor): Promise<void> {
-        if (from.role === UserRoles.Homeowner) {
+    private async takeAssets(amount: number, from: IPersistedUser, to: IPersistedInvestor): Promise<void> {
+        if (!isInvestor(from)) {
             if (!from.id) {
                 throw new Error('bad user');
             }
             const contract = await this.contractDao.getContract(from.id);
-            const newInvestment = new Investment();
-            newInvestment.contract = contract;
-            newInvestment.forSale = false;
-            newInvestment.id = getRandomInt();
-            newInvestment.owner = to;
-            newInvestment.percentage = amount / contract.saleAmount;
-            this.investmentDao.createInvestment(newInvestment);
+            const toCreate = new StorableInvestment(contract.id, amount / contract.saleAmount, to.id);
+            const newInvestment = await this.investmentDao.createInvestment(toCreate);
             contract.investments.push(newInvestment);
         } else {
             // Find investments.
@@ -114,7 +106,4 @@ export class RequestService implements IRequestService {
     }
 
 
-    private async splitInvestment(investment: IInvestment) {
-        throw new Error('Not impl');
-    }
 }

@@ -1,16 +1,17 @@
 import { IUserDao } from './UserDao';
-import { IUser, IHomeowner, Homeowner } from '@entities';
-import { createConnection, Connection, getRepository } from 'typeorm';
+import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
+import { IPersistedHomeowner, IStoredHomeowner, PersistedHomeowner } from '@entities';
+import { SqlContractDao } from '@daos';
 
-export class SqlHomeownerDao implements IUserDao<IHomeowner> {
+export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner> {
 
 
     /**
      * @param email
      */
-    public async getOne(emailOrId: string | number): Promise<IHomeowner | null> {
-        return getRepository(Homeowner)
+    public async getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return getRepository(PersistedHomeowner)
             .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
             .then((result) => result ? result : null);
     }
@@ -19,8 +20,8 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
     /**
      *
      */
-    public async getAll(): Promise<IHomeowner[]> {
-        return getRepository(Homeowner).find();
+    public async getAll(): Promise<IPersistedHomeowner[]> {
+        return getRepository(PersistedHomeowner).find();
     }
 
 
@@ -28,15 +29,16 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
      *
      * @param user
      */
-    public async add(homeowner: IHomeowner): Promise<IHomeowner> {
-        const newHomeowner = new Homeowner();
-        newHomeowner.contract = homeowner.contract;
+    public async add(homeowner: IStoredHomeowner): Promise<IPersistedHomeowner> {
+        const contractDao = new SqlContractDao();
+        const newHomeowner = new PersistedHomeowner();
+        newHomeowner.contract = homeowner.contract ?
+            await contractDao.getContract(homeowner.contract.id) : undefined;
         newHomeowner.email = homeowner.email;
         newHomeowner.id = homeowner.id ? homeowner.id : getRandomInt();
         newHomeowner.name = homeowner.name;
         newHomeowner.pwdHash = homeowner.pwdHash;
-        newHomeowner.role = homeowner.role;
-        return getRepository(Homeowner).save(newHomeowner);
+        return getRepository(PersistedHomeowner).save(newHomeowner);
     }
 
 
@@ -45,6 +47,6 @@ export class SqlHomeownerDao implements IUserDao<IHomeowner> {
      * @param id
      */
     public async delete(id: number): Promise<void> {
-        getRepository(Homeowner).delete(id);
+        getRepository(PersistedHomeowner).delete(id);
     }
 }

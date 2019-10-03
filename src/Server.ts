@@ -3,17 +3,16 @@ import express from 'express';
 import path from 'path';
 import logger from 'morgan';
 import BaseRouter from './routes';
-import { createConnection } from 'typeorm';
 
 import { IUserDao } from '@daos';
-import { IHomeowner, IInvestor, User } from '@entities';
+import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStoredInvestor } from '@entities';
 import { logger as loggerOutput } from '@shared';
 import { IContractService, IInvestmentService } from '@services';
 
 export default (
-    homeownerDao: IUserDao<IHomeowner>,
-    investorDao: IUserDao<IInvestor>,
-    createContract: (homeownerDao: IUserDao<IHomeowner>) => IContractService,
+    homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+    investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+    createContract: (homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>) => IContractService,
     investmentService: IInvestmentService) => {
     // Init express
     const app = express();

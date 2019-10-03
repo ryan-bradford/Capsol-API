@@ -1,16 +1,16 @@
-import { IContract, Contract } from '@entities';
 import { getRepository } from 'typeorm';
+import { IPersistedContract, PersistedContract } from '@entities';
 
 export interface IContractDao {
-    getContracts(userId?: number): Promise<IContract[]>;
-    getContract(id: number): Promise<IContract>;
+    getContracts(userId?: number): Promise<IPersistedContract[]>;
+    getContract(id: number): Promise<IPersistedContract>;
 }
 
 export class SqlContractDao implements IContractDao {
 
 
-    public async getContract(id: number): Promise<IContract> {
-        return getRepository(Contract).findOne(id).then((contract) => {
+    public async getContract(id: number): Promise<IPersistedContract> {
+        return getRepository(PersistedContract).findOne(id).then((contract) => {
             if (!contract) {
                 throw new Error('not found');
             }
@@ -19,8 +19,8 @@ export class SqlContractDao implements IContractDao {
     }
 
 
-    public async getContracts(userId?: number): Promise<IContract[]> {
-        return getRepository(Contract).find().then((contracts) =>
+    public async getContracts(userId?: number): Promise<IPersistedContract[]> {
+        return getRepository(PersistedContract).find().then((contracts) =>
             contracts.filter((contract) => !userId || contract.homeowner.id === userId));
     }
 }

@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, OK, UNAUTHORIZED } from 'http-status-codes';
-import { UserRoles } from '@entities';
 
 import {
     paramMissingError,
@@ -51,7 +50,7 @@ router.post('/login', async (req: Request, res: Response) => {
         }
         // Setup Admin Cookie
         const jwt = await jwtService.getJwt({
-            role: user.role,
+            role: user.admin ? 1 : 0,
         });
         const { key, options } = jwtCookieProps;
         res.cookie(key, jwt, options);

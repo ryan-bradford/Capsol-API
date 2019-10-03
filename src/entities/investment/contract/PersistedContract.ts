@@ -1,20 +1,20 @@
-import { Column, OneToMany, PrimaryColumn, OneToOne, Entity } from 'typeorm';
-import { IInvestment, IHomeowner, Investment, Homeowner } from '@entities';
+import { Entity, PrimaryColumn, Column, OneToMany, OneToOne } from 'typeorm';
+import { IPersistedInvestment, IPersistedHomeowner, PersistedInvestment, PersistedHomeowner } from '@entities';
 
-export interface IContract {
+export interface IPersistedContract {
     id: number;
     saleAmount: number;
     length: number;
     monthlyPayment: number;
-    investments: IInvestment[];
-    homeowner: IHomeowner;
+    investments: IPersistedInvestment[];
+    homeowner: IPersistedHomeowner;
     readonly isFulfilled: boolean;
     readonly yearsPassed: number;
     readonly depreciationValue: number;
 }
 
-@Entity()
-export class Contract implements IContract {
+@Entity('contract')
+export class PersistedContract implements IPersistedContract {
 
     @PrimaryColumn()
     public id!: number;
@@ -28,11 +28,11 @@ export class Contract implements IContract {
     @Column()
     public monthlyPayment!: number;
 
-    @OneToMany((type) => Investment, (investment) => investment.contract)
-    public investments!: IInvestment[];
+    @OneToMany((type) => PersistedInvestment, (investment) => investment.contract)
+    public investments!: IPersistedInvestment[];
 
-    @OneToOne((type) => Homeowner, (homeowner) => homeowner.contract)
-    public homeowner!: IHomeowner;
+    @OneToOne((type) => PersistedHomeowner, (homeowner) => homeowner.contract)
+    public homeowner!: IPersistedHomeowner;
 
 
     get isFulfilled(): boolean {

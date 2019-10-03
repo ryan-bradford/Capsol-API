@@ -1,28 +1,45 @@
-import { IInvestment, Investment } from '@entities';
 import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
+import { IPersistedInvestment, IStorableInvestment, PersistedInvestment, IPersistedInvestor, IStoredInvestor } from '@entities';
+import { IUserDao, SqlInvestorDao, IContractDao, SqlContractDao } from '@daos';
 
 export interface IInvestmentDao {
-    getInvestments(userId?: number): Promise<IInvestment[]>;
-    createInvestment(investment: IInvestment): Promise<void>;
+    getInvestment(id: number): Promise<IPersistedInvestment | null>;
+    getInvestments(userId?: number): Promise<IPersistedInvestment[]>;
+    createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment>;
 }
 
 export class SqlInvestmentDao implements IInvestmentDao {
 
 
-    public async createInvestment(investment: IInvestment): Promise<void> {
-        const toSave = new Investment();
-        toSave.contract = investment.contract;
-        toSave.percentage = investment.percentage;
-        toSave.forSale = investment.forSale;
-        toSave.id = investment.id ? investment.id : getRandomInt();
-        toSave.owner = investment.owner;
-        await getRepository(Investment).save(toSave);
+    public async getInvestment(id: number): Promise<IPersistedInvestment | null> {
+        return getRepository(PersistedInvestment).findOne(id).then((investment) => investment ? investment : null);
     }
 
 
-    public async getInvestments(userId?: number): Promise<IInvestment[]> {
-        return getRepository(Investment).find().then((investments) =>
+    public async createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment> {
+        const investorDao = new SqlInvestorDao();
+        const contractDao = new SqlContractDao();
+        const toSave = new PersistedInvestment();
+        const contract = await contractDao.getContract(investment.contractId);
+        if (!contract) {
+            throw new Error('Contract not found');
+        }
+        toSave.contract = contract;
+        toSave.percentage = investment.percentage;
+        toSave.id = getRandomInt();
+        const investor = await investorDao.getOne(investment.ownerId);
+        if (!investor) {
+            throw new Error('Investor not found');
+        }
+        toSave.owner = investor;
+        await getRepository(PersistedInvestment).save(toSave);
+        return toSave;
+    }
+
+
+    public async getInvestments(userId?: number): Promise<IPersistedInvestment[]> {
+        return getRepository(PersistedInvestment).find().then((investments) =>
             investments.filter((investment) => !userId || investment.owner.id === userId));
     }
 

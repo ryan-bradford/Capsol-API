@@ -2,13 +2,13 @@ import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, CREATED, OK, NOT_FOUND } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
-import { UserRoles, IHomeowner } from '@entities';
 import { IUserDao } from '@daos';
 import { IContractService } from '@services';
 import { NOTFOUND } from 'dns';
+import { IPersistedHomeowner, IStoredHomeowner } from '@entities';
 
 
-export default (homeownerDao: IUserDao<IHomeowner>, contractService: IContractService) => {
+export default (homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>, contractService: IContractService) => {
     const router = Router();
 
     router.get('', adminMW, async (req: Request, res: Response) => {
@@ -33,7 +33,6 @@ export default (homeownerDao: IUserDao<IHomeowner>, contractService: IContractSe
                 });
             }
             // Add new user
-            user.role = UserRoles.Investor;
             await homeownerDao.add(user);
             return res.status(CREATED).end();
         } catch (err) {

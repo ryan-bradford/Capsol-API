@@ -3,30 +3,34 @@ import supertest from 'supertest';
 
 import { OK, CREATED, NOT_FOUND, BAD_REQUEST } from 'http-status-codes';
 import { SuperTest, Test } from 'supertest';
-import { UserRoles, Investor, IHomeowner, IInvestor, IContract, Contract } from '@entities';
 import { pErr, logger } from '@shared';
 import { IUserDao } from '@daos';
 import { InvestmentService, IContractService } from '@services';
 import { login } from 'spec/support/LoginAgent';
 import { NOTFOUND } from 'dns';
+import {
+    IPersistedInvestor, IStoredInvestor, IPersistedHomeowner, IStoredHomeowner,
+    PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor,
+} from '@entities';
 
 const startHomeowners = {
     users: [
         {
+            id: 1,
             name: 'Ryan',
             email: 'test@gmail.com',
+            admin: false,
             pwdHash: '1',
-            role: UserRoles.Homeowner,
             purchaseRequests: [],
         },
     ],
 };
 
 const nextUser = {
+    id: 2,
     name: 'Emma',
     email: 'blorg@gmail.com',
     pwdHash: '2',
-    role: UserRoles.Homeowner,
     purchaseRequests: [],
 };
 
@@ -240,14 +244,13 @@ describe('HomeownerRouter', () => {
     });
 });
 
-class MockInvestorDao implements IUserDao<IInvestor> {
+class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
 
 
-    public getOne(emailOrId: string | number): Promise<IInvestor | null> {
+    public getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
         if (emailOrId === 'test@gmail.com') {
-            const loginUser = new Investor();
+            const loginUser = new PersistedInvestor();
             loginUser.email = 'jsmith@gmail.com';
-            loginUser.role = UserRoles.Investor;
             loginUser.pwdHash = 'hello';
             loginUser.name = 'john smith';
             return Promise.resolve(loginUser);
@@ -257,12 +260,12 @@ class MockInvestorDao implements IUserDao<IInvestor> {
     }
 
 
-    public getAll(): Promise<IInvestor[]> {
+    public getAll(): Promise<IPersistedInvestor[]> {
         throw new Error('Not impl');
     }
 
 
-    public add(user: IInvestor): Promise<IInvestor> {
+    public add(user: IStoredInvestor): Promise<IPersistedInvestor> {
         throw new Error('Not impl');
     }
 
@@ -274,9 +277,9 @@ class MockInvestorDao implements IUserDao<IInvestor> {
 }
 
 // tslint:disable-next-line: max-classes-per-file
-class MockHomeownerDao implements IUserDao<IHomeowner> {
+class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner> {
 
-    private examples: IHomeowner[] = Object.values(Object.assign({}, startHomeowners.users));
+    private examples: IPersistedHomeowner[] = Object.values(Object.assign({}, startHomeowners.users));
 
 
     constructor() {
@@ -284,7 +287,7 @@ class MockHomeownerDao implements IUserDao<IHomeowner> {
     }
 
 
-    public getOne(emailOrId: string | number): Promise<IHomeowner | null> {
+    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
         if (emailOrId !== 'test@gmail.com') {
             return Promise.resolve(null);
         }
@@ -292,13 +295,13 @@ class MockHomeownerDao implements IUserDao<IHomeowner> {
     }
 
 
-    public getAll(): Promise<IHomeowner[]> {
+    public getAll(): Promise<IPersistedHomeowner[]> {
         return Promise.resolve(this.examples);
     }
 
 
-    public add(user: IHomeowner): Promise<IHomeowner> {
-        return Promise.resolve(user);
+    public add(user: IStoredHomeowner): Promise<IPersistedHomeowner> {
+        return Promise.resolve(new PersistedHomeowner());
     }
 
 
@@ -315,8 +318,9 @@ class MockHomeownerDao implements IUserDao<IHomeowner> {
 class MockContractService implements IContractService {
 
 
-    public createContract(amount: number, interestRate: number, years: number, user: IHomeowner): Promise<IContract> {
-        const toReturn = new Contract();
+    public createContract(amount: number, interestRate: number, years: number, user: IPersistedHomeowner):
+        Promise<IPersistedContract> {
+        const toReturn = new PersistedContract();
         toReturn.id = 5;
         toReturn.homeowner = user;
         toReturn.investments = [];

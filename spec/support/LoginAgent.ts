@@ -1,8 +1,8 @@
 import bcrypt from 'bcrypt';
 import { SuperTest, Test } from 'supertest';
-import { UserRoles, IHomeowner } from '@entities';
 import { pwdSaltRounds } from '@shared';
 import { SqlHomeownerDao } from '@daos';
+import { IStoredHomeowner, IPersistedHomeowner } from '@entities';
 
 
 const creds = {
@@ -12,12 +12,12 @@ const creds = {
 
 export const login = (beforeAgent: SuperTest<Test>, done: any) => {
     // Setup dummy data
-    const role = UserRoles.Admin;
     const pwdHash = bcrypt.hashSync(creds.password, pwdSaltRounds);
-    const loginUser: IHomeowner = {
+    const loginUser: IPersistedHomeowner = {
+        id: 1,
         name: 'john smith',
         email: creds.email,
-        role,
+        admin: true,
         pwdHash,
         purchaseRequests: [],
     };
