@@ -1,10 +1,10 @@
 import { IUserDao } from './UserDao';
-import { IPersistedInvestor, IStoredInvestor, PersistedInvestor, IPersistedInvestment } from '@entities';
+import { IPersistedInvestor, IStoredInvestor, PersistedInvestor, IPersistedInvestment, IStorableInvestor } from '@entities';
 import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
 import { IInvestmentDao, SqlInvestmentDao } from '@daos';
 
-export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
+export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
 
     /**
@@ -29,21 +29,14 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStoredInves
      *
      * @param user
      */
-    public async add(user: IStoredInvestor): Promise<IPersistedInvestor> {
-        const investmentDao = new SqlInvestmentDao();
+    public async add(user: IStorableInvestor): Promise<IPersistedInvestor> {
         const newInvestor = new PersistedInvestor();
         newInvestor.email = user.email;
-        newInvestor.id = user.id ? user.id : getRandomInt();
-        newInvestor.investments = (await Promise.all(user.investments
-            .map((investment) => investmentDao.getInvestment(investment.id))
-            .filter((investment) => {
-                if (investment === null) {
-                    throw new Error('Investment not found');
-                }
-                return investment !== null;
-            }))) as IPersistedInvestment[];
+        newInvestor.id = getRandomInt();
+        newInvestor.investments = [];
         newInvestor.name = user.name;
         newInvestor.pwdHash = user.pwdHash;
+        newInvestor.admin = false;
         return getRepository(PersistedInvestor).save(newInvestor);
     }
 

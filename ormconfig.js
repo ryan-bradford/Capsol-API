@@ -5,7 +5,7 @@ module.exports = {
     port: 3306,
     username: 'root',
     password: 'password',
-    database: 'SOLAR',
+    database: process.env.USE_TEST_DB ? 'SOLAR_TEST' : 'SOLAR',
     synchronize: false,
     entities: ['./src/entities/**/*.ts'],
     migrations: ['db/migration/*.js'],

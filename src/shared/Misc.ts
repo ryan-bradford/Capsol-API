@@ -28,7 +28,7 @@ export const pErr = (err: Error) => {
 
 
 export const getRandomInt = () => {
-    return Math.floor(Math.random() * 1_000_000_000_000);
+    return Math.floor(Math.random() * 2_147_483_648);
 };
 
 

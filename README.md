@@ -1,12 +1,10 @@
 TODO:
 
-Write tests for routers<br>
-Fix the occasional typeorm failure<br>
-Make all npm commands do a full build<br>
-Add validation to entities in routers<br>
 Write tests for daos<br>
 Write tests for entities<br>
 Write tests for service<br>
+Change user id to VARCHAR<br>
+Add validation to entities in routers<br>
 Design better error handling<br>
 Comment shit<br>
 Create dashboard<br>

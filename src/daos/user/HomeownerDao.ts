@@ -1,10 +1,10 @@
 import { IUserDao } from './UserDao';
 import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
-import { IPersistedHomeowner, IStoredHomeowner, PersistedHomeowner } from '@entities';
+import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@entities';
 import { SqlContractDao } from '@daos';
 
-export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner> {
+export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
 
     /**
@@ -29,15 +29,14 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHom
      *
      * @param user
      */
-    public async add(homeowner: IStoredHomeowner): Promise<IPersistedHomeowner> {
-        const contractDao = new SqlContractDao();
+    public async add(homeowner: IStorableHomeowner): Promise<IPersistedHomeowner> {
         const newHomeowner = new PersistedHomeowner();
-        newHomeowner.contract = homeowner.contract ?
-            await contractDao.getContract(homeowner.contract.id) : undefined;
+        newHomeowner.contract = undefined;
         newHomeowner.email = homeowner.email;
-        newHomeowner.id = homeowner.id ? homeowner.id : getRandomInt();
+        newHomeowner.id = getRandomInt();
         newHomeowner.name = homeowner.name;
         newHomeowner.pwdHash = homeowner.pwdHash;
+        newHomeowner.admin = false;
         return getRepository(PersistedHomeowner).save(newHomeowner);
     }
 
