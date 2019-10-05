@@ -6,7 +6,6 @@ import BaseRouter from './routes';
 
 import { IUserDao } from '@daos';
 import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStoredInvestor } from '@entities';
-import { logger as loggerOutput } from '@shared';
 import { IContractService, IInvestmentService } from '@services';
 
 export default (

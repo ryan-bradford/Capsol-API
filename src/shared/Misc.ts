@@ -45,7 +45,7 @@ export const adminMW = async (req: Request, res: Response, next: NextFunction) =
         if (clientData.role === 1) {
             next();
         } else {
-            throw Error('JWT not present in signed cookie.');
+            throw Error('User not an admin.');
         }
     } catch (err) {
         return res.status(UNAUTHORIZED).json({

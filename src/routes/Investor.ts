@@ -5,102 +5,23 @@ import { adminMW, logger, paramMissingError } from '@shared';
 import { IUserDao } from '@daos';
 import { IInvestmentService } from '@services';
 import { IPersistedInvestor, IStoredInvestor } from '@entities';
+import InvestorController from 'src/controller/Investor';
 
 
 // Init shared
-const router = Router();
-
 export default (investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>, investmentService: IInvestmentService) => {
+    const router = Router();
+    const controller = new InvestorController(investorDao, investmentService);
 
+    router.get('', adminMW, controller.getAll);
 
-    /******************************************************************************
-     *                      Get All Users - "GET /api/investors"
-     ******************************************************************************/
+    router.post('', adminMW, controller.addInvestor);
 
-    router.get('', adminMW, async (req: Request, res: Response) => {
-        try {
-            const users = await investorDao.getAll();
-            return res.status(OK).json({ users });
-        } catch (err) {
-            logger.error(err.message, err);
-            return res.status(BAD_REQUEST).json({
-                error: err.message,
-            });
-        }
-    });
+    router.get('/:email', adminMW, controller.getInvestor);
 
-    router.post('', adminMW, async (req: Request, res: Response) => {
-        try {
-            // Check parameters
-            const { user } = req.body;
-            if (!user) {
-                return res.status(BAD_REQUEST).json({
-                    error: paramMissingError,
-                });
-            }
-            // Add new user
-            await investorDao.add(user);
-            return res.status(CREATED).end();
-        } catch (err) {
-            logger.error(err.message, err);
-            return res.status(BAD_REQUEST).json({
-                error: err.message,
-            });
-        }
-    });
+    router.delete('/:email', adminMW, controller.deleteInvestor);
 
-    router.get('/:email', adminMW, async (req: Request, res: Response) => {
-        try {
-            const { email } = req.params as ParamsDictionary;
-            const user = await investorDao.getOne(email);
-            if (user && user.id) {
-                return res.status(OK).json(user);
-            } else {
-                throw new Error('Bad user');
-            }
-        } catch (err) {
-            logger.error(err.message, err);
-            return res.status(BAD_REQUEST).json({
-                error: err.message,
-            });
-        }
-    });
-
-    router.delete('/:email', adminMW, async (req: Request, res: Response) => {
-        try {
-            const { email } = req.params as ParamsDictionary;
-            const investor = await investorDao.getOne(email);
-            if (!investor || !investor.id) {
-                return res.status(NOT_FOUND).end();
-            }
-            await investorDao.delete(investor.id);
-            return res.status(OK).end();
-        } catch (err) {
-            logger.error(err.message, err);
-            return res.status(BAD_REQUEST).json({
-                error: err.message,
-            });
-        }
-    });
-
-    router.put('/:email/investment', adminMW, async (req: Request, res: Response) => {
-        try {
-            const { email } = req.params as ParamsDictionary;
-            const { amount } = req.body;
-            const user = await investorDao.getOne(email);
-            if (user && user.id) {
-                await investmentService.addFunds(user.id, amount);
-                return res.status(OK).end();
-            } else {
-                throw new Error('Bad user');
-            }
-        } catch (err) {
-            logger.error(err.message, err);
-            return res.status(BAD_REQUEST).json({
-                error: err.message,
-            });
-        }
-    });
+    router.put('/:email/investment', adminMW, controller.addInvestment);
 
     return router;
 };

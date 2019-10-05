@@ -18,7 +18,7 @@ export default (
     // Add sub-routes
     router.use('/investors', InvestorRoute(investorDao, investmentService));
     router.use('/homeowners', HomeownerRoute(homeownerDao, contractService));
-    router.use('/auth', AuthRouter);
+    router.use('/auth', AuthRouter(investorDao, homeownerDao));
     return router;
 
 };
