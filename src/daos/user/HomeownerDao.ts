@@ -2,7 +2,7 @@ import { IUserDao } from './UserDao';
 import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
 import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@entities';
-import { SqlContractDao } from '@daos';
+import { getDaos } from '@daos';
 
 export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
@@ -46,6 +46,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
      * @param id
      */
     public async delete(id: number): Promise<void> {
-        getRepository(PersistedHomeowner).delete(id);
+        await getRepository(PersistedHomeowner).delete(id);
+        return;
     }
 }

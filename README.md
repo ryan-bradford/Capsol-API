@@ -4,6 +4,7 @@ Write tests for daos<br>
 Write tests for entities<br>
 Write tests for service<br>
 Change user id to VARCHAR<br>
+Change deleted to table field<br>
 Add validation to entities in routers<br>
 Design better error handling<br>
 Comment shit<br>
@@ -22,12 +23,13 @@ Overall Architecture Design:<br>
 /src/services -> stores important business processes that are tangential to database or entity. Here is where business logic will go.<br>
 /src/entities -> all the entities that this app will use. Here is where the validation will go.<br>
 /src/public -> any publicly accessible scripts (CSS, JS, ect);<br>
-/src/routes -> links the views to the entities/DAOS<br>
+/src/controllers -> links the views to the entities/DAOS<br>
+/src/routes -> links the controller to the proper auth + validation methods<br>
 /src/shared -> any helper functions that need to be used globally<br>
 /src/views -> the PUG views for rendering the JSON content<br>
 
 
-APIs:
+APIs: 
 
 GET /investors                  - get all investors<br> 
 POST /investors                 - create an investor<br>

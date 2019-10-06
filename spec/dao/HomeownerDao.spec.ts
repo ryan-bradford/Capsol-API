@@ -1,17 +1,20 @@
-import { SqlHomeownerDao, clearDatabase } from '@daos';
-import { StorableHomeowner, IPersistedHomeowner } from '@entities';
+import { StorableHomeowner, IPersistedHomeowner, IStorableHomeowner } from '@entities';
 import { expect } from 'chai';
 import { logger } from '@shared';
+import { getDaos, IUserDao } from '@daos';
 
 describe('Homeowner Dao', () => {
 
-    const homeownerDao = new SqlHomeownerDao();
+    let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     const u1 = new StorableHomeowner('Ryan', 'test@gmail.com', 'askjnd');
 
     let id: number = 0;
 
     before((done) => {
-        clearDatabase().then((result) => {
+        getDaos().then((daos) => {
+            homeownerDao = new daos.SqlHomeownerDao();
+            return daos.clearDatabase();
+        }).then((result) => {
             done();
         });
     });

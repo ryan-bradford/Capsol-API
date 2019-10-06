@@ -2,7 +2,6 @@ import { IUserDao } from './UserDao';
 import { IPersistedInvestor, IStoredInvestor, PersistedInvestor, IPersistedInvestment, IStorableInvestor } from '@entities';
 import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
-import { IInvestmentDao, SqlInvestmentDao } from '@daos';
 
 export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
@@ -46,7 +45,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
      * @param id
      */
     public async delete(id: number): Promise<void> {
-        getRepository(PersistedInvestor).delete(id);
-
+        await getRepository(PersistedInvestor).delete(id);
+        return;
     }
 }

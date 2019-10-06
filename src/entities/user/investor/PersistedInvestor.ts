@@ -12,10 +12,10 @@ export interface IPersistedInvestor extends IPersistedUser {
 @Entity('investor')
 export class PersistedInvestor extends PersistedUser implements IPersistedInvestor {
 
-    @OneToMany((type) => PersistedInvestment, (investment) => investment.owner)
+    @OneToMany((type) => PersistedInvestment, (investment) => investment.owner, { onDelete: 'CASCADE' })
     public investments!: IPersistedInvestment[];
 
-    @OneToMany((type) => PersistedSellRequest, (request) => request.user)
+    @OneToMany((type) => PersistedSellRequest, (request) => request.user, { onDelete: 'CASCADE' })
     public sellRequests!: IPersistedSellRequest[];
 
 }

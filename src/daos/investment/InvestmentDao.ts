@@ -1,7 +1,7 @@
 import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
 import { IPersistedInvestment, IStorableInvestment, PersistedInvestment, IPersistedInvestor, IStoredInvestor } from '@entities';
-import { IUserDao, SqlInvestorDao, IContractDao, SqlContractDao } from '@daos';
+import { getDaos } from '@daos';
 
 export interface IInvestmentDao {
     getInvestment(id: number): Promise<IPersistedInvestment | null>;
@@ -18,8 +18,9 @@ export class SqlInvestmentDao implements IInvestmentDao {
 
 
     public async createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment> {
-        const investorDao = new SqlInvestorDao();
-        const contractDao = new SqlContractDao();
+        const daos = await getDaos();
+        const investorDao = new daos.SqlInvestorDao();
+        const contractDao = new daos.SqlContractDao();
         const toSave = new PersistedInvestment();
         const contract = await contractDao.getContract(investment.contractId);
         if (!contract) {

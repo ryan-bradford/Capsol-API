@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, ManyToOne, Column } from 'typeorm';
+import { Entity, PrimaryColumn, ManyToOne, Column, JoinColumn } from 'typeorm';
 import { IPersistedContract, IPersistedInvestor, PersistedContract, PersistedInvestor } from '@entities';
 
 export interface IPersistedInvestment {
@@ -15,13 +15,15 @@ export class PersistedInvestment implements IPersistedInvestment {
     @PrimaryColumn()
     public id!: number;
 
-    @ManyToOne((type) => PersistedContract, (contract) => contract.investments)
+    @ManyToOne((type) => PersistedContract, (contract) => contract.investments, { onDelete: 'CASCADE' })
+    @JoinColumn()
     public contract!: IPersistedContract;
 
     @Column()
     public percentage!: number;
 
-    @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments)
+    @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE' })
+    @JoinColumn()
     public owner!: IPersistedInvestor;
 
     public get value(): number {

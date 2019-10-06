@@ -27,7 +27,7 @@ export abstract class PersistedUser implements IPersistedUser {
     @Column()
     public admin!: boolean;
 
-    @OneToMany((type) => PersistedPurchaseRequest, (request) => request.user)
+    @OneToMany((type) => PersistedPurchaseRequest, (request) => request.user, { onDelete: 'CASCADE' })
     public purchaseRequests!: IPersistedPurchaseRequest[];
 
 

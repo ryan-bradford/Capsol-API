@@ -6,6 +6,7 @@ import Mocha from 'mocha';
 const mocha = new Mocha();
 
 // Run all or a single unit-test
+logger.info(process.argv[2]);
 if (process.argv[2]) {
     const testFile = process.argv[2];
     const files = find.fileSync(testFile + '.spec.ts', './spec');

@@ -25,10 +25,10 @@ export abstract class APersistedRequest implements IPersistedRequest {
     @Column()
     public dateCreated!: Date;
 
-    @OneToMany((type) => PersistedInvestor, (investor: PersistedInvestor) => investor.id)
+    @OneToMany((type) => PersistedInvestor, (investor: PersistedInvestor) => investor.id, { onDelete: 'CASCADE' })
     public investor?: IPersistedInvestor;
 
-    @OneToMany((type) => PersistedHomeowner, (homeowner: PersistedHomeowner) => homeowner.id)
+    @OneToMany((type) => PersistedHomeowner, (homeowner: PersistedHomeowner) => homeowner.id, { onDelete: 'CASCADE' })
     public homeowner?: IPersistedHomeowner;
 
     set user(user: IPersistedUser) {

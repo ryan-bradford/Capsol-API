@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany, OneToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 import { IPersistedInvestment, IPersistedHomeowner, PersistedInvestment, PersistedHomeowner } from '@entities';
 
 export interface IPersistedContract {
@@ -28,10 +28,11 @@ export class PersistedContract implements IPersistedContract {
     @Column()
     public monthlyPayment!: number;
 
-    @OneToMany((type) => PersistedInvestment, (investment) => investment.contract)
+    @OneToMany((type) => PersistedInvestment, (investment) => investment.contract, { onDelete: 'CASCADE' })
     public investments!: IPersistedInvestment[];
 
-    @OneToOne((type) => PersistedHomeowner, (homeowner) => homeowner.contract)
+    @OneToOne((type) => PersistedHomeowner, (homeowner) => homeowner.contract, { onDelete: 'CASCADE' })
+    @JoinColumn()
     public homeowner!: IPersistedHomeowner;
 
 
