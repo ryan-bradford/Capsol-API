@@ -3,6 +3,7 @@ import {
     PersistedHomeowner, IPersistedHomeowner, isInvestor,
 } from '@entities';
 import { PrimaryColumn, Column, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
+import { logger } from '@shared';
 
 
 export interface IPersistedRequest {

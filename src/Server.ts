@@ -4,19 +4,41 @@ import path from 'path';
 import logger from 'morgan';
 import BaseRouter from './routes';
 
-import { IUserDao } from '@daos';
-import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStoredInvestor } from '@entities';
-import { IContractService, IInvestmentService } from '@services';
+import { IUserDao, IContractDao, IInvestmentDao } from '@daos';
+import {
+    IPersistedHomeowner, IStoredHomeowner,
+    IPersistedInvestor, IStoredInvestor, IPersistedSellRequest,
+    IStorableSellRequest, IPersistedPurchaseRequest, IStorablePurchaseRequest,
+} from '@entities';
+import { IContractService, IInvestmentService, InvestmentService, IRequestService } from '@services';
+import { IRequestDao } from './daos/investment/RequestDao';
 
 export default (
     homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
     investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
-    createContract: (homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>) => IContractService,
-    investmentService: IInvestmentService) => {
+    contractDao: IContractDao,
+    investmentDao: IInvestmentDao,
+    sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>,
+    purchaseRequestDao: IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest>,
+    createContract:
+        (
+            homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+            contractDao: IContractDao, requestService: IRequestService)
+            => IContractService,
+    createInvestment: (
+        purchaseRequestDao: IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest>,
+        sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>,
+        requestService: IRequestService) => IInvestmentService,
+    createRequestService: (
+        sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>,
+        purchaseRequestDao: IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest>,
+        investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+        homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+        investmentDao: IInvestmentDao,
+        contractDao: IContractDao) => IRequestService) => {
     // Init express
     const app = express();
 
-    const contractService = createContract(homeownerDao);
 
 
     // Add middleware/settings/routes to express.
@@ -25,7 +47,11 @@ export default (
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser(process.env.COOKIE_SECRET));
     app.use(express.static(path.join(__dirname, 'public')));
-    app.use('', BaseRouter(homeownerDao, investorDao, contractService, investmentService));
+    const requestService = createRequestService(sellRequestDao, purchaseRequestDao, investorDao,
+        homeownerDao, investmentDao, contractDao);
+    const contractService = createContract(homeownerDao, contractDao, requestService);
+    app.use('', BaseRouter(homeownerDao, investorDao, contractService,
+        createInvestment(purchaseRequestDao, sellRequestDao, requestService)));
 
 
     /**

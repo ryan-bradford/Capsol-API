@@ -91,7 +91,7 @@ export default class HomeownerController {
             }
             const user = await this.homeownerDao.getOne(email);
             if (user && user.id) {
-                await this.contractService.createContract(amount, 0.04, 20, user);
+                await this.contractService.createContract(amount, 0.04, 20, user.id);
                 return res.status(OK).end();
             } else {
                 return res.status(NOT_FOUND).end();

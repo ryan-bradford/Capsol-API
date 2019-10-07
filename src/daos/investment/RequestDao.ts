@@ -13,6 +13,7 @@ export interface IRequestDao<T extends IPersistedRequest, R extends IStorableReq
     getRequests(): Promise<T[]>;
     createRequest(toCreate: R): Promise<T>;
     deleteRequest(toDeleteId: number): Promise<void>;
+    saveRequest(toSave: T): Promise<void>;
 
 }
 
@@ -20,7 +21,9 @@ export class SqlPurchaseRequestDao implements IRequestDao<IPersistedPurchaseRequ
 
 
     public getRequests(): Promise<IPersistedPurchaseRequest[]> {
-        return getRepository(PersistedPurchaseRequest).find();
+        return getRepository(PersistedPurchaseRequest).find({
+            relations: ['homeowner', 'investor'],
+        });
     }
 
 
@@ -37,13 +40,19 @@ export class SqlPurchaseRequestDao implements IRequestDao<IPersistedPurchaseRequ
         } else {
             persistedRequest.homeowner = homeowner as IPersistedHomeowner;
         }
-        getRepository(PersistedPurchaseRequest).save(persistedRequest);
+        await getRepository(PersistedPurchaseRequest).save(persistedRequest);
         return persistedRequest;
     }
 
 
     public async deleteRequest(toDeleteId: number): Promise<void> {
         await getRepository(PersistedPurchaseRequest).delete(toDeleteId);
+        return;
+    }
+
+
+    public async saveRequest(toSave: IPersistedPurchaseRequest): Promise<void> {
+        await getRepository(PersistedPurchaseRequest).save(toSave);
         return;
     }
 }
@@ -54,7 +63,9 @@ export class SqlSellRequestDao implements IRequestDao<IPersistedSellRequest, ISt
 
 
     public getRequests(): Promise<IPersistedSellRequest[]> {
-        return getRepository(PersistedSellRequest).find();
+        return getRepository(PersistedSellRequest).find({
+            relations: ['homeowner', 'investor'],
+        });
     }
 
 
@@ -71,13 +82,19 @@ export class SqlSellRequestDao implements IRequestDao<IPersistedSellRequest, ISt
         } else {
             persistedRequest.homeowner = homeowner as IPersistedHomeowner;
         }
-        getRepository(PersistedSellRequest).save(persistedRequest);
+        await getRepository(PersistedSellRequest).save(persistedRequest);
         return persistedRequest;
     }
 
 
     public async deleteRequest(toDeleteId: number): Promise<void> {
         await getRepository(PersistedSellRequest).delete(toDeleteId);
+        return;
+    }
+
+
+    public async saveRequest(toSave: IPersistedSellRequest): Promise<void> {
+        await getRepository(PersistedSellRequest).save(toSave);
         return;
     }
 }

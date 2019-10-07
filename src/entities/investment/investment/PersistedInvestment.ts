@@ -19,7 +19,7 @@ export class PersistedInvestment implements IPersistedInvestment {
     @JoinColumn()
     public contract!: IPersistedContract;
 
-    @Column()
+    @Column('decimal', { precision: 5, scale: 2 })
     public percentage!: number;
 
     @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE' })

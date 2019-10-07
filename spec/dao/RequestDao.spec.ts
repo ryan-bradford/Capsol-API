@@ -8,6 +8,7 @@ import {
 } from '@entities';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { expect } from 'chai';
+import { logger } from '@shared';
 
 describe('Request Dao', () => {
 
@@ -28,7 +29,7 @@ describe('Request Dao', () => {
             contractDao = new daos.SqlContractDao();
             investorDao = new daos.SqlInvestorDao();
             purchaseRequestDao = new daos.SqlPurchaseRequestDao();
-            sellRequestDao = new daos.SqlPurchaseRequestDao();
+            sellRequestDao = new daos.SqlSellRequestDao();
             return daos.clearDatabase();
         }).then(() => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));

@@ -286,11 +286,10 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
 class MockContractService implements IContractService {
 
 
-    public createContract(amount: number, interestRate: number, years: number, user: IPersistedHomeowner):
+    public createContract(amount: number, interestRate: number, years: number, userId: number):
         Promise<IPersistedContract> {
         const toReturn = new PersistedContract();
         toReturn.id = 5;
-        toReturn.homeowner = user;
         toReturn.investments = [];
         toReturn.length = years;
         toReturn.saleAmount = amount;

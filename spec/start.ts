@@ -3,7 +3,10 @@ import { logger } from '@shared';
 import Mocha from 'mocha';
 
 // Init Jasmine
-const mocha = new Mocha();
+const mocha = new Mocha({
+    fullStackTrace: true,
+    bail: true,
+});
 
 // Run all or a single unit-test
 logger.info(process.argv[2]);

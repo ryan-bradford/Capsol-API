@@ -15,8 +15,10 @@ export class PersistedInvestor extends PersistedUser implements IPersistedInvest
     @OneToMany((type) => PersistedInvestment, (investment) => investment.owner, { onDelete: 'CASCADE' })
     public investments!: IPersistedInvestment[];
 
+    private type = 'investor';
+
 }
 
 export function isInvestor(value: IPersistedUser): value is IPersistedInvestor {
-    return (value as IPersistedInvestor).investments !== undefined;
+    return (value as any).type === 'investor';
 }

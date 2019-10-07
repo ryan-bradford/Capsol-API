@@ -14,7 +14,7 @@ export class SqlContractDao implements IContractDao {
 
     public async getContract(id: number): Promise<IPersistedContract> {
         return getRepository(PersistedContract).findOne(id, {
-            relations: ['homeowner'],
+            relations: ['homeowner', 'investments'],
         }).then((contract) => {
             if (!contract) {
                 throw new Error('not found');
@@ -26,7 +26,7 @@ export class SqlContractDao implements IContractDao {
 
     public async getContracts(userId?: number): Promise<IPersistedContract[]> {
         return getRepository(PersistedContract).find({
-            relations: ['homeowner'],
+            relations: ['homeowner', 'investments'],
         }).then((contracts: IPersistedContract[]) =>
             contracts.filter((contract) => !userId || contract.homeowner.id === userId));
     }
