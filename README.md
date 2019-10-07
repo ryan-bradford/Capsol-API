@@ -1,9 +1,10 @@
 TODO:
 
-Write tests for daos<br>
 Write tests for entities<br>
 Write tests for service<br>
+Add endpoint to make a payment<br>
 Change user id to VARCHAR<br>
+Abstract await requests<br>
 Change deleted to table field<br>
 Add validation to entities in routers<br>
 Design better error handling<br>

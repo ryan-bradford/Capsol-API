@@ -1,15 +1,18 @@
 import { getRepository } from 'typeorm';
 import {
-    IPersistedRequest, IStoredRequest, IPersistedPurchaseRequest,
-    IStoredPurchaseRequest, PersistedPurchaseRequest, IPersistedSellRequest,
-    IStoredSellRequest, PersistedSellRequest, IStorableRequest, IStorablePurchaseRequest, IStorableSellRequest,
+    IPersistedRequest, IPersistedPurchaseRequest,
+    PersistedPurchaseRequest, IPersistedSellRequest,
+    PersistedSellRequest, IStorableRequest, IStorablePurchaseRequest,
+    IStorableSellRequest, IPersistedHomeowner, IPersistedInvestor,
 } from '@entities';
+import { getRandomInt } from '@shared';
+import { getDaos } from '@daos';
 
 export interface IRequestDao<T extends IPersistedRequest, R extends IStorableRequest> {
 
     getRequests(): Promise<T[]>;
-    createRequest(toCreate: R): Promise<void>;
-    deleteRequest(toDelete: T): Promise<void>;
+    createRequest(toCreate: R): Promise<T>;
+    deleteRequest(toDeleteId: number): Promise<void>;
 
 }
 
@@ -21,14 +24,27 @@ export class SqlPurchaseRequestDao implements IRequestDao<IPersistedPurchaseRequ
     }
 
 
-    public createRequest(toCreate: IStorablePurchaseRequest): Promise<void> {
-        throw new Error('Method not implemented.');
+    public async createRequest(toCreate: IStorablePurchaseRequest): Promise<IPersistedPurchaseRequest> {
+        const daos = await getDaos();
+        const persistedRequest = new PersistedPurchaseRequest();
+        persistedRequest.amount = toCreate.amount;
+        persistedRequest.dateCreated = toCreate.dateCreated;
+        persistedRequest.id = getRandomInt();
+        const investor = await new daos.SqlInvestorDao().getOne(toCreate.userId);
+        const homeowner = await new daos.SqlHomeownerDao().getOne(toCreate.userId);
+        if (investor) {
+            persistedRequest.investor = investor as IPersistedInvestor;
+        } else {
+            persistedRequest.homeowner = homeowner as IPersistedHomeowner;
+        }
+        getRepository(PersistedPurchaseRequest).save(persistedRequest);
+        return persistedRequest;
     }
 
 
-    public async deleteRequest(toDelete: IPersistedPurchaseRequest): Promise<void> {
-        // tslint:disable-next-line: no-empty
-        await getRepository(PersistedPurchaseRequest).delete(toDelete.id);
+    public async deleteRequest(toDeleteId: number): Promise<void> {
+        await getRepository(PersistedPurchaseRequest).delete(toDeleteId);
+        return;
     }
 }
 
@@ -42,13 +58,26 @@ export class SqlSellRequestDao implements IRequestDao<IPersistedSellRequest, ISt
     }
 
 
-    public createRequest(toCreate: IStorableSellRequest): Promise<void> {
-        throw new Error('Method not implemented.');
+    public async createRequest(toCreate: IStorableSellRequest): Promise<IPersistedSellRequest> {
+        const daos = await getDaos();
+        const persistedRequest = new PersistedSellRequest();
+        persistedRequest.amount = toCreate.amount;
+        persistedRequest.dateCreated = toCreate.dateCreated;
+        persistedRequest.id = getRandomInt();
+        const investor = await new daos.SqlInvestorDao().getOne(toCreate.userId);
+        const homeowner = await new daos.SqlHomeownerDao().getOne(toCreate.userId);
+        if (investor) {
+            persistedRequest.investor = investor as IPersistedInvestor;
+        } else {
+            persistedRequest.homeowner = homeowner as IPersistedHomeowner;
+        }
+        getRepository(PersistedSellRequest).save(persistedRequest);
+        return persistedRequest;
     }
 
 
-    public async deleteRequest(toDelete: IPersistedSellRequest): Promise<void> {
-        // tslint:disable-next-line: no-empty
-        await getRepository(PersistedSellRequest).delete(toDelete.id);
+    public async deleteRequest(toDeleteId: number): Promise<void> {
+        await getRepository(PersistedSellRequest).delete(toDeleteId);
+        return;
     }
 }

@@ -9,6 +9,7 @@ import {
     PersistedContract, PersistedSellRequest, PersistedPurchaseRequest,
     PersistedInvestment, PersistedHomeowner, PersistedInvestor,
 } from '@entities';
+import { SqlPurchaseRequestDao, SqlSellRequestDao } from './investment/RequestDao';
 
 async function getDaos() {
     if (getConnectionManager().connections.length === 0) {
@@ -17,6 +18,8 @@ async function getDaos() {
     return {
         SqlHomeownerDao, SqlInvestorDao,
         SqlInvestmentDao, SqlContractDao, clearDatabase,
+        SqlPurchaseRequestDao, SqlSellRequestDao,
+
     };
 }
 

@@ -2,7 +2,7 @@ import {
     IPersistedUser, PersistedInvestor, IPersistedInvestor,
     PersistedHomeowner, IPersistedHomeowner, isInvestor,
 } from '@entities';
-import { PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { PrimaryColumn, Column, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 
 
 export interface IPersistedRequest {
@@ -25,10 +25,12 @@ export abstract class APersistedRequest implements IPersistedRequest {
     @Column()
     public dateCreated!: Date;
 
-    @OneToMany((type) => PersistedInvestor, (investor: PersistedInvestor) => investor.id, { onDelete: 'CASCADE' })
+    @ManyToOne((type) => PersistedInvestor, (investor: PersistedInvestor) => investor,
+        { onDelete: 'CASCADE', nullable: true })
     public investor?: IPersistedInvestor;
 
-    @OneToMany((type) => PersistedHomeowner, (homeowner: PersistedHomeowner) => homeowner.id, { onDelete: 'CASCADE' })
+    @ManyToOne((type) => PersistedHomeowner, (homeowner: PersistedHomeowner) => homeowner,
+        { onDelete: 'CASCADE', nullable: true })
     public homeowner?: IPersistedHomeowner;
 
     set user(user: IPersistedUser) {

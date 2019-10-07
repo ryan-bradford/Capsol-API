@@ -1,5 +1,5 @@
 import { PrimaryColumn, Column, OneToMany } from 'typeorm';
-import { IPersistedPurchaseRequest, PersistedPurchaseRequest } from '@entities';
+import { IPersistedPurchaseRequest, PersistedPurchaseRequest, PersistedSellRequest, IPersistedSellRequest } from '@entities';
 
 export interface IPersistedUser {
     id: number;
@@ -29,6 +29,9 @@ export abstract class PersistedUser implements IPersistedUser {
 
     @OneToMany((type) => PersistedPurchaseRequest, (request) => request.user, { onDelete: 'CASCADE' })
     public purchaseRequests!: IPersistedPurchaseRequest[];
+
+    @OneToMany((type) => PersistedSellRequest, (request) => request.user, { onDelete: 'CASCADE' })
+    public sellRequests!: IPersistedSellRequest[];
 
 
 }

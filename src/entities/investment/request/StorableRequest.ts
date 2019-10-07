@@ -4,7 +4,7 @@ import { IPersistedUser } from 'src/entities/user/user/PersistedUser';
 export interface IStorableRequest {
 
     amount: number;
-    user: IPersistedUser;
+    userId: number;
     dateCreated: Date;
 
 }
@@ -13,12 +13,12 @@ export abstract class AStorableRequest implements IStorableRequest {
 
     public amount: number;
     public dateCreated: Date;
-    public user: IPersistedUser;
+    public userId: number;
 
 
-    constructor(amount: number, dateCreated: Date, user: IPersistedUser) {
+    constructor(amount: number, dateCreated: Date, userId: number) {
         this.amount = amount;
         this.dateCreated = dateCreated;
-        this.user = user;
+        this.userId = userId;
     }
 }
