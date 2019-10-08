@@ -22,7 +22,7 @@ export class PersistedInvestment implements IPersistedInvestment {
     @Column('decimal', { precision: 5, scale: 2 })
     public percentage!: number;
 
-    @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE' })
+    @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()
     public owner!: IPersistedInvestor;
 

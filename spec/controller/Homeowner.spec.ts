@@ -1,8 +1,8 @@
 
 import { OK, CREATED, NOT_FOUND, BAD_REQUEST } from 'http-status-codes';
 import { pErr, logger, pwdSaltRounds } from '@shared';
-import { IUserDao } from '@daos';
-import { IContractService } from '@services';
+import { IUserDao, getDaos } from '@daos';
+import { IContractService, InvestmentService, RequestService } from '@services';
 import bcrypt from 'bcrypt';
 import sinon from 'sinon';
 import { Response } from 'express';
@@ -46,10 +46,27 @@ describe('HomeownerRouter', () => {
 
     let homeownerController: HomeownerController;
 
-    before(() => {
-        homeownerController = new HomeownerController(
-            new MockHomeownerDao(),
-            new MockContractService());
+    before((done) => {
+        const daos = getDaos();
+        daos.then((realDaos) => {
+            const homeownerDao = new MockHomeownerDao();
+            const investorDao = new realDaos.SqlInvestorDao();
+            const investmentDao = new realDaos.SqlInvestmentDao();
+            const contractDao = new realDaos.SqlContractDao();
+            const purchaseRequestDao = new realDaos.SqlPurchaseRequestDao();
+            const sellRequestDao = new realDaos.SqlSellRequestDao();
+            const contractService = new MockContractService();
+            const requestService = new RequestService(sellRequestDao, purchaseRequestDao,
+                investorDao, homeownerDao, investmentDao, contractDao);
+            const investmentService = new InvestmentService(purchaseRequestDao, sellRequestDao, requestService);
+            homeownerController = new HomeownerController(
+                homeownerDao,
+                investorDao,
+                contractDao,
+                contractService,
+                investmentService);
+            done();
+        });
     });
 
     describe(`"GET":${homeownerPath}`, () => {
@@ -294,6 +311,11 @@ class MockContractService implements IContractService {
         toReturn.length = years;
         toReturn.saleAmount = amount;
         return Promise.resolve(toReturn);
+    }
+
+
+    public makePayment(email: string): Promise<void> {
+        throw new Error('Not impl');
     }
 
 }

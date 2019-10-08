@@ -1,11 +1,11 @@
 import { IPersistedHomeowner, IStoredHomeowner, IPersistedContract, PersistedContract, StorableContract } from '@entities';
 import { IUserDao, IContractDao } from '@daos';
-import { assert } from 'console';
 import { IRequestService } from '@services';
 
 export interface IContractService {
     createContract(amount: number, interestRate: number, years: number, userId: number):
         Promise<IPersistedContract>;
+    makePayment(email: string): Promise<void>;
 }
 
 export class ContractService implements IContractService {
@@ -29,4 +29,22 @@ export class ContractService implements IContractService {
         return toReturn;
     }
 
+
+    public async makePayment(email: string): Promise<void> {
+        const user = await this.homeownerDao.getOne(email);
+        if (user && user.id) {
+            const contracts = await this.contractDao.getContracts(user.id);
+            if (contracts.length !== 1) {
+                throw new Error('Bad request');
+            }
+            const contract = contracts[0];
+            await Promise.all(contract.investments.map(async (investment) => {
+                await this.requestService.createPurchaseRequest(investment.owner.id,
+                    investment.percentage * contract.monthlyPayment);
+                return;
+            }));
+        } else {
+            throw new Error('Not found');
+        }
+    }
 }

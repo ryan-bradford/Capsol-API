@@ -148,4 +148,19 @@ describe('Investment Service', () => {
         });
     });
 
+    it('should allow a homeowner to make a payment', (done) => {
+        contractService.makePayment(homeowner.email).then((result) => {
+            done();
+        });
+    });
+
+    it('should not return the purchase request resulting from the payment', (done) => {
+        purchaseRequestDao.getRequests().then((requests) => {
+            expect(requests.length).to.be.equal(3);
+            let total = 0;
+            requests.forEach((request) => total += Number(request.amount));
+            expect(total).to.be.equal(500 * 0.04);
+            done();
+        });
+    });
 });

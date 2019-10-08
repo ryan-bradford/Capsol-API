@@ -1,6 +1,7 @@
 TODO:
 
 Add endpoint to make a payment<br>
+Add concept of transaction history<br>
 Change user id to VARCHAR<br>
 Abstract away requests<br>
 Change deleted to table field<br>

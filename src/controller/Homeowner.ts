@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { IUserDao } from '@daos';
-import { IPersistedHomeowner, IStoredHomeowner } from '@entities';
-import { IContractService } from '@services';
+import { IUserDao, IContractDao } from '@daos';
+import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStorableInvestor } from '@entities';
+import { IContractService, IInvestmentService } from '@services';
 import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
 import { logger, paramMissingError } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
@@ -9,7 +9,10 @@ import { ParamsDictionary } from 'express-serve-static-core';
 export default class HomeownerController {
     constructor(
         private homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
-        private contractService: IContractService) { }
+        private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        private contractDao: IContractDao,
+        private contractService: IContractService,
+        private investmentService: IInvestmentService) { }
 
 
     public async getUsers(req: Request, res: Response) {
@@ -96,6 +99,20 @@ export default class HomeownerController {
             } else {
                 return res.status(NOT_FOUND).end();
             }
+        } catch (err) {
+            logger.error(err.message, err);
+            return res.status(BAD_REQUEST).json({
+                error: err.message,
+            });
+        }
+    }
+
+
+    public async makePayment(req: Request, res: Response) {
+        try {
+            const { email } = req.params as ParamsDictionary;
+            this.contractService.makePayment(email);
+            return res.status(OK).end();
         } catch (err) {
             logger.error(err.message, err);
             return res.status(BAD_REQUEST).json({

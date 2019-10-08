@@ -2,13 +2,17 @@ import { Router } from 'express';
 import InvestorRoute from './Investor';
 import HomeownerRoute from './Homeowner';
 import AuthRouter from './Auth';
-import { IUserDao } from '@daos';
-import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStoredInvestor } from '@entities';
+import { IUserDao, IContractDao } from '@daos';
+import {
+    IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStoredInvestor,
+    IStorableInvestor, IStorableHomeowner,
+} from '@entities';
 import { IContractService, IInvestmentService } from '@services';
 
 export default (
-    homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
-    investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+    homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
+    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+    contractDao: IContractDao,
     contractService: IContractService,
     investmentService: IInvestmentService) => {
 
@@ -17,7 +21,8 @@ export default (
 
     // Add sub-routes
     router.use('/investors', InvestorRoute(investorDao, investmentService));
-    router.use('/homeowners', HomeownerRoute(homeownerDao, contractService));
+    router.use('/homeowners', HomeownerRoute(homeownerDao, investorDao, contractDao,
+        contractService, investmentService));
     router.use('/auth', AuthRouter(investorDao, homeownerDao));
     return router;
 

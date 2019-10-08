@@ -8,14 +8,14 @@ import { IUserDao, IContractDao, IInvestmentDao } from '@daos';
 import {
     IPersistedHomeowner, IStoredHomeowner,
     IPersistedInvestor, IStoredInvestor, IPersistedSellRequest,
-    IStorableSellRequest, IPersistedPurchaseRequest, IStorablePurchaseRequest,
+    IStorableSellRequest, IPersistedPurchaseRequest, IStorablePurchaseRequest, IStorableInvestor, IStorableHomeowner,
 } from '@entities';
 import { IContractService, IInvestmentService, InvestmentService, IRequestService } from '@services';
 import { IRequestDao } from './daos/investment/RequestDao';
 
 export default (
-    homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
-    investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+    homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
+    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
     contractDao: IContractDao,
     investmentDao: IInvestmentDao,
     sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>,
@@ -50,8 +50,8 @@ export default (
     const requestService = createRequestService(sellRequestDao, purchaseRequestDao, investorDao,
         homeownerDao, investmentDao, contractDao);
     const contractService = createContract(homeownerDao, contractDao, requestService);
-    app.use('', BaseRouter(homeownerDao, investorDao, contractService,
-        createInvestment(purchaseRequestDao, sellRequestDao, requestService)));
+    const investmentService = createInvestment(purchaseRequestDao, sellRequestDao, requestService);
+    app.use('', BaseRouter(homeownerDao, investorDao, contractDao, contractService, investmentService));
 
 
     /**
