@@ -1,5 +1,6 @@
 import { Entity, PrimaryColumn, Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
 import { IPersistedInvestment, IPersistedHomeowner, PersistedInvestment, PersistedHomeowner } from '@entities';
+import { logger } from '@shared';
 
 export interface IPersistedContract {
     id: number;
@@ -11,6 +12,7 @@ export interface IPersistedContract {
     readonly isFulfilled: boolean;
     readonly yearsPassed: number;
     readonly depreciationValue: number;
+    readonly unsoldAmount: number;
 }
 
 @Entity('contract')
@@ -39,12 +41,12 @@ export class PersistedContract implements IPersistedContract {
     get isFulfilled(): boolean {
         let total = 0;
         this.investments.forEach((investment) => {
-            total += investment.percentage;
+            total += Number(investment.percentage);
         });
         if (total > 1) {
-            throw new Error('WTF');
+            throw new Error(`WTF ${total}`);
         }
-        return total === 1;
+        return total >= 1;
     }
 
 
@@ -55,5 +57,11 @@ export class PersistedContract implements IPersistedContract {
 
     get depreciationValue(): number {
         return this.saleAmount / this.length;
+    }
+
+    get unsoldAmount(): number {
+        let toReturn = 1;
+        this.investments.forEach((investment) => toReturn -= Number(investment.percentage));
+        return this.saleAmount * toReturn;
     }
 }

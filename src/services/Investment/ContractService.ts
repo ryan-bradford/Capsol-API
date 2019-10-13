@@ -3,7 +3,7 @@ import { IUserDao, IContractDao } from '@daos';
 import { IRequestService } from '@services';
 
 export interface IContractService {
-    createContract(amount: number, interestRate: number, years: number, userId: number):
+    createContract(amount: number, userId: number):
         Promise<IPersistedContract>;
     makePayment(email: string): Promise<void>;
 }
@@ -17,15 +17,17 @@ export class ContractService implements IContractService {
         private requestService: IRequestService) { }
 
 
-    public async createContract(amount: number, interestRate: number, years: number, userId: number):
+    public async createContract(amount: number, userId: number):
         Promise<IPersistedContract> {
         const homeowner = await this.homeownerDao.getOne(userId);
         if (!homeowner) {
             throw new Error('Not found');
         }
-        const newContract = new StorableContract(amount, years, amount * interestRate, homeowner.id);
+        const months = 240;
+        const interestRate = 0.04;
+        const newContract = new StorableContract(amount, months, amount * interestRate, homeowner.id);
         const toReturn = await this.contractDao.createContract(newContract);
-        await this.requestService.createSellRequest(homeowner.id, toReturn.saleAmount);
+        await this.requestService.handleRequests();
         return toReturn;
     }
 
@@ -38,11 +40,16 @@ export class ContractService implements IContractService {
                 throw new Error('Bad request');
             }
             const contract = contracts[0];
+            if (!contract.isFulfilled || !contract.length) {
+                throw new Error('No payment needed');
+            }
             await Promise.all(contract.investments.map(async (investment) => {
                 await this.requestService.createPurchaseRequest(investment.owner.id,
                     investment.percentage * contract.monthlyPayment);
                 return;
             }));
+            contract.length -= 1;
+            this.contractDao.saveContract(contract);
         } else {
             throw new Error('Not found');
         }

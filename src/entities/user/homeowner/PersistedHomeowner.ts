@@ -1,14 +1,24 @@
-import { OneToOne, Entity, JoinColumn } from 'typeorm';
-import { IPersistedUser, IPersistedContract, PersistedUser, PersistedContract } from '@entities';
+import { OneToOne, Entity, OneToMany, ChildEntity } from 'typeorm';
+import {
+    IPersistedUser, IPersistedContract, PersistedUser, PersistedContract,
+    PersistedRequest, IPersistedRequest, isInvestor,
+} from '@entities';
 
 export interface IPersistedHomeowner extends IPersistedUser {
     contract?: IPersistedContract;
 }
 
-@Entity('homeowner')
+@ChildEntity('homeowner')
 export class PersistedHomeowner extends PersistedUser implements IPersistedHomeowner {
 
-    @OneToOne((type) => PersistedContract, (contract) => contract.homeowner, { nullable: true, onDelete: 'CASCADE' })
+    @OneToOne(() => PersistedContract, (contract) => contract.homeowner,
+        { nullable: true, onDelete: 'CASCADE', eager: true })
     public contract?: IPersistedContract;
 
+    private type = 'homeowner';
+
+}
+
+export function isHomeowner(value: IPersistedUser): value is IPersistedHomeowner {
+    return !isInvestor(value);
 }

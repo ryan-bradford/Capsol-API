@@ -5,7 +5,6 @@ import { IUserDao, getDaos } from '@daos';
 import { IContractService, InvestmentService, RequestService } from '@services';
 import bcrypt from 'bcrypt';
 import sinon from 'sinon';
-import { Response } from 'express';
 import {
     IPersistedHomeowner, IStoredHomeowner,
     PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor,
@@ -26,7 +25,7 @@ const startHomeowners = {
             email: 'test@gmail.com',
             admin: false,
             pwdHash: '1',
-            purchaseRequests: [],
+            requests: [],
         },
     ],
 };
@@ -53,12 +52,11 @@ describe('HomeownerRouter', () => {
             const investorDao = new realDaos.SqlInvestorDao();
             const investmentDao = new realDaos.SqlInvestmentDao();
             const contractDao = new realDaos.SqlContractDao();
-            const purchaseRequestDao = new realDaos.SqlPurchaseRequestDao();
-            const sellRequestDao = new realDaos.SqlSellRequestDao();
+            const requestDao = new realDaos.SqlRequestDao();
             const contractService = new MockContractService();
-            const requestService = new RequestService(sellRequestDao, purchaseRequestDao,
+            const requestService = new RequestService(requestDao,
                 investorDao, homeownerDao, investmentDao, contractDao);
-            const investmentService = new InvestmentService(purchaseRequestDao, sellRequestDao, requestService);
+            const investmentService = new InvestmentService(requestService);
             homeownerController = new HomeownerController(
                 homeownerDao,
                 investorDao,
@@ -303,12 +301,12 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
 class MockContractService implements IContractService {
 
 
-    public createContract(amount: number, interestRate: number, years: number, userId: number):
+    public createContract(amount: number, userId: number):
         Promise<IPersistedContract> {
         const toReturn = new PersistedContract();
         toReturn.id = 5;
         toReturn.investments = [];
-        toReturn.length = years;
+        toReturn.length = 20;
         toReturn.saleAmount = amount;
         return Promise.resolve(toReturn);
     }

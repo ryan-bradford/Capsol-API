@@ -1,4 +1,4 @@
-import { IStoredUser, IStoredContract, StoredUser, IStoredPurchaseRequest } from '@entities';
+import { IStoredUser, IStoredContract, StoredUser, IStoredRequest } from '@entities';
 
 export interface IStoredHomeowner extends IStoredUser {
     contract?: IStoredContract;
@@ -11,8 +11,8 @@ export class StoredHomeowner extends StoredUser implements IStoredHomeowner {
 
     constructor(id: number, name: string, email: string, pwdHash: string,
         // tslint:disable-next-line: align
-        purchaseRequests: IStoredPurchaseRequest[], contract?: IStoredContract) {
-        super(id, name, email, pwdHash, purchaseRequests);
+        requests: IStoredRequest[], contract?: IStoredContract) {
+        super(id, name, email, pwdHash, requests);
         this.contract = contract;
     }
 

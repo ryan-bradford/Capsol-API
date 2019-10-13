@@ -19,17 +19,17 @@ export default (
     const controller = new HomeownerController(homeownerDao, investorDao, contractDao,
         contractService, investmentService);
 
-    router.get('', adminMW, controller.getUsers);
+    router.get('', adminMW, (req, res) => controller.getUsers(req, res));
 
-    router.post('', adminMW, controller.addUser);
+    router.post('', adminMW, (req, res) => controller.addUser(req, res));
 
-    router.get('/:email', adminMW, controller.getUser);
+    router.get('/:email', adminMW, (req, res) => controller.getUser(req, res));
 
-    router.delete('/:email', adminMW, controller.deleteUser);
+    router.delete('/:email', adminMW, (req, res) => controller.deleteUser(req, res));
 
-    router.put('/:email/home', adminMW, controller.signUpHome);
+    router.put('/:email/home', adminMW, (req, res) => controller.signUpHome(req, res));
 
-    router.put('/:email/payment', adminMW, controller.makePayment);
+    router.put('/:email/payment', adminMW, (req, res) => controller.makePayment(req, res));
 
     return router;
 

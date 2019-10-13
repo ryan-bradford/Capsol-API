@@ -3,13 +3,11 @@ import { SqlHomeownerDao } from './user/HomeownerDao';
 import { SqlInvestorDao } from './user/InvestorDao';
 import { IInvestmentDao, SqlInvestmentDao } from './investment/InvestmentDao';
 import { IContractDao, SqlContractDao } from './investment/ContractDao';
-import { createConnection, getRepository, getConnection, getConnectionManager } from 'typeorm';
-import { logger } from '@shared';
+import { SqlRequestDao } from './investment/RequestDao';
+import { createConnection, getRepository, getConnectionManager } from 'typeorm';
 import {
-    PersistedContract, PersistedSellRequest, PersistedPurchaseRequest,
-    PersistedInvestment, PersistedHomeowner, PersistedInvestor,
+    PersistedHomeowner, PersistedInvestor,
 } from '@entities';
-import { SqlPurchaseRequestDao, SqlSellRequestDao } from './investment/RequestDao';
 
 async function getDaos() {
     if (getConnectionManager().connections.length === 0) {
@@ -18,8 +16,7 @@ async function getDaos() {
     return {
         SqlHomeownerDao, SqlInvestorDao,
         SqlInvestmentDao, SqlContractDao, clearDatabase,
-        SqlPurchaseRequestDao, SqlSellRequestDao,
-
+        SqlRequestDao,
     };
 }
 

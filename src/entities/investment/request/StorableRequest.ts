@@ -6,19 +6,22 @@ export interface IStorableRequest {
     amount: number;
     userId: number;
     dateCreated: Date;
+    type: 'purchase' | 'sell';
 
 }
 
-export abstract class AStorableRequest implements IStorableRequest {
+export class StorableRequest implements IStorableRequest {
 
     public amount: number;
     public dateCreated: Date;
     public userId: number;
+    public type: 'purchase' | 'sell';
 
 
-    constructor(amount: number, dateCreated: Date, userId: number) {
+    constructor(amount: number, dateCreated: Date, userId: number, type: 'purchase' | 'sell') {
         this.amount = amount;
         this.dateCreated = dateCreated;
         this.userId = userId;
+        this.type = type;
     }
 }

@@ -12,7 +12,9 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
      */
     public async getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
         return getRepository(PersistedHomeowner)
-            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
+            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId }, {
+                relations: ['contract'],
+            })
             .then((result) => result ? result : null);
     }
 
@@ -21,7 +23,9 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
      *
      */
     public async getAll(): Promise<IPersistedHomeowner[]> {
-        return getRepository(PersistedHomeowner).find();
+        return getRepository(PersistedHomeowner).find({
+            relations: ['contract'],
+        });
     }
 
 

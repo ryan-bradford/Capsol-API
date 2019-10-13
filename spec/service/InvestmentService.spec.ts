@@ -3,11 +3,8 @@ import {
     IPersistedHomeowner, IStorableHomeowner, IPersistedInvestor,
     IStorableInvestor, IPersistedContract, IStorableInvestment,
     StorableInvestor, StorableHomeowner, StorableContract,
-    StorableInvestment,
-    IPersistedPurchaseRequest,
-    IStorablePurchaseRequest,
-    IPersistedSellRequest,
-    IStorableSellRequest,
+    IPersistedRequest,
+    IStorableRequest,
 } from '@entities';
 import { IInvestmentService, InvestmentService, IContractService, ContractService, RequestService } from '@services';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
@@ -18,8 +15,7 @@ describe('Investment Service', () => {
 
     let investmentDao: IInvestmentDao;
     let contractDao: IContractDao;
-    let purchaseRequestDao: IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest>;
-    let sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>;
+    let requestDao: IRequestDao<IPersistedRequest, IStorableRequest>;
     let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     let investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>;
     let investmentService: IInvestmentService;
@@ -33,12 +29,11 @@ describe('Investment Service', () => {
             contractDao = new daos.SqlContractDao();
             investmentDao = new daos.SqlInvestmentDao();
             investorDao = new daos.SqlInvestorDao();
-            purchaseRequestDao = new daos.SqlPurchaseRequestDao();
-            sellRequestDao = new daos.SqlSellRequestDao();
-            const requestService = new RequestService(sellRequestDao, purchaseRequestDao,
+            requestDao = new daos.SqlRequestDao();
+            const requestService = new RequestService(requestDao,
                 investorDao, homeownerDao, investmentDao, contractDao);
             contractService = new ContractService(homeownerDao, contractDao, requestService);
-            investmentService = new InvestmentService(purchaseRequestDao, sellRequestDao, requestService);
+            investmentService = new InvestmentService(requestService);
             return daos.clearDatabase();
         }).then((result) => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));
@@ -58,7 +53,7 @@ describe('Investment Service', () => {
     });
 
     it('should return the purchase request', (done) => {
-        purchaseRequestDao.getRequests().then((requests) => {
+        requestDao.getRequests().then((requests) => {
             expect(requests.length).to.be.equal(1);
             expect(requests[0].amount).to.be.equal(100);
             done();
@@ -66,7 +61,7 @@ describe('Investment Service', () => {
     });
 
     it('should properly create a contract', (done) => {
-        contractService.createContract(500, 0.04, 20, homeowner.id).then((result) => {
+        contractService.createContract(500, homeowner.id).then((result) => {
             expect(result.saleAmount).to.be.equal(500);
             done();
         });
@@ -74,15 +69,15 @@ describe('Investment Service', () => {
 
 
     it('should give the sell request', (done) => {
-        sellRequestDao.getRequests().then((result) => {
+        contractDao.getContracts().then((result) => {
             expect(result.length).to.be.equal(1);
-            expect(result[0].amount).to.be.equal(400);
+            expect(result[0].unsoldAmount).to.be.equal(400);
             done();
         });
     });
 
     it('should not return the purchase request', (done) => {
-        purchaseRequestDao.getRequests().then((requests) => {
+        requestDao.getRequests().then((requests) => {
             expect(requests.length).to.be.equal(0);
             done();
         });
@@ -103,7 +98,7 @@ describe('Investment Service', () => {
     });
 
     it('should return the purchase request', (done) => {
-        purchaseRequestDao.getRequests().then((requests) => {
+        requestDao.getRequests().then((requests) => {
             expect(requests.length).to.be.equal(1);
             expect(requests[0].amount).to.be.equal(200);
             done();
@@ -135,14 +130,14 @@ describe('Investment Service', () => {
     });
 
     it('should not return the purchase request', (done) => {
-        purchaseRequestDao.getRequests().then((requests) => {
+        requestDao.getRequests().then((requests) => {
             expect(requests.length).to.be.equal(0);
             done();
         });
     });
 
     it('should not return the sell request', (done) => {
-        sellRequestDao.getRequests().then((requests) => {
+        requestDao.getRequests().then((requests) => {
             expect(requests.length).to.be.equal(0);
             done();
         });
@@ -155,7 +150,7 @@ describe('Investment Service', () => {
     });
 
     it('should not return the purchase request resulting from the payment', (done) => {
-        purchaseRequestDao.getRequests().then((requests) => {
+        requestDao.getRequests().then((requests) => {
             expect(requests.length).to.be.equal(3);
             let total = 0;
             requests.forEach((request) => total += Number(request.amount));

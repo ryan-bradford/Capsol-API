@@ -31,7 +31,6 @@ export default class AuthController {
                 });
             }
             // Fetch user
-            logger.info(email);
             const homeowner = await this.homeownerDao.getOne(email);
             const investor = await this.investorDao.getOne(email);
             const user = homeowner ? homeowner : investor;

@@ -13,15 +13,15 @@ export default (investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>, inve
     const router = Router();
     const controller = new InvestorController(investorDao, investmentService);
 
-    router.get('', adminMW, controller.getAll);
+    router.get('', adminMW, (req, res) => controller.getAll(req, res));
 
-    router.post('', adminMW, controller.addInvestor);
+    router.post('', adminMW, (req, res) => controller.addInvestor(req, res));
 
-    router.get('/:email', adminMW, controller.getInvestor);
+    router.get('/:email', adminMW, (req, res) => controller.getInvestor(req, res));
 
-    router.delete('/:email', adminMW, controller.deleteInvestor);
+    router.delete('/:email', adminMW, (req, res) => controller.deleteInvestor(req, res));
 
-    router.put('/:email/investment', adminMW, controller.addInvestment);
+    router.put('/:email/investment', adminMW, (req, res) => controller.addInvestment(req, res));
 
     return router;
 };

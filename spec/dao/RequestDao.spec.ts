@@ -2,9 +2,7 @@ import { getDaos, IInvestmentDao, IContractDao, IUserDao } from '@daos';
 import {
     IPersistedHomeowner, IStorableHomeowner, IPersistedInvestor,
     IStorableInvestor, IPersistedContract, StorableInvestor,
-    StorableHomeowner, StorableContract, IStorablePurchaseRequest,
-    IPersistedPurchaseRequest, IPersistedSellRequest, IStorableSellRequest, StorablePurchaseRequest,
-    StorableSellRequest,
+    StorableHomeowner, StorableContract, IPersistedRequest, IStorableRequest, StorableRequest,
 } from '@entities';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { expect } from 'chai';
@@ -16,10 +14,9 @@ describe('Request Dao', () => {
     let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     let investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>;
     let investor: IPersistedInvestor;
-    let purchaseRequestDao: IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest>;
-    let sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>;
-    let storablePurchaseRequest: IStorablePurchaseRequest;
-    let storableSellRequest: IStorableSellRequest;
+    let requestDao: IRequestDao<IPersistedRequest, IStorableRequest>;
+    let storablePurchaseRequest: IStorableRequest;
+    let storableSellRequest: IStorableRequest;
     let purchaseId: number;
     let sellId: number;
 
@@ -28,8 +25,7 @@ describe('Request Dao', () => {
             homeownerDao = new daos.SqlHomeownerDao();
             contractDao = new daos.SqlContractDao();
             investorDao = new daos.SqlInvestorDao();
-            purchaseRequestDao = new daos.SqlPurchaseRequestDao();
-            sellRequestDao = new daos.SqlSellRequestDao();
+            requestDao = new daos.SqlRequestDao();
             return daos.clearDatabase();
         }).then(() => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));
@@ -40,17 +36,17 @@ describe('Request Dao', () => {
             const newContract = new StorableContract(1000, 5, 100, newHomeowner.id);
             return contractDao.createContract(newContract);
         }).then((newContract) => {
-            storablePurchaseRequest = new StorablePurchaseRequest(100, new Date(), investor.id);
-            storableSellRequest = new StorableSellRequest(100, new Date(), investor.id);
+            storablePurchaseRequest = new StorableRequest(100, new Date(), investor.id, 'purchase');
+            storableSellRequest = new StorableRequest(100, new Date(), investor.id, 'sell');
             done();
         });
     });
 
     it('should add a request', (done) => {
-        purchaseRequestDao.createRequest(storablePurchaseRequest).then((result) => {
+        requestDao.createRequest(storablePurchaseRequest).then((result) => {
             expect(result.amount).to.be.equal(100);
             purchaseId = result.id;
-            return sellRequestDao.createRequest(storableSellRequest);
+            return requestDao.createRequest(storableSellRequest);
         }).then((result) => {
             expect(result.amount).to.be.equal(100);
             sellId = result.id;
@@ -59,10 +55,10 @@ describe('Request Dao', () => {
     });
 
     it('should give all requests', (done) => {
-        purchaseRequestDao.getRequests().then((result) => {
+        requestDao.getRequests().then((result) => {
             expect(result.length).to.be.equal(1);
             expect(result[0].amount).to.be.equal(100);
-            return sellRequestDao.getRequests();
+            return requestDao.getRequests();
         }).then((result) => {
             expect(result.length).to.be.equal(1);
             expect(result[0].amount).to.be.equal(100);
@@ -71,17 +67,17 @@ describe('Request Dao', () => {
     });
 
     it('should delete one request', (done) => {
-        purchaseRequestDao.deleteRequest(purchaseId).then((result) => {
-            return sellRequestDao.deleteRequest(sellId);
+        requestDao.deleteRequest(purchaseId).then((result) => {
+            return requestDao.deleteRequest(sellId);
         }).then((result) => {
             done();
         });
     });
 
     it('should give all requests', (done) => {
-        purchaseRequestDao.getRequests().then((result) => {
+        requestDao.getRequests().then((result) => {
             expect(result.length).to.be.equal(0);
-            return sellRequestDao.getRequests();
+            return requestDao.getRequests();
         }).then((result) => {
             expect(result.length).to.be.equal(0);
             done();

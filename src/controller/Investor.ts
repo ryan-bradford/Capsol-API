@@ -1,7 +1,7 @@
 import { IUserDao } from '@daos';
 import { Request, Response } from 'express';
 
-import { IPersistedInvestor, IStoredInvestor } from '@entities';
+import { IPersistedInvestor, IStoredInvestor, StorableInvestor, StoredInvestor } from '@entities';
 
 import { IInvestmentService } from '@services';
 import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
@@ -18,7 +18,9 @@ export default class InvestorController {
 
     public async getAll(req: Request, res: Response) {
         try {
-            const users = await this.investorDao.getAll();
+            const users = (await this.investorDao.getAll()).map((investor) =>
+                new StoredInvestor(investor.id, investor.name, investor.email, investor.pwdHash,
+                    investor.portfolioValue));
             return res.status(OK).json({ users });
         } catch (err) {
             logger.error(err.message, err);
@@ -40,7 +42,7 @@ export default class InvestorController {
             }
             // Add new user
             await this.investorDao.add(user);
-            return res.status(CREATED).end();
+            return res.status(CREATED).send(user);
         } catch (err) {
             logger.error(err.message, err);
             return res.status(BAD_REQUEST).json({
@@ -53,9 +55,11 @@ export default class InvestorController {
     public async getInvestor(req: Request, res: Response) {
         try {
             const { email } = req.params as ParamsDictionary;
-            const user = await this.investorDao.getOne(email);
-            if (user && user.id) {
-                return res.status(OK).json(user);
+            const investor = await this.investorDao.getOne(email);
+            if (investor) {
+                return res.status(OK).json(
+                    new StoredInvestor(investor.id, investor.name, investor.email, investor.pwdHash,
+                        investor.portfolioValue));
             } else {
                 return res.status(NOT_FOUND).end();
             }

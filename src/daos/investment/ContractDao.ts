@@ -7,6 +7,7 @@ export interface IContractDao {
     getContracts(userId?: number): Promise<IPersistedContract[]>;
     getContract(id: number): Promise<IPersistedContract>;
     createContract(contract: IStorableContract): Promise<IPersistedContract>;
+    saveContract(contract: IPersistedContract): Promise<void>;
 }
 
 export class SqlContractDao implements IContractDao {
@@ -49,5 +50,11 @@ export class SqlContractDao implements IContractDao {
         await getRepository(PersistedContract).save(newContract);
         homeowner.contract = newContract;
         return newContract;
+    }
+
+
+    public async saveContract(contract: IPersistedContract): Promise<void> {
+        await getRepository(PersistedContract).save(contract);
+        return;
     }
 }

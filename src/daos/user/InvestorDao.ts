@@ -1,7 +1,7 @@
 import { IUserDao } from './UserDao';
 import { IPersistedInvestor, IStoredInvestor, PersistedInvestor, IPersistedInvestment, IStorableInvestor } from '@entities';
 import { getRepository } from 'typeorm';
-import { getRandomInt } from '@shared';
+import { getRandomInt, logger } from '@shared';
 
 export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
@@ -11,7 +11,9 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
      */
     public async getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
         return getRepository(PersistedInvestor)
-            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId })
+            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId }, {
+                relations: ['requests', 'investments'],
+            })
             .then((result) => result ? result : null);
     }
 
@@ -20,7 +22,9 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
      *
      */
     public async getAll(): Promise<IPersistedInvestor[]> {
-        return getRepository(PersistedInvestor).find();
+        return getRepository(PersistedInvestor).find({
+            relations: ['requests', 'investments'],
+        });
     }
 
 

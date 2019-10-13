@@ -25,9 +25,7 @@ const startInvestors: { users: IPersistedInvestor[] } = {
             email: 'test@gmail.com',
             admin: false,
             pwdHash: '1',
-            purchaseRequests: [],
-            investments: [],
-            sellRequests: [],
+            requests: [],
         },
     ],
 };
@@ -37,9 +35,8 @@ const nextUser: IStoredInvestor = {
     name: 'Emma',
     email: 'blorg@gmail.com',
     pwdHash: '2',
-    purchaseRequests: [],
+    requests: [],
     investments: [],
-    sellRequests: [],
 };
 
 

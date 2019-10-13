@@ -20,7 +20,6 @@ if (process.argv[2]) {
     }
 } else {
     const files = find.fileSync(new RegExp('.*spec.*'), './spec');
-    logger.info(files);
     files.forEach((file) => {
         mocha.addFile(file);
     });

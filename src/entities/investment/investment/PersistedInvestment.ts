@@ -15,7 +15,7 @@ export class PersistedInvestment implements IPersistedInvestment {
     @PrimaryColumn()
     public id!: number;
 
-    @ManyToOne((type) => PersistedContract, (contract) => contract.investments, { onDelete: 'CASCADE' })
+    @ManyToOne((type) => PersistedContract, (contract) => contract.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()
     public contract!: IPersistedContract;
 

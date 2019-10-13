@@ -20,8 +20,8 @@ export default (
     const router = Router();
 
     // Add sub-routes
-    router.use('/investors', InvestorRoute(investorDao, investmentService));
-    router.use('/homeowners', HomeownerRoute(homeownerDao, investorDao, contractDao,
+    router.use('/investor', InvestorRoute(investorDao, investmentService));
+    router.use('/homeowner', HomeownerRoute(homeownerDao, investorDao, contractDao,
         contractService, investmentService));
     router.use('/auth', AuthRouter(investorDao, homeownerDao));
     return router;

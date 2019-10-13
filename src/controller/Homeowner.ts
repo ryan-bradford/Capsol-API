@@ -39,7 +39,7 @@ export default class HomeownerController {
             }
             // Add new user
             await this.homeownerDao.add(user);
-            return res.status(CREATED).end();
+            return res.status(CREATED).send(user);
         } catch (err) {
             logger.error(err.message, err);
             return res.status(BAD_REQUEST).json({
@@ -94,7 +94,7 @@ export default class HomeownerController {
             }
             const user = await this.homeownerDao.getOne(email);
             if (user && user.id) {
-                await this.contractService.createContract(amount, 0.04, 20, user.id);
+                await this.contractService.createContract(amount, user.id);
                 return res.status(OK).end();
             } else {
                 return res.status(NOT_FOUND).end();
@@ -111,10 +111,10 @@ export default class HomeownerController {
     public async makePayment(req: Request, res: Response) {
         try {
             const { email } = req.params as ParamsDictionary;
-            this.contractService.makePayment(email);
+            await this.contractService.makePayment(email);
             return res.status(OK).end();
         } catch (err) {
-            logger.error(err.message, err);
+            // logger.error(err.message, err);
             return res.status(BAD_REQUEST).json({
                 error: err.message,
             });

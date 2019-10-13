@@ -17,9 +17,8 @@ describe('Contract Service', () => {
             contractDao = new daos.SqlContractDao();
             const investmentDao = new daos.SqlInvestmentDao();
             const investorDao = new daos.SqlInvestorDao();
-            const sellRequestDao = new daos.SqlSellRequestDao();
-            const purchaseRequestDao = new daos.SqlPurchaseRequestDao();
-            const requestService = new RequestService(sellRequestDao, purchaseRequestDao,
+            const requestDao = new daos.SqlRequestDao();
+            const requestService = new RequestService(requestDao,
                 investorDao, homeownerDao, investmentDao, contractDao);
             contractService = new ContractService(homeownerDao, contractDao, requestService);
             return daos.clearDatabase();
@@ -32,7 +31,7 @@ describe('Contract Service', () => {
     });
 
     it('should properly create a contract', (done) => {
-        contractService.createContract(500, 0.04, 20, homeowner.id).then((result) => {
+        contractService.createContract(500, homeowner.id).then((result) => {
             expect(result.saleAmount).to.be.equal(500);
             done();
         });

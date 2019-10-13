@@ -22,7 +22,7 @@ export default (
     /******************************************************************************
      *                      Login User - "POST /api/auth/login"
      ******************************************************************************/
-    router.post('/login', controller.login);
+    router.post('/login', (req, res) => controller.login(req, res));
 
     /******************************************************************************
      *                      Login - "GET /api/auth/login"

@@ -51,7 +51,6 @@ describe('Investor Dao', () => {
 
     it('should not give a deleted user', (done) => {
         investorDao.getOne('test@gmail.com').then((result) => {
-            logger.info(result ? result.name : 'null');
             expect(result).to.be.equal(null);
             done();
         });

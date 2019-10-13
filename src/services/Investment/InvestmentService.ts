@@ -1,6 +1,5 @@
 import {
-    IPersistedInvestment, StorablePurchaseRequest, IPersistedPurchaseRequest,
-    IStorablePurchaseRequest, IPersistedSellRequest, IStorableSellRequest, StorableSellRequest,
+    IPersistedInvestment,
 } from '@entities';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { IRequestService, RequestService } from '@services';
@@ -14,8 +13,6 @@ export class InvestmentService implements IInvestmentService {
 
 
     constructor(
-        private purchaseRequestDao: IRequestDao<IPersistedPurchaseRequest, IStorablePurchaseRequest>,
-        private sellRequestDao: IRequestDao<IPersistedSellRequest, IStorableSellRequest>,
         private requestService: IRequestService) { }
 
 
