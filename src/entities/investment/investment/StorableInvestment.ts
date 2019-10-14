@@ -1,19 +1,19 @@
 export interface IStorableInvestment {
     contractId: number;
-    percentage: number;
+    amount: number;
     ownerId: number;
 }
 
 export class StorableInvestment implements IStorableInvestment {
 
     public contractId: number;
-    public percentage: number;
+    public amount: number;
     public ownerId: number;
 
 
-    constructor(contractId: number, percentage: number, ownerId: number) {
+    constructor(contractId: number, amount: number, ownerId: number) {
         this.contractId = contractId;
-        this.percentage = percentage;
+        this.amount = amount;
         this.ownerId = ownerId;
     }
 

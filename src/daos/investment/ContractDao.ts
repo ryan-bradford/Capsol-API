@@ -44,6 +44,7 @@ export class SqlContractDao implements IContractDao {
         }
         newContract.homeowner = homeowner;
         newContract.investments = [];
+        newContract.startLength = contract.length;
         newContract.length = contract.length;
         newContract.monthlyPayment = contract.monthlyPayment;
         newContract.saleAmount = contract.saleAmount;

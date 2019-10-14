@@ -17,19 +17,17 @@ export default (
     investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
     contractDao: IContractDao,
     investmentDao: IInvestmentDao,
-    requestDao: IRequestDao<IPersistedRequest, IStorableRequest>,
+    requestDao: IRequestDao,
     createContract:
         (
             homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
             contractDao: IContractDao, requestService: IRequestService)
             => IContractService,
     createInvestment: (
-        requestDao: IRequestDao<IPersistedRequest, IStorableRequest>,
+        investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         requestService: IRequestService) => IInvestmentService,
     createRequestService: (
-        requestDao: IRequestDao<IPersistedRequest, IStorableRequest>,
-        investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
-        homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+        requestDao: IRequestDao,
         investmentDao: IInvestmentDao,
         contractDao: IContractDao) => IRequestService) => {
     // Init express
@@ -43,10 +41,9 @@ export default (
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser(process.env.COOKIE_SECRET));
     app.use(express.static(path.join(__dirname, 'public')));
-    const requestService = createRequestService(requestDao, investorDao,
-        homeownerDao, investmentDao, contractDao);
+    const requestService = createRequestService(requestDao, investmentDao, contractDao);
     const contractService = createContract(homeownerDao, contractDao, requestService);
-    const investmentService = createInvestment(requestDao, requestService);
+    const investmentService = createInvestment(investorDao, requestService);
     app.use('', BaseRouter(homeownerDao, investorDao, contractDao, contractService, investmentService));
 
 

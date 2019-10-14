@@ -18,9 +18,14 @@ export default class InvestorController {
 
     public async getAll(req: Request, res: Response) {
         try {
-            const users = (await this.investorDao.getAll()).map((investor) =>
-                new StoredInvestor(investor.id, investor.name, investor.email, investor.pwdHash,
-                    investor.portfolioValue));
+            const users = await
+                this.investorDao.getAll()
+                    .then((result) => Promise.all(
+                        result.map(async (investor) => {
+                            const portfolio = await this.investmentService.getPortfolioValue(investor.id);
+                            return new StoredInvestor(investor.id, portfolio,
+                                investor.name, investor.email, investor.pwdHash);
+                        })));
             return res.status(OK).json({ users });
         } catch (err) {
             logger.error(err.message, err);
@@ -57,9 +62,9 @@ export default class InvestorController {
             const { email } = req.params as ParamsDictionary;
             const investor = await this.investorDao.getOne(email);
             if (investor) {
+                const portfolio = await this.investmentService.getPortfolioValue(investor.id);
                 return res.status(OK).json(
-                    new StoredInvestor(investor.id, investor.name, investor.email, investor.pwdHash,
-                        investor.portfolioValue));
+                    new StoredInvestor(investor.id, portfolio, investor.name, investor.email, investor.pwdHash));
             } else {
                 return res.status(NOT_FOUND).end();
             }

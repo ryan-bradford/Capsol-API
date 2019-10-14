@@ -14,7 +14,7 @@ describe('Request Dao', () => {
     let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     let investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>;
     let investor: IPersistedInvestor;
-    let requestDao: IRequestDao<IPersistedRequest, IStorableRequest>;
+    let requestDao: IRequestDao;
     let storablePurchaseRequest: IStorableRequest;
     let storableSellRequest: IStorableRequest;
     let purchaseId: number;
@@ -56,12 +56,9 @@ describe('Request Dao', () => {
 
     it('should give all requests', (done) => {
         requestDao.getRequests().then((result) => {
-            expect(result.length).to.be.equal(1);
+            expect(result.length).to.be.equal(2);
             expect(result[0].amount).to.be.equal(100);
-            return requestDao.getRequests();
-        }).then((result) => {
-            expect(result.length).to.be.equal(1);
-            expect(result[0].amount).to.be.equal(100);
+            expect(result[1].amount).to.be.equal(100);
             done();
         });
     });

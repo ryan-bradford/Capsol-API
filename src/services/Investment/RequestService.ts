@@ -6,11 +6,12 @@ import {
     IPersistedHomeowner, IStoredHomeowner, IPersistedUser, isInvestor,
     StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment,
 } from '@entities';
+import { assert } from 'console';
 
 export interface IRequestService {
 
-    createPurchaseRequest(userId: number, amount: number): Promise<void>;
-    createSellRequest(amount: number, userId: number): Promise<void>;
+    createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void>;
+    createSellRequest(user: IPersistedInvestor, amount: number): Promise<void>;
     handleRequests(): Promise<void>;
 
 }
@@ -19,33 +20,21 @@ export class RequestService implements IRequestService {
 
 
     constructor(
-        private requestDao: IRequestDao<IPersistedRequest, IStorableRequest>,
-        private investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
-        private homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+        private requestDao: IRequestDao,
         private investmentDao: IInvestmentDao,
         private contractDao: IContractDao) { }
 
 
-    public async createPurchaseRequest(userId: number, amount: number): Promise<void> {
-        const investor = await this.investorDao.getOne(userId);
-        if (!investor) {
-            throw new Error('Not Found');
-        }
-        const newRequest = new StorableRequest(amount, new Date(), investor.id, 'purchase');
+    public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void> {
+        const newRequest = new StorableRequest(amount, new Date(), user.id, 'purchase');
         await this.requestDao.createRequest(newRequest);
         await this.handleRequests();
         return;
     }
 
 
-    public async createSellRequest(userId: number, amount: number): Promise<void> {
+    public async createSellRequest(user: IPersistedInvestor, amount: number): Promise<void> {
         // Literally only creates a sell request with the user ID and amount
-        const investor = await this.investorDao.getOne(userId);
-        const homeowner = await this.homeownerDao.getOne(userId);
-        const user = investor ? investor : homeowner;
-        if (!user) {
-            throw new Error('Not Found');
-        }
         const newRequest = new StorableRequest(amount, new Date(), user.id, 'sell');
         await this.requestDao.createRequest(newRequest);
         await this.handleRequests();
@@ -65,33 +54,31 @@ export class RequestService implements IRequestService {
         const allContracts = (await this.contractDao.getContracts())
             .filter((contract) => !contract.isFulfilled)
             .sort((a, b) => b.unsoldAmount / b.saleAmount - a.unsoldAmount / a.saleAmount);
+        assert(allPurchaseRequests.length - 1 <= 0 || allSellRequests.length + allContracts.length - 1 <= 0,
+            `${allPurchaseRequests.length}, ${allSellRequests.length + allContracts.length}`);
         let currentPurchase = allPurchaseRequests.pop();
-        let currentSell: (IPersistedRequest | IPersistedContract | undefined) = allSellRequests.pop();
-        if (!currentSell) {
-            currentSell = allContracts.pop();
-        }
+        let currentSell: (IPersistedRequest | IPersistedContract | undefined) =
+            allSellRequests.pop() || allContracts.pop();
         while (currentPurchase && currentSell) {
             if (isRequest(currentSell)) {
-                await this.takeAssets(Math.min(currentSell.amount, currentPurchase.amount),
+                const transactionAmount = Math.min(currentSell.amount, currentPurchase.amount);
+                await this.takeAssets(transactionAmount,
                     currentSell.investor, currentPurchase.investor as IPersistedInvestor);
-                const initPurchaseAmount = currentPurchase.amount;
-                currentPurchase.amount -= currentSell.amount;
-                currentPurchase.amount = Math.max(currentPurchase.amount, 0);
-                currentSell.amount -= initPurchaseAmount;
-                currentSell.amount = Math.max((currentSell as IPersistedRequest).amount, 0);
+                currentPurchase.amount -= transactionAmount;
+                currentSell.amount -= transactionAmount;
                 await this.requestDao.saveRequest(currentSell);
                 if (currentSell.amount === 0) {
                     await this.requestDao.deleteRequest(currentSell.id);
                     currentSell = allSellRequests.pop() || allContracts.pop();
                 }
             } else {
-                const investment = await this.takeAssets(Math.min(currentSell.unsoldAmount, currentPurchase.amount),
+                const transactionAmount = Math.min(currentSell.unsoldAmount, currentPurchase.amount);
+                const investment = await this.takeAssets(transactionAmount,
                     currentSell.homeowner, currentPurchase.investor as IPersistedInvestor);
                 if (!investment) {
                     throw new Error('Bad');
                 }
-                currentPurchase.amount -= currentSell.unsoldAmount;
-                currentPurchase.amount = Math.max(currentPurchase.amount, 0);
+                currentPurchase.amount -= transactionAmount;
                 currentSell.investments.push(investment);
                 if (currentSell.isFulfilled) {
                     await this.requestDao.deleteRequest(currentSell.id);
@@ -104,6 +91,7 @@ export class RequestService implements IRequestService {
                 currentPurchase = allPurchaseRequests.pop();
             }
         }
+        await this.mergeInvestments();
     }
 
 
@@ -118,16 +106,12 @@ export class RequestService implements IRequestService {
                     throw new Error('SEVERE');
                 }
                 if (curInvestment.value > amount) {
-                    const percentPurchase = amount / curInvestment.value;
-                    const toUpdateInvestmentPercentage = curInvestment.percentage * percentPurchase;
-                    const toCreateInvestmentPercentage =
-                        curInvestment.percentage - curInvestment.percentage * percentPurchase;
                     const contract = curInvestment.contract;
                     await this.investmentDao.deleteInvestment(curInvestment.id);
                     await this.investmentDao.createInvestment(
-                        new StorableInvestment(contract.id, toUpdateInvestmentPercentage, to.id));
+                        new StorableInvestment(contract.id, amount, to.id));
                     await this.investmentDao.createInvestment(
-                        new StorableInvestment(contract.id, toCreateInvestmentPercentage, from.id));
+                        new StorableInvestment(contract.id, curInvestment.value - amount, from.id));
                     amount = 0;
                 } else {
                     amount -= curInvestment.value;
@@ -135,6 +119,7 @@ export class RequestService implements IRequestService {
                 }
             }
         } else if (isHomeowner(from)) {
+            logger.info(JSON.stringify(from));
             from = (from as IPersistedHomeowner);
             if (!from.id) {
                 throw new Error('bad user');
@@ -144,7 +129,7 @@ export class RequestService implements IRequestService {
                 throw new Error(`Bad ${contracts.length} ${from.id}`);
             }
             const contract = contracts[0];
-            const toCreate = new StorableInvestment(contract.id, amount / contract.saleAmount, to.id);
+            const toCreate = new StorableInvestment(contract.id, amount, to.id);
             const newInvestment = await this.investmentDao.createInvestment(toCreate);
             contract.investments.push(newInvestment);
             return newInvestment;
@@ -152,6 +137,24 @@ export class RequestService implements IRequestService {
     }
 
 
+    private async mergeInvestments(): Promise<void> {
+        const investments = await this.investmentDao.getInvestments();
+        const investorContractToInvestment: Map<[number, number], IPersistedInvestment> = new Map();
+        await Promise.all(investments.map(async (investment) => {
+            const key: [number, number] = [investment.contract.id, investment.owner.id];
+            const current = investorContractToInvestment.get(key);
+            if (!current) {
+                investorContractToInvestment.set(key, investment);
+                return;
+            } else {
+                current.percentage += investment.percentage;
+                await this.investmentDao.deleteInvestment(investment.id);
+                await this.investmentDao.saveInvestment(current);
+                return;
+            }
+        }));
+        return;
+    }
 }
 
 function isRequest(a: any): a is IPersistedRequest {

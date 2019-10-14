@@ -15,7 +15,7 @@ describe('Investment Service', () => {
 
     let investmentDao: IInvestmentDao;
     let contractDao: IContractDao;
-    let requestDao: IRequestDao<IPersistedRequest, IStorableRequest>;
+    let requestDao: IRequestDao;
     let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     let investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>;
     let investmentService: IInvestmentService;
@@ -30,10 +30,9 @@ describe('Investment Service', () => {
             investmentDao = new daos.SqlInvestmentDao();
             investorDao = new daos.SqlInvestorDao();
             requestDao = new daos.SqlRequestDao();
-            const requestService = new RequestService(requestDao,
-                investorDao, homeownerDao, investmentDao, contractDao);
+            const requestService = new RequestService(requestDao, investmentDao, contractDao);
             contractService = new ContractService(homeownerDao, contractDao, requestService);
-            investmentService = new InvestmentService(requestService);
+            investmentService = new InvestmentService(investorDao, requestService);
             return daos.clearDatabase();
         }).then((result) => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));
@@ -86,7 +85,7 @@ describe('Investment Service', () => {
     it('should return the new investment', (done) => {
         investmentDao.getInvestments().then((investments) => {
             expect(investments.length).to.be.equal(1);
-            expect(investments[0].percentage).to.be.equal('0.20');
+            expect(investments[0].percentage).to.be.equal(0.2);
             done();
         });
     });
@@ -108,7 +107,7 @@ describe('Investment Service', () => {
     it('should return the new investment', (done) => {
         investmentDao.getInvestments().then((investments) => {
             expect(investments.length).to.be.equal(2);
-            expect(investments.map(((investment) => investment.percentage))).to.contain('0.20').and.to.contain('0.80');
+            expect(investments.map(((investment) => investment.percentage))).to.contain(0.2).and.to.contain(0.8);
             done();
         });
     });
@@ -154,7 +153,7 @@ describe('Investment Service', () => {
             expect(requests.length).to.be.equal(3);
             let total = 0;
             requests.forEach((request) => total += Number(request.amount));
-            expect(total).to.be.equal(500 * 0.04);
+            expect(total).to.be.equal(4);
             done();
         });
     });

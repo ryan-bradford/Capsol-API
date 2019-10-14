@@ -1,5 +1,5 @@
 import { IUserDao } from './UserDao';
-import { IPersistedInvestor, IStoredInvestor, PersistedInvestor, IPersistedInvestment, IStorableInvestor } from '@entities';
+import { IPersistedInvestor, PersistedInvestor, IStorableInvestor } from '@entities';
 import { getRepository } from 'typeorm';
 import { getRandomInt, logger } from '@shared';
 
@@ -9,10 +9,10 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
     /**
      * @param email
      */
-    public async getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
+    public async getOne(emailOrId: string | number, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
         return getRepository(PersistedInvestor)
             .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId }, {
-                relations: ['requests', 'investments'],
+                relations: ['investments'].concat(loadRequests ? ['requests'] : []),
             })
             .then((result) => result ? result : null);
     }
@@ -21,9 +21,9 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
     /**
      *
      */
-    public async getAll(): Promise<IPersistedInvestor[]> {
+    public async getAll(loadRequests?: boolean): Promise<IPersistedInvestor[]> {
         return getRepository(PersistedInvestor).find({
-            relations: ['requests', 'investments'],
+            relations: ['investments'].concat(loadRequests ? ['requests'] : []),
         });
     }
 

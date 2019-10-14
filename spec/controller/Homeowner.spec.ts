@@ -54,9 +54,8 @@ describe('HomeownerRouter', () => {
             const contractDao = new realDaos.SqlContractDao();
             const requestDao = new realDaos.SqlRequestDao();
             const contractService = new MockContractService();
-            const requestService = new RequestService(requestDao,
-                investorDao, homeownerDao, investmentDao, contractDao);
-            const investmentService = new InvestmentService(requestService);
+            const requestService = new RequestService(requestDao, investmentDao, contractDao);
+            const investmentService = new InvestmentService(investorDao, requestService);
             homeownerController = new HomeownerController(
                 homeownerDao,
                 investorDao,
@@ -312,7 +311,7 @@ class MockContractService implements IContractService {
     }
 
 
-    public makePayment(email: string): Promise<void> {
+    public makePayment(email: string): Promise<number> {
         throw new Error('Not impl');
     }
 

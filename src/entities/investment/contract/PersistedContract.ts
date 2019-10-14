@@ -9,6 +9,7 @@ export interface IPersistedContract {
     monthlyPayment: number;
     investments: IPersistedInvestment[];
     homeowner: IPersistedHomeowner;
+    startLength: number;
     readonly isFulfilled: boolean;
     readonly yearsPassed: number;
     readonly depreciationValue: number;
@@ -23,6 +24,9 @@ export class PersistedContract implements IPersistedContract {
 
     @Column()
     public saleAmount!: number;
+
+    @Column()
+    public startLength!: number;
 
     @Column()
     public length!: number;
@@ -51,12 +55,12 @@ export class PersistedContract implements IPersistedContract {
 
 
     get yearsPassed(): number {
-        return 5;
+        return this.startLength - this.length;
     }
 
 
     get depreciationValue(): number {
-        return this.saleAmount / this.length;
+        return this.saleAmount / this.startLength;
     }
 
     get unsoldAmount(): number {

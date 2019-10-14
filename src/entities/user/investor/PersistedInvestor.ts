@@ -5,10 +5,10 @@ import {
 } from '@entities';
 import { IPersistedRequest, PersistedRequest } from 'src/entities/investment/request/PersistedRequest';
 import { IPersistedHomeowner } from '../homeowner/PersistedHomeowner';
+import { IStoredInvestor, StoredInvestor } from './StoredInvestor';
 
 export interface IPersistedInvestor extends IPersistedUser {
     requests: IPersistedRequest[];
-    readonly portfolioValue: number;
 }
 
 @ChildEntity('investor')
@@ -17,25 +17,11 @@ export class PersistedInvestor extends PersistedUser implements IPersistedInvest
     @OneToMany((type) => PersistedInvestment, (investment) => investment.owner, { onDelete: 'CASCADE' })
     public investments!: IPersistedInvestment[];
 
-    @OneToMany((type) => PersistedRequest, (request) => request.investor, { onDelete: 'CASCADE', eager: true })
+    @OneToMany((type) => PersistedRequest, (request) => request.investor, { onDelete: 'CASCADE' })
     public requests!: IPersistedRequest[];
-
-    get portfolioValue(): number {
-        let total = 0;
-        this.investments.forEach((investment) => {
-            total += investment.value;
-        });
-
-        this.requests.forEach((request) => {
-            total += request.amount;
-        });
-        return total;
-    }
-
-    private type = 'investor';
 
 }
 
 export function isInvestor(value: IPersistedUser): value is IPersistedInvestor {
-    return (value as any).type === 'investor';
+    return (value as any).investments !== undefined || (value as any).type !== 'homeowner';
 }

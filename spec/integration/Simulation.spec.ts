@@ -9,9 +9,12 @@ import faker from 'faker';
 import sinon from 'sinon';
 import bcrypt from 'bcrypt';
 import { SqlHomeownerDao } from 'src/daos/user/HomeownerDao';
+import { expect } from 'chai';
 
 let appInstance: Express;
 let cookie: string;
+let totalFunds = 0;
+
 
 async function runSimulation() {
 
@@ -26,11 +29,10 @@ async function runSimulation() {
             new daos.SqlRequestDao(),
             (homeownerDao, contractDao, requestService) =>
                 new ContractService(homeownerDao, contractDao, requestService),
-            (requestDao, requestService) =>
-                new InvestmentService(requestService),
-            (requestDao, investorDao, homeownerDao, investmentDao, contractDao) =>
-                new RequestService(requestDao,
-                    investorDao, homeownerDao, investmentDao, contractDao));
+            (investorDao, requestService) =>
+                new InvestmentService(investorDao, requestService),
+            (requestDao, investmentDao, contractDao) =>
+                new RequestService(requestDao, investmentDao, contractDao));
     await daos.clearDatabase();
     cookie = await login();
 
@@ -51,50 +53,43 @@ async function runSimulation() {
 
     const investmentSizeMax = 10000;
     const contractSizeMax = 10000;
-    const simulationLength = 2;
+    const simulationLength = 240;
     const newInvestorNumber = 20;
     const newHomeownerNumber = 50;
+    totalFunds = 0;
 
     const investorToDate: Map<string, number> = new Map();
     const investorToInvestment: Map<string, number> = new Map();
 
-    const investorEmail = await addInvestor();
-    const homeownerEmail = await addHomeowner();
-    const homeownerEmail2 = await addHomeowner();
-    await addInvestment(investorEmail, 100);
-    await addContract(homeownerEmail, 100);
-    await addContract(homeownerEmail2, 100);
-    await tickMonth();
-    const investorEmail2 = await addInvestor();
-    await addInvestment(investorEmail2, 96);
-    await tickMonth();
+    for (let a = 0; a < 1; a++) {
+        const investorEmail = await addInvestor();
+        const investment = 10000;
+        await addInvestment(investorEmail, investment);
+        totalFunds += investment;
+        investorToDate.set(investorEmail, 0);
+        investorToInvestment.set(investorEmail, investment);
+    }
+    for (let a = 0; a < 1; a++) {
+        const homeownerEmail = await addHomeowner();
+        await addContract(homeownerEmail, 10000);
+    }
 
-    request(appInstance).get(`/investor`)
-        .set('Accept', 'application/json')
-        .set('Cookie', cookie)
-        .then((result) => {
-            logger.info(JSON.stringify(result.body.users.map((user: any) =>
-                user.portfolioValue / 100)));
-        });
-
-    /*
     for (let i = 0; i < simulationLength; i++) {
         logger.info(String(i));
-        const newInvestors = Math.round(Math.random() * newInvestorNumber);
-        const newHomeowners = Math.round(Math.random() * newHomeownerNumber);
-        for (let a = 0; a < 1; a++) {
-            const investorEmail = await addInvestor();
-            const investment = Math.round(Math.random() * investmentSizeMax);
-            await addInvestment(investorEmail, investment);
-            investorToDate.set(investorEmail, i);
-            investorToInvestment.set(investorEmail, investment);
-        }
-        for (let a = 0; a < 4; a++) {
-            const homeownerEmail = await addHomeowner();
-            await addContract(homeownerEmail, Math.round(Math.random() * contractSizeMax));
-        }
-        await tickMonth();
-    }*/
+        //await tickMonth();
+    }
+    /*
+        request(appInstance).get(`/investor`)
+            .set('Accept', 'application/json')
+            .set('Cookie', cookie)
+            .then((result) => {
+                let total = 0;
+                logger.info(JSON.stringify(result.body.users.map((user: any) => {
+                    total += user.portfolioValue;
+                    return Math.sqrt((user.portfolioValue / Number(investorToInvestment.get(user.email)) - 1));
+                })));
+                expect(total).to.be.equal(totalFunds);
+            });*/
 }
 
 async function addInvestor(): Promise<string> {
@@ -148,7 +143,10 @@ async function tickMonth(): Promise<void> {
 async function makePayment(homeownerEmail: string): Promise<void> {
     await request(appInstance).put(`/homeowner/${homeownerEmail}/payment`)
         .set('Accept', 'application/json')
-        .set('Cookie', cookie);
+        .set('Cookie', cookie)
+        .then((result) => {
+            totalFunds += result.body.payment;
+        });
     return;
 }
 

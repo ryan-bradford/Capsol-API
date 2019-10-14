@@ -7,6 +7,7 @@ import { Response } from 'express';
 import {
     PersistedInvestor, IStoredInvestor, IPersistedInvestor,
     IPersistedInvestment,
+    StoredInvestor,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse } from 'mock-req-res';
@@ -35,8 +36,7 @@ const nextUser: IStoredInvestor = {
     name: 'Emma',
     email: 'blorg@gmail.com',
     pwdHash: '2',
-    requests: [],
-    investments: [],
+    portfolioValue: 1,
 };
 
 
@@ -64,8 +64,13 @@ describe('HomeownerRouter', () => {
             callApi()
                 .then((res) => {
                     expect(res.status).to.be.calledWith(OK);
-                    expect(res.json).to.be.calledWith({ users: startInvestors.users });
+                    expect(res.json).to.be.calledWith({
+                        users: startInvestors.users.map((user) => {
+                            return new StoredInvestor(user, 1);
+                        }),
+                    });
                     done();
+
                 });
         });
 
@@ -168,7 +173,7 @@ describe('HomeownerRouter', () => {
             callApi('test@gmail.com')
                 .then((res) => {
                     expect(res.status).to.be.calledWith(OK);
-                    expect(res.json).to.be.calledWith(startInvestors.users[0]);
+                    expect(res.json).to.be.calledWith(new StoredInvestor(startInvestors.users[0], 1));
                     done();
                 });
         });
@@ -294,6 +299,11 @@ class MockInvestmentService implements IInvestmentService {
 
     public sellInvestments(userId: number, amount: number): Promise<void> {
         return Promise.resolve();
+    }
+
+
+    public getPortfolioValue(userId: number): Promise<number> {
+        return Promise.resolve(1);
     }
 
 }

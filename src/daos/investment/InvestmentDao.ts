@@ -40,7 +40,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
             throw new Error('Contract not found');
         }
         toSave.contract = contract;
-        toSave.percentage = investment.percentage;
+        toSave.amount = investment.amount;
         toSave.id = getRandomInt();
         const investor = await investorDao.getOne(investment.ownerId);
         if (!investor) {

@@ -1,17 +1,14 @@
 TODO:
 
-Add endpoint to make a payment<br>
+Add more tests<br>
+Comment shit<br>
+Migrate away from typeorm<br>
 Add concept of transaction history<br>
 Change user id to VARCHAR<br>
-Abstract away requests<br>
 Change deleted to table field<br>
 Add validation to entities in routers<br>
 Design better error handling<br>
-Add more tests<br>
-Comment shit<br>
 Create dashboard<br>
-Add ability to sell<br>
-    Add the idea of a buy request and sell request<br>
 Design Database/Data Structure<br>
 Add stuff about locking and transactions<br>
 Make RAML<br>

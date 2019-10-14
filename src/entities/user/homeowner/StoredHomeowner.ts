@@ -11,8 +11,8 @@ export class StoredHomeowner extends StoredUser implements IStoredHomeowner {
 
     constructor(id: number, name: string, email: string, pwdHash: string,
         // tslint:disable-next-line: align
-        requests: IStoredRequest[], contract?: IStoredContract) {
-        super(id, name, email, pwdHash, requests);
+        contract?: IStoredContract) {
+        super(id, name, email, pwdHash);
         this.contract = contract;
     }
 

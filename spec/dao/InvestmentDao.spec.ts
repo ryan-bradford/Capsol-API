@@ -34,7 +34,7 @@ describe('Investment Dao', () => {
             return contractDao.createContract(newContract);
         }).then((newContract) => {
             contract = newContract;
-            storableInvestment = new StorableInvestment(contract.id, 1, investor.id);
+            storableInvestment = new StorableInvestment(contract.id, 1000, investor.id);
             done();
         });
     });

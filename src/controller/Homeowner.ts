@@ -111,8 +111,8 @@ export default class HomeownerController {
     public async makePayment(req: Request, res: Response) {
         try {
             const { email } = req.params as ParamsDictionary;
-            await this.contractService.makePayment(email);
-            return res.status(OK).end();
+            const payment = await this.contractService.makePayment(email);
+            return res.status(OK).send({ payment });
         } catch (err) {
             // logger.error(err.message, err);
             return res.status(BAD_REQUEST).json({

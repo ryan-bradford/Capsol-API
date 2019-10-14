@@ -19,14 +19,23 @@ export class PersistedInvestment implements IPersistedInvestment {
     @JoinColumn()
     public contract!: IPersistedContract;
 
-    @Column('decimal', { precision: 5, scale: 2 })
-    public percentage!: number;
+    @Column()
+    public amount!: number;
+
+    get percentage() {
+        return this.amount / this.contract.saleAmount;
+    }
+
+    set percentage(newPercentage: number) {
+        this.amount = this.contract.saleAmount * newPercentage;
+    }
 
     @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()
     public owner!: IPersistedInvestor;
 
     public get value(): number {
-        return this.contract.saleAmount - this.contract.depreciationValue * this.contract.yearsPassed;
+        return this.percentage *
+            (this.contract.saleAmount - this.contract.depreciationValue * this.contract.yearsPassed);
     }
 }
