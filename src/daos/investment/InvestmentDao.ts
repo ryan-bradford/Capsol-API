@@ -71,7 +71,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
     }
 
 
-    public async  saveInvestment(investment: IPersistedInvestment): Promise<void> {
+    public async saveInvestment(investment: IPersistedInvestment): Promise<void> {
         await getRepository(PersistedInvestment).update(investment.id, investment);
         return;
     }

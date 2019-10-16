@@ -53,20 +53,20 @@ async function runSimulation() {
 
     const investmentSizeMax = 10000;
     const contractSizeMax = 10000;
-    const simulationLength = 5;
-    const newInvestorNumber = 20;
-    const newHomeownerNumber = 50;
+    const simulationLength = 24;
+    const newInvestorNumber = 2;
+    const newHomeownerNumber = 5;
     totalFunds = 0;
 
-    const investorToDate: Map<string, number> = new Map();
     const investorToInvestment: Map<string, number> = new Map();
+    const investorToJoinTime: Map<string, number> = new Map();
 
     for (let a = 0; a < 1; a++) {
         const investorEmail = await addInvestor();
         const investment = 10000;
         await addInvestment(investorEmail, investment);
         totalFunds += investment;
-        investorToDate.set(investorEmail, 0);
+        investorToJoinTime.set(investorEmail, 0);
         investorToInvestment.set(investorEmail, investment);
     }
     for (let a = 0; a < 1; a++) {
@@ -90,6 +90,7 @@ async function runSimulation() {
             const newEmail = await addInvestor();
             const investmentSize = 1000 + Math.round(Math.random() * investmentSizeMax);
             investorToInvestment.set(newEmail, investmentSize);
+            investorToJoinTime.set(newEmail, i + 1);
             await addInvestment(newEmail, investmentSize);
         }
     }
@@ -97,13 +98,18 @@ async function runSimulation() {
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
         .then((result) => {
-            let total = 0;
+            let totalInterest = 0;
             logger.info(JSON.stringify(result.body.users.map((user: any) => {
-                total += user.portfolioValue;
-                logger.info(String(total));
-                return Math.pow((user.portfolioValue / Number(investorToInvestment.get(user.email))),
-                    1 / (simulationLength / 12));
+                const initInvestment = Number(investorToInvestment.get(user.email));
+                let joinTime = Number(investorToJoinTime.get(user.email));
+                joinTime = joinTime === simulationLength ? joinTime - 1 : joinTime;
+                logger.info(String([joinTime, initInvestment]));
+                const interest = Math.pow((user.portfolioValue / initInvestment),
+                    1 / ((simulationLength - joinTime) / 12));
+                totalInterest += interest;
+                return interest;
             })));
+            logger.info(String(totalInterest / result.body.users.length));
         });
 }
 
@@ -237,9 +243,8 @@ function hashPwd(pwd: string) {
 describe('Simulation', function test() {
     this.timeout(50000);
     it('should run the simulation', (done) => {
-        /*runSimulation().then((result) => {
+        runSimulation().then((result) => {
             done();
-        });*/
-        done();
+        });
     });
 });

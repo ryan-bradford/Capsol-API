@@ -46,8 +46,7 @@ export class InvestmentService implements IInvestmentService {
     public async getPortfolioValue(userId: string): Promise<number> {
         const [requestValue, investments] = await Promise.all([getRepository(PersistedRequest)
             .createQueryBuilder('request')
-            .where('request.investorId = :userId', { userId })
-            .where('request.type = "purchase"')
+            .where('request.investorId = :userId AND request.type = "purchase"', { userId })
             .select('SUM(request.amount)', 'sum')
             .getRawOne(),
         this.investmentDao.getInvestments(userId)]);
@@ -55,7 +54,7 @@ export class InvestmentService implements IInvestmentService {
         investments.forEach((investment) => {
             investmentValue += investment.value;
         });
-        return Number(requestValue.sum) + Number(investmentValue) as number;
+        return Number(requestValue.sum) + Number(investmentValue);
     }
 
 }
