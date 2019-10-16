@@ -4,9 +4,9 @@ import { IRequestService } from '@services';
 import { logger } from '@shared';
 
 export interface IContractService {
-    createContract(amount: number, userId: number):
+    createContract(amount: number, userId: string):
         Promise<IPersistedContract>;
-    makePayment(email: string): Promise<number>;
+    makePayment(email: string): Promise<number | null>;
 }
 
 export class ContractService implements IContractService {
@@ -18,7 +18,7 @@ export class ContractService implements IContractService {
         private requestService: IRequestService) { }
 
 
-    public async createContract(amount: number, userId: number):
+    public async createContract(amount: number, userId: string):
         Promise<IPersistedContract> {
         const homeowner = await this.homeownerDao.getOne(userId);
         if (!homeowner) {
@@ -27,16 +27,14 @@ export class ContractService implements IContractService {
         const interestRate = 0.04;
         const lengthInYears = 20;
         const yearlyPayment = amount * (1 / 20 + interestRate);
-        // const lengthInYears = (1 / interestRate * amount) / (amount + 1 / interestRate * yearlyPayment);
         const newContract = new StorableContract(amount, lengthInYears * 12, yearlyPayment / 12, homeowner.id);
         const toReturn = await this.contractDao.createContract(newContract);
-        await this.requestService.handleRequests();
         return toReturn;
     }
 
 
-    public async makePayment(email: string): Promise<number> {
-        const user = await this.homeownerDao.getOne(email);
+    public async makePayment(email: string): Promise<number | null> {
+        const user = await this.homeownerDao.getOneByEmail(email);
         if (user && user.id) {
             const contracts = await this.contractDao.getContracts(user.id);
             if (contracts.length !== 1) {
@@ -44,7 +42,7 @@ export class ContractService implements IContractService {
             }
             const contract = contracts[0];
             if (!contract.isFulfilled || !contract.length) {
-                throw new Error('No payment needed');
+                return null;
             }
             await Promise.all(contract.investments.map(async (investment) => {
                 await this.requestService.createPurchaseRequest(investment.owner,
@@ -54,6 +52,7 @@ export class ContractService implements IContractService {
             contract.length -= 1;
             await this.contractDao.saveContract(contract);
             return contract.monthlyPayment;
+            return 1;
         } else {
             throw new Error('Not found');
         }

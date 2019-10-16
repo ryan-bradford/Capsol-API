@@ -6,7 +6,7 @@ import {
     IPersistedHomeowner, IStoredHomeowner, IPersistedUser, isInvestor,
     StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment,
 } from '@entities';
-import { assert } from 'console';
+import { strict as assert } from 'assert';
 
 export interface IRequestService {
 
@@ -28,7 +28,6 @@ export class RequestService implements IRequestService {
     public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void> {
         const newRequest = new StorableRequest(amount, new Date(), user.id, 'purchase');
         await this.requestDao.createRequest(newRequest);
-        await this.handleRequests();
         return;
     }
 
@@ -37,7 +36,6 @@ export class RequestService implements IRequestService {
         // Literally only creates a sell request with the user ID and amount
         const newRequest = new StorableRequest(amount, new Date(), user.id, 'sell');
         await this.requestDao.createRequest(newRequest);
-        await this.handleRequests();
         return;
     }
 
@@ -54,8 +52,6 @@ export class RequestService implements IRequestService {
         const allContracts = (await this.contractDao.getContracts())
             .filter((contract) => !contract.isFulfilled)
             .sort((a, b) => b.unsoldAmount / b.saleAmount - a.unsoldAmount / a.saleAmount);
-        assert(allPurchaseRequests.length - 1 <= 0 || allSellRequests.length + allContracts.length - 1 <= 0,
-            `${allPurchaseRequests.length}, ${allSellRequests.length + allContracts.length}`);
         let currentPurchase = allPurchaseRequests.pop();
         let currentSell: (IPersistedRequest | IPersistedContract | undefined) =
             allSellRequests.pop() || allContracts.pop();
@@ -102,7 +98,6 @@ export class RequestService implements IRequestService {
             while (amount > 0) {
                 const curInvestment = investments.pop();
                 if (!curInvestment) {
-                    logger.error(String(amount));
                     throw new Error('SEVERE');
                 }
                 if (curInvestment.value > amount) {
@@ -119,7 +114,6 @@ export class RequestService implements IRequestService {
                 }
             }
         } else if (isHomeowner(from)) {
-            logger.info(JSON.stringify(from));
             from = (from as IPersistedHomeowner);
             if (!from.id) {
                 throw new Error('bad user');
@@ -130,8 +124,11 @@ export class RequestService implements IRequestService {
             }
             const contract = contracts[0];
             const toCreate = new StorableInvestment(contract.id, amount, to.id);
+            const oldValue = contract.unsoldAmount;
             const newInvestment = await this.investmentDao.createInvestment(toCreate);
             contract.investments.push(newInvestment);
+            assert(Math.round(oldValue - amount) === Math.round(contract.unsoldAmount),
+                `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount}`);
             return newInvestment;
         }
     }
@@ -139,20 +136,19 @@ export class RequestService implements IRequestService {
 
     private async mergeInvestments(): Promise<void> {
         const investments = await this.investmentDao.getInvestments();
-        const investorContractToInvestment: Map<[number, number], IPersistedInvestment> = new Map();
-        await Promise.all(investments.map(async (investment) => {
-            const key: [number, number] = [investment.contract.id, investment.owner.id];
+        const investorContractToInvestment: Map<string, IPersistedInvestment> = new Map();
+        for (const investment of investments) {
+            const key: string = `${investment.contract.id}, ${investment.owner.id}`;
+            const key2 = [investment.contract.id, investment.owner.id];
             const current = investorContractToInvestment.get(key);
             if (!current) {
                 investorContractToInvestment.set(key, investment);
-                return;
             } else {
                 current.percentage += investment.percentage;
                 await this.investmentDao.deleteInvestment(investment.id);
                 await this.investmentDao.saveInvestment(current);
-                return;
             }
-        }));
+        }
         return;
     }
 }

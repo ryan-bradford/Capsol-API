@@ -93,9 +93,8 @@ describe('AuthRouter', () => {
             };
             // Call API
             callApi(creds)
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
@@ -105,7 +104,7 @@ describe('AuthRouter', () => {
 class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
 
 
-    public getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
+    public getOneByEmail(emailOrId: string): Promise<IPersistedInvestor | null> {
         if (emailOrId === '3@gmail.com') {
             throw new Error('Database query failed.');
         } else if (emailOrId === 'jsmith@gmail.com') {
@@ -120,6 +119,11 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
     }
 
 
+    public getOne(email: string): Promise<IPersistedInvestor | null> {
+        return Promise.resolve(null);
+    }
+
+
     public getAll(): Promise<IPersistedInvestor[]> {
         throw new Error('Not impl');
     }
@@ -130,7 +134,7 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
     }
 
 
-    public delete(id: number): Promise<void> {
+    public delete(id: string): Promise<void> {
         throw new Error('Not impl');
     }
 
@@ -145,6 +149,11 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
     }
 
 
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
     public getAll(): Promise<IPersistedHomeowner[]> {
         throw new Error('Not impl');
     }
@@ -155,7 +164,7 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
     }
 
 
-    public delete(id: number): Promise<void> {
+    public delete(id: string): Promise<void> {
         throw new Error('Not impl');
     }
 

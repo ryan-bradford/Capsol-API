@@ -3,19 +3,24 @@ import { BAD_REQUEST, CREATED, OK, NOT_FOUND } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
 import { IUserDao } from '@daos';
-import { IInvestmentService } from '@services';
+import { IInvestmentService, IRequestService } from '@services';
 import { IPersistedInvestor, IStoredInvestor } from '@entities';
 import InvestorController from 'src/controller/Investor';
 
 
 // Init shared
-export default (investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>, investmentService: IInvestmentService) => {
+export default (
+    investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+    investmentService: IInvestmentService,
+    requestService: IRequestService) => {
     const router = Router();
-    const controller = new InvestorController(investorDao, investmentService);
+    const controller = new InvestorController(investorDao, investmentService, requestService);
 
     router.get('', adminMW, (req, res) => controller.getAll(req, res));
 
     router.post('', adminMW, (req, res) => controller.addInvestor(req, res));
+
+    router.post('/update', adminMW, (req, res) => controller.handleInvestments(req, res));
 
     router.get('/:email', adminMW, (req, res) => controller.getInvestor(req, res));
 

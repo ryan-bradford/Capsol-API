@@ -4,8 +4,6 @@ import {
     PersistedUser, PersistedInvestment,
 } from '@entities';
 import { IPersistedRequest, PersistedRequest } from 'src/entities/investment/request/PersistedRequest';
-import { IPersistedHomeowner } from '../homeowner/PersistedHomeowner';
-import { IStoredInvestor, StoredInvestor } from './StoredInvestor';
 
 export interface IPersistedInvestor extends IPersistedUser {
     requests: IPersistedRequest[];

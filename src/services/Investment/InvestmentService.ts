@@ -1,17 +1,17 @@
 import {
-    IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest,
+    IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest, PersistedInvestment,
 } from '@entities';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { IRequestService, RequestService } from '@services';
-import { IUserDao } from '@daos';
+import { IUserDao, IInvestmentDao } from '@daos';
 import { SqlInvestorDao } from 'src/daos/user/InvestorDao';
 import { getRepository } from 'typeorm';
 import { logger } from '@shared';
 
 export interface IInvestmentService {
-    addFunds(userId: number, amount: number): Promise<IPersistedInvestment[]>;
-    sellInvestments(userId: number, amount: number): Promise<void>;
-    getPortfolioValue(userId: number): Promise<number>;
+    addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]>;
+    sellInvestments(userId: string, amount: number): Promise<void>;
+    getPortfolioValue(userId: string): Promise<number>;
 }
 
 export class InvestmentService implements IInvestmentService {
@@ -19,10 +19,11 @@ export class InvestmentService implements IInvestmentService {
 
     constructor(
         private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        private investmentDao: IInvestmentDao,
         private requestService: IRequestService) { }
 
 
-    public async addFunds(userId: number, amount: number): Promise<IPersistedInvestment[]> {
+    public async addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]> {
         const user = await this.investorDao.getOne(userId);
         if (!user) {
             throw new Error('Not found');
@@ -32,7 +33,7 @@ export class InvestmentService implements IInvestmentService {
     }
 
 
-    public async sellInvestments(userId: number, amount: number): Promise<void> {
+    public async sellInvestments(userId: string, amount: number): Promise<void> {
         const user = await this.investorDao.getOne(userId);
         if (!user) {
             throw new Error('Not found');
@@ -42,13 +43,19 @@ export class InvestmentService implements IInvestmentService {
     }
 
 
-    public async getPortfolioValue(userId: number): Promise<number> {
-        const result = await getRepository(PersistedRequest)
+    public async getPortfolioValue(userId: string): Promise<number> {
+        const [requestValue, investments] = await Promise.all([getRepository(PersistedRequest)
             .createQueryBuilder('request')
             .where('request.investorId = :userId', { userId })
-            .select('SUM(request.amount)')
-            .getOne();
-        return result as unknown as number;
+            .where('request.type = "purchase"')
+            .select('SUM(request.amount)', 'sum')
+            .getRawOne(),
+        this.investmentDao.getInvestments(userId)]);
+        let investmentValue = 0;
+        investments.forEach((investment) => {
+            investmentValue += investment.value;
+        });
+        return Number(requestValue.sum) + Number(investmentValue) as number;
     }
 
 }

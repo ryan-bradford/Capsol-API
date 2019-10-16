@@ -1,12 +1,12 @@
 import { IInvestmentDao, IContractDao, IUserDao, getDaos } from '@daos';
 import {
     IPersistedHomeowner, IStorableHomeowner, IPersistedInvestor,
-    IStorableInvestor, IPersistedContract, IStorableInvestment,
-    StorableInvestor, StorableHomeowner, StorableContract,
-    IPersistedRequest,
-    IStorableRequest,
+    IStorableInvestor, StorableInvestor, StorableHomeowner,
 } from '@entities';
-import { IInvestmentService, InvestmentService, IContractService, ContractService, RequestService } from '@services';
+import {
+    IInvestmentService, InvestmentService, IContractService, ContractService,
+    RequestService, IRequestService,
+} from '@services';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { expect } from 'chai';
 
@@ -19,6 +19,7 @@ describe('Investment Service', () => {
     let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     let investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>;
     let investmentService: IInvestmentService;
+    let requestService: IRequestService;
     let contractService: IContractService;
     let investor: IPersistedInvestor;
     let homeowner: IPersistedHomeowner;
@@ -30,11 +31,11 @@ describe('Investment Service', () => {
             investmentDao = new daos.SqlInvestmentDao();
             investorDao = new daos.SqlInvestorDao();
             requestDao = new daos.SqlRequestDao();
-            const requestService = new RequestService(requestDao, investmentDao, contractDao);
+            requestService = new RequestService(requestDao, investmentDao, contractDao);
             contractService = new ContractService(homeownerDao, contractDao, requestService);
-            investmentService = new InvestmentService(investorDao, requestService);
+            investmentService = new InvestmentService(investorDao, investmentDao, requestService);
             return daos.clearDatabase();
-        }).then((result) => {
+        }).then(() => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));
         }).then((newInvestor) => {
             investor = newInvestor;
@@ -46,7 +47,7 @@ describe('Investment Service', () => {
     });
 
     it('should create a purchase requests', (done) => {
-        investmentService.addFunds(investor.id, 100).then((result) => {
+        investmentService.addFunds(investor.id, 100).then(() => {
             done();
         });
     });
@@ -68,11 +69,13 @@ describe('Investment Service', () => {
 
 
     it('should give the sell request', (done) => {
-        contractDao.getContracts().then((result) => {
-            expect(result.length).to.be.equal(1);
-            expect(result[0].unsoldAmount).to.be.equal(400);
-            done();
-        });
+        requestService.handleRequests()
+            .then(() => contractDao.getContracts())
+            .then((result) => {
+                expect(result.length).to.be.equal(1);
+                expect(result[0].unsoldAmount).to.be.equal(400);
+                done();
+            });
     });
 
     it('should not return the purchase request', (done) => {
@@ -91,36 +94,38 @@ describe('Investment Service', () => {
     });
 
     it('should create a purchase requests', (done) => {
-        investmentService.addFunds(investor.id, 600).then((result) => {
+        investmentService.addFunds(investor.id, 600).then(() => {
             done();
         });
     });
 
     it('should return the purchase request', (done) => {
-        requestDao.getRequests().then((requests) => {
-            expect(requests.length).to.be.equal(1);
-            expect(requests[0].amount).to.be.equal(200);
-            done();
-        });
+        requestService.handleRequests()
+            .then(() => requestDao.getRequests())
+            .then((requests) => {
+                expect(requests.length).to.be.equal(1);
+                expect(requests[0].amount).to.be.equal(200);
+                done();
+            });
     });
 
     it('should return the new investment', (done) => {
         investmentDao.getInvestments().then((investments) => {
-            expect(investments.length).to.be.equal(2);
-            expect(investments.map(((investment) => investment.percentage))).to.contain(0.2).and.to.contain(0.8);
+            expect(investments.length).to.be.equal(1);
+            expect(investments[0].percentage).to.be.equal(1);
             done();
         });
     });
 
     it('should sell the investment to satisfy purchase requests', (done) => {
-        investmentService.sellInvestments(investor.id, 200).then((result) => {
-            done();
-        });
+        investmentService.sellInvestments(investor.id, 200)
+            .then(() => requestService.handleRequests())
+            .then(() => done());
     });
 
     it('should not return the new investment', (done) => {
         investmentDao.getInvestments().then((investments) => {
-            expect(investments.length).to.be.equal(3);
+            expect(investments.length).to.be.equal(1);
             let total = 0;
             investments.forEach((investment) => total += Number(investment.percentage));
             expect(total).to.be.equal(1);
@@ -143,14 +148,21 @@ describe('Investment Service', () => {
     });
 
     it('should allow a homeowner to make a payment', (done) => {
-        contractService.makePayment(homeowner.email).then((result) => {
+        contractService.makePayment(homeowner.email)
+            .then(() => requestService.handleRequests())
+            .then(() => done());
+    });
+
+    it('should have a length of one less', (done) => {
+        contractDao.getContracts().then((contracts) => {
+            expect(contracts[0].length).to.be.equal(239);
             done();
         });
     });
 
     it('should not return the purchase request resulting from the payment', (done) => {
         requestDao.getRequests().then((requests) => {
-            expect(requests.length).to.be.equal(3);
+            expect(requests.length).to.be.equal(1);
             let total = 0;
             requests.forEach((request) => total += Number(request.amount));
             expect(total).to.be.equal(4);

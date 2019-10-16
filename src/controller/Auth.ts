@@ -22,57 +22,43 @@ export default class AuthController {
 
 
     public async login(req: Request, res: Response) {
-        try {
-            // Check email and password present
-            const { email, password } = req.body;
-            if (!(email && password)) {
-                return res.status(BAD_REQUEST).json({
-                    error: paramMissingError,
-                });
-            }
-            // Fetch user
-            const homeowner = await this.homeownerDao.getOne(email);
-            const investor = await this.investorDao.getOne(email);
-            const user = homeowner ? homeowner : investor;
-            if (!user) {
-                return res.status(UNAUTHORIZED).json({
-                    error: loginFailedErr,
-                });
-            }
-            // Check password
-            const pwdPassed = await bcrypt.compare(password, user.pwdHash);
-            if (!pwdPassed) {
-                return res.status(UNAUTHORIZED).json({
-                    error: loginFailedErr,
-                });
-            }
-            // Setup Admin Cookie
-            const jwt = await this.jwtService.getJwt({
-                role: user.admin ? 1 : 0,
-            });
-            const { key, options } = jwtCookieProps;
-            res.cookie(key, jwt, options);
-            // Return
-            return res.status(OK).end();
-        } catch (err) {
-            logger.error(err.message, err);
+        // Check email and password present
+        const { email, password } = req.body;
+        if (!(email && password)) {
             return res.status(BAD_REQUEST).json({
-                error: err.message,
+                error: paramMissingError,
             });
         }
+        // Fetch user
+        const homeowner = await this.homeownerDao.getOneByEmail(email);
+        const investor = await this.investorDao.getOneByEmail(email);
+        const user = homeowner ? homeowner : investor;
+        if (!user) {
+            return res.status(UNAUTHORIZED).json({
+                error: loginFailedErr,
+            });
+        }
+        // Check password
+        const pwdPassed = await bcrypt.compare(password, user.pwdHash);
+        if (!pwdPassed) {
+            return res.status(UNAUTHORIZED).json({
+                error: loginFailedErr,
+            });
+        }
+        // Setup Admin Cookie
+        const jwt = await this.jwtService.getJwt({
+            role: user.admin ? 1 : 0,
+        });
+        const { key, options } = jwtCookieProps;
+        res.cookie(key, jwt, options);
+        // Return
+        return res.status(OK).end();
     }
 
 
     public async logout(req: Request, res: Response) {
-        try {
-            const { key, options } = jwtCookieProps;
-            res.clearCookie(key, options);
-            return res.status(OK).end();
-        } catch (err) {
-            logger.error(err.message, err);
-            return res.status(BAD_REQUEST).json({
-                error: err.message,
-            });
-        }
+        const { key, options } = jwtCookieProps;
+        res.clearCookie(key, options);
+        return res.status(OK).end();
     }
 }

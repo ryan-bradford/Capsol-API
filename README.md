@@ -1,10 +1,14 @@
 TODO:
 
 Add more tests<br>
+    getPortfolioValue
+    makePayment
+    takeAssets
+    transferInvestment
+    saveInvestment
 Comment shit<br>
 Migrate away from typeorm<br>
 Add concept of transaction history<br>
-Change user id to VARCHAR<br>
 Change deleted to table field<br>
 Add validation to entities in routers<br>
 Design better error handling<br>

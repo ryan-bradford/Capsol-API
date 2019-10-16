@@ -1,8 +1,7 @@
-import { PrimaryColumn, Column, OneToMany, JoinColumn, Entity, TableInheritance } from 'typeorm';
-import { IPersistedRequest, PersistedRequest } from 'src/entities/investment/request/PersistedRequest';
+import { Column, Entity, TableInheritance, PrimaryGeneratedColumn } from 'typeorm';
 
 export interface IPersistedUser {
-    id: number;
+    id: string;
     name: string;
     email: string;
     pwdHash: string;
@@ -13,8 +12,8 @@ export interface IPersistedUser {
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export abstract class PersistedUser implements IPersistedUser {
 
-    @PrimaryColumn()
-    public id!: number;
+    @PrimaryGeneratedColumn('uuid')
+    public id!: string;
 
     @Column()
     public name!: string;

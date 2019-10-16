@@ -25,6 +25,7 @@ export default (
             => IContractService,
     createInvestment: (
         investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        investmentDao: IInvestmentDao,
         requestService: IRequestService) => IInvestmentService,
     createRequestService: (
         requestDao: IRequestDao,
@@ -43,8 +44,8 @@ export default (
     app.use(express.static(path.join(__dirname, 'public')));
     const requestService = createRequestService(requestDao, investmentDao, contractDao);
     const contractService = createContract(homeownerDao, contractDao, requestService);
-    const investmentService = createInvestment(investorDao, requestService);
-    app.use('', BaseRouter(homeownerDao, investorDao, contractDao, contractService, investmentService));
+    const investmentService = createInvestment(investorDao, investmentDao, requestService);
+    app.use('', BaseRouter(homeownerDao, investorDao, contractDao, contractService, investmentService, requestService));
 
 
     /**
@@ -58,3 +59,4 @@ export default (
 
     return app;
 };
+

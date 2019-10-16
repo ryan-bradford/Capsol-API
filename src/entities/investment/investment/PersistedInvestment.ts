@@ -1,8 +1,8 @@
-import { Entity, PrimaryColumn, ManyToOne, Column, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, ManyToOne, Column, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { IPersistedContract, IPersistedInvestor, PersistedContract, PersistedInvestor } from '@entities';
 
 export interface IPersistedInvestment {
-    id: number;
+    id: string;
     contract: IPersistedContract;
     percentage: number;
     owner: IPersistedInvestor;
@@ -12,8 +12,8 @@ export interface IPersistedInvestment {
 @Entity('investment')
 export class PersistedInvestment implements IPersistedInvestment {
 
-    @PrimaryColumn()
-    public id!: number;
+    @PrimaryGeneratedColumn('uuid')
+    public id!: string;
 
     @ManyToOne((type) => PersistedContract, (contract) => contract.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()

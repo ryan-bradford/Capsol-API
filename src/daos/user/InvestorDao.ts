@@ -9,11 +9,19 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
     /**
      * @param email
      */
-    public async getOne(emailOrId: string | number, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
+    public async getOne(id: string, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
         return getRepository(PersistedInvestor)
-            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId }, {
-                relations: ['investments'].concat(loadRequests ? ['requests'] : []),
-            })
+            .findOne(id)
+            .then((result) => result ? result : null);
+    }
+
+
+    /**
+     * @param email
+     */
+    public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
+        return getRepository(PersistedInvestor)
+            .findOne({ email })
             .then((result) => result ? result : null);
     }
 
@@ -35,7 +43,6 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
     public async add(user: IStorableInvestor): Promise<IPersistedInvestor> {
         const newInvestor = new PersistedInvestor();
         newInvestor.email = user.email;
-        newInvestor.id = getRandomInt();
         newInvestor.investments = [];
         newInvestor.name = user.name;
         newInvestor.pwdHash = user.pwdHash;
@@ -48,7 +55,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
      *
      * @param id
      */
-    public async delete(id: number): Promise<void> {
+    public async delete(id: string): Promise<void> {
         await getRepository(PersistedInvestor).delete(id);
         return;
     }

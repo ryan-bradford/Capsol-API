@@ -2,12 +2,12 @@ import {
     IPersistedUser, PersistedInvestor, IPersistedInvestor,
     PersistedHomeowner, IPersistedHomeowner, isInvestor, PersistedUser,
 } from '@entities';
-import { PrimaryColumn, Column, JoinColumn, ManyToOne, Entity } from 'typeorm';
+import { PrimaryColumn, Column, JoinColumn, ManyToOne, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 
 export interface IPersistedRequest {
 
-    id: number;
+    id: string;
     amount: number;
     investor: IPersistedUser;
     dateCreated: Date;
@@ -18,8 +18,8 @@ export interface IPersistedRequest {
 @Entity('request')
 export class PersistedRequest implements IPersistedRequest {
 
-    @PrimaryColumn()
-    public id!: number;
+    @PrimaryGeneratedColumn('uuid')
+    public id!: string;
 
     @Column()
     public type!: 'purchase' | 'sell';

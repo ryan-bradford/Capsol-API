@@ -1,19 +1,19 @@
 export interface IStoredInvestment {
-    id: number;
+    id: string;
     contractId: number;
     percentage: number;
-    ownerId: number;
+    ownerId: string;
 }
 
 export class StoredInvestment implements IStoredInvestment {
 
-    public id: number;
+    public id: string;
     public contractId: number;
     public percentage: number;
-    public ownerId: number;
+    public ownerId: string;
 
 
-    constructor(id: number, contractId: number, percentage: number, ownerId: number) {
+    constructor(id: string, contractId: number, percentage: number, ownerId: string) {
         this.id = id;
         this.contractId = contractId;
         this.percentage = percentage;

@@ -8,7 +8,7 @@ describe('Investor Dao', () => {
     let investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>;
     const u1 = new StorableInvestor('Mary', 'test@gmail.com', 'askjnd');
 
-    let id: number = 0;
+    let id: string = 'a';
 
     before((done) => {
         getDaos().then((daos) => {
@@ -36,7 +36,7 @@ describe('Investor Dao', () => {
     });
 
     it('should give one user', (done) => {
-        investorDao.getOne('test@gmail.com').then((result) => {
+        investorDao.getOneByEmail('test@gmail.com').then((result) => {
             expect(result).to.not.be.equal(null);
             expect((result as IPersistedInvestor).name).to.be.equal('Mary');
             done();
@@ -50,7 +50,7 @@ describe('Investor Dao', () => {
     });
 
     it('should not give a deleted user', (done) => {
-        investorDao.getOne('test@gmail.com').then((result) => {
+        investorDao.getOneByEmail('test@gmail.com').then((result) => {
             expect(result).to.be.equal(null);
             done();
         });

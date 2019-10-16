@@ -1,7 +1,7 @@
 
 import { OK, CREATED, NOT_FOUND, BAD_REQUEST } from 'http-status-codes';
 import { IUserDao } from '@daos';
-import { IInvestmentService } from '@services';
+import { IInvestmentService, IRequestService } from '@services';
 import sinon from 'sinon';
 import { Response } from 'express';
 import {
@@ -21,7 +21,7 @@ chai.use(sinonChai);
 const startInvestors: { users: IPersistedInvestor[] } = {
     users: [
         {
-            id: 1,
+            id: 'a',
             name: 'Ryan',
             email: 'test@gmail.com',
             admin: false,
@@ -32,7 +32,7 @@ const startInvestors: { users: IPersistedInvestor[] } = {
 };
 
 const nextUser: IStoredInvestor = {
-    id: 2,
+    id: 'b',
     name: 'Emma',
     email: 'blorg@gmail.com',
     pwdHash: '2',
@@ -40,19 +40,20 @@ const nextUser: IStoredInvestor = {
 };
 
 
-describe('HomeownerRouter', () => {
+describe('InvestorRouter', () => {
 
-    const homeownerPath = '/homeowners';
+    const investorPath = '/investor';
 
     let investorController: InvestorController;
 
     before(() => {
         investorController = new InvestorController(
             new MockInvestorDao(),
-            new MockInvestmentService());
+            new MockInvestmentService(),
+            new MockRequestService());
     });
 
-    describe(`"GET":${homeownerPath}`, () => {
+    describe(`"GET":${investorPath}`, () => {
 
         const callApi = async () => {
             const res = mockResponse();
@@ -77,15 +78,15 @@ describe('HomeownerRouter', () => {
         it('should return a 400', (done) => {
             sinon.stub(MockInvestorDao.prototype, 'getAll').throws(new Error('Database query failed.'));
             callApi()
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
     });
 
-    describe(`"POST":${homeownerPath}`, () => {
+    describe(`"POST":${investorPath}`, () => {
 
         const callApi = async (body?: any) => {
             const res = mockResponse();
@@ -103,10 +104,8 @@ describe('HomeownerRouter', () => {
 
         it('should fail if missing the user', (done) => {
             callApi({})
-                .then((res) => {
-                    expect(res.status.calledWith(BAD_REQUEST)).to.equal(true);
-                    expect(res.json)
-                        .to.be.calledWith({ error: 'One or more of the required parameters was missing.' });
+                .catch((error) => {
+                    expect(error.message).to.be.equal('One or more of the required parameters was missing.');
                     done();
                 });
         });
@@ -114,17 +113,16 @@ describe('HomeownerRouter', () => {
         it('should fail if the DB fails', (done) => {
             sinon.stub(MockInvestorDao.prototype, 'add').throws(new Error('Database query failed.'));
             callApi({ user: nextUser })
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
 
     });
 
-    describe(`"DELETE":${homeownerPath}/email`, () => {
+    describe(`"DELETE":${investorPath}/email`, () => {
 
         const callApi = async (email?: any) => {
             const res = mockResponse();
@@ -151,17 +149,16 @@ describe('HomeownerRouter', () => {
         it('should fail if the DB fails', (done) => {
             sinon.stub(MockInvestorDao.prototype, 'delete').throws(new Error('Database query failed.'));
             callApi('test@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
 
     });
 
-    describe(`"GET":${homeownerPath}/email`, () => {
+    describe(`"GET":${investorPath}/email`, () => {
 
         const callApi = async (email?: any) => {
             const res = mockResponse();
@@ -187,19 +184,18 @@ describe('HomeownerRouter', () => {
         });
 
         it('should fail if the DB fails', (done) => {
-            sinon.stub(MockInvestorDao.prototype, 'getOne').throws(new Error('Database query failed.'));
+            sinon.stub(MockInvestorDao.prototype, 'getOneByEmail').throws(new Error('Database query failed.'));
             callApi('test@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
 
     });
 
-    describe(`"PUT":${homeownerPath}/email/home`, () => {
+    describe(`"PUT":${investorPath}/email/home`, () => {
 
         const callApi = async (email?: any, amount?: any): Promise<Response> => {
             const res = mockResponse();
@@ -229,18 +225,16 @@ describe('HomeownerRouter', () => {
         it('should fail if the contract service fails', (done) => {
             sinon.stub(MockInvestmentService.prototype, 'addFunds').throws(new Error('Database query failed.'));
             callApi('test@gmail.com', 100)
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
 
         it('should fail if amount is not included', (done) => {
             callApi('test@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
+                .catch((error) => {
                     done();
                 });
         });
@@ -256,11 +250,20 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
 
 
     constructor() {
-        this.examples[0].id = 1;
+        this.examples[0].id = 'a';
     }
 
 
     public getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
+        if (emailOrId === 'test@gmail.com') {
+            return Promise.resolve(this.examples[0]);
+        } else {
+            return Promise.resolve(null);
+        }
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedInvestor | null> {
         if (emailOrId === 'test@gmail.com') {
             return Promise.resolve(this.examples[0]);
         } else {
@@ -279,8 +282,8 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
     }
 
 
-    public delete(id: number): Promise<void> {
-        if (id === 1) {
+    public delete(id: string): Promise<void> {
+        if (id === 'a') {
             return Promise.resolve();
         }
         throw new Error('Not found');
@@ -292,19 +295,45 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
 class MockInvestmentService implements IInvestmentService {
 
 
-    public addFunds(userId: number, amount: number): Promise<IPersistedInvestment[]> {
+    public addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]> {
         return Promise.resolve([]);
     }
 
 
-    public sellInvestments(userId: number, amount: number): Promise<void> {
+    public sellInvestments(userId: string, amount: number): Promise<void> {
         return Promise.resolve();
     }
 
 
-    public getPortfolioValue(userId: number): Promise<number> {
+    public getPortfolioValue(userId: string): Promise<number> {
         return Promise.resolve(1);
     }
 
 }
+
+
+// tslint:disable-next-line: max-classes-per-file
+class MockRequestService implements IRequestService {
+
+
+    public createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+    public createSellRequest(user: IPersistedInvestor, amount: number): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+    public handleRequests(): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+
+
+
+}
+
 

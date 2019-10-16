@@ -2,7 +2,7 @@ import { IStoredRequest } from 'src/entities/investment/request/StoredRequest';
 import { IPersistedUser } from './PersistedUser';
 
 export interface IStoredUser {
-    id: number;
+    id: string;
     name: string;
     email: string;
     pwdHash: string;
@@ -10,14 +10,14 @@ export interface IStoredUser {
 
 export abstract class StoredUser implements IStoredUser {
 
-    public id: number;
+    public id: string;
     public name: string;
     public email: string;
     public pwdHash: string;
 
 
-    constructor(id: number | IPersistedUser, name?: string, email?: string, pwdHash?: string) {
-        if (typeof id === 'number') {
+    constructor(id: string | IPersistedUser, name?: string, email?: string, pwdHash?: string) {
+        if (typeof id === 'string') {
             if (!name || !email || !pwdHash) {
                 throw new Error('Bad!');
             }

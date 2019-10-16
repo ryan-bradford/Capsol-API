@@ -48,7 +48,7 @@ describe('Contract Dao', () => {
 
     it('should give no contracts for a non existent', (done) => {
         expect(homeowner.id).to.be.not.equal(undefined);
-        contractDao.getContracts(homeowner.id - 10).then((allContracts) => {
+        contractDao.getContracts(homeowner.id + 'a').then((allContracts) => {
             expect(allContracts.length).to.be.equal(0);
             done();
         });

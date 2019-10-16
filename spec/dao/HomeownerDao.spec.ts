@@ -8,7 +8,7 @@ describe('Homeowner Dao', () => {
     let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     const u1 = new StorableHomeowner('Ryan', 'test@gmail.com', 'askjnd');
 
-    let id: number = 0;
+    let id: string = '';
 
     before((done) => {
         getDaos().then((daos) => {
@@ -36,7 +36,7 @@ describe('Homeowner Dao', () => {
     });
 
     it('should give one user', (done) => {
-        homeownerDao.getOne('test@gmail.com').then((result) => {
+        homeownerDao.getOneByEmail('test@gmail.com').then((result) => {
             expect(result).to.not.be.equal(null);
             expect((result as IPersistedHomeowner).name).to.be.equal('Ryan');
             done();
@@ -50,7 +50,7 @@ describe('Homeowner Dao', () => {
     });
 
     it('should not give a deleted user', (done) => {
-        homeownerDao.getOne('test@gmail.com').then((result) => {
+        homeownerDao.getOneByEmail('test@gmail.com').then((result) => {
             expect(result).to.be.equal(null);
             done();
         });

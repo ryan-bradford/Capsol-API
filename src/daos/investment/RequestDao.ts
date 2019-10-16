@@ -7,7 +7,7 @@ export interface IRequestDao {
 
     getRequests(): Promise<IPersistedRequest[]>;
     createRequest(toCreate: IStorableRequest): Promise<IPersistedRequest>;
-    deleteRequest(toDeleteId: number): Promise<void>;
+    deleteRequest(toDeleteId: string): Promise<void>;
     saveRequest(toSave: IPersistedRequest): Promise<void>;
 
 }
@@ -28,22 +28,21 @@ export class SqlRequestDao implements IRequestDao {
         persistedRequest.amount = toCreate.amount;
         persistedRequest.dateCreated = toCreate.dateCreated;
         persistedRequest.type = toCreate.type;
-        persistedRequest.id = getRandomInt();
         const investor = await new daos.SqlInvestorDao().getOne(toCreate.userId, false);
         persistedRequest.investor = investor as IPersistedInvestor;
-        await getRepository(PersistedRequest).save(persistedRequest);
-        return persistedRequest;
+        const toReturn = await getRepository(PersistedRequest).save(persistedRequest);
+        return toReturn;
     }
 
 
-    public async deleteRequest(toDeleteId: number): Promise<void> {
+    public async deleteRequest(toDeleteId: string): Promise<void> {
         await getRepository(PersistedRequest).delete(toDeleteId);
         return;
     }
 
 
     public async saveRequest(toSave: IPersistedRequest): Promise<void> {
-        await getRepository(PersistedRequest).save(toSave);
+        await getRepository(PersistedRequest).update(toSave.id, toSave);
         return;
     }
 }

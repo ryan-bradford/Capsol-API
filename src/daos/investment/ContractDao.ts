@@ -4,8 +4,8 @@ import { getRandomInt } from '@shared';
 import { getDaos } from '@daos';
 
 export interface IContractDao {
-    getContracts(userId?: number): Promise<IPersistedContract[]>;
-    getContract(id: number): Promise<IPersistedContract>;
+    getContracts(userId?: string): Promise<IPersistedContract[]>;
+    getContract(id: string): Promise<IPersistedContract>;
     createContract(contract: IStorableContract): Promise<IPersistedContract>;
     saveContract(contract: IPersistedContract): Promise<void>;
 }
@@ -13,7 +13,7 @@ export interface IContractDao {
 export class SqlContractDao implements IContractDao {
 
 
-    public async getContract(id: number): Promise<IPersistedContract> {
+    public async getContract(id: string): Promise<IPersistedContract> {
         return getRepository(PersistedContract).findOne(id, {
             relations: ['homeowner', 'investments'],
         }).then((contract) => {
@@ -25,7 +25,7 @@ export class SqlContractDao implements IContractDao {
     }
 
 
-    public async getContracts(userId?: number): Promise<IPersistedContract[]> {
+    public async getContracts(userId?: string): Promise<IPersistedContract[]> {
         return getRepository(PersistedContract).find({
             relations: ['homeowner', 'investments'],
         }).then((contracts: IPersistedContract[]) =>
@@ -37,10 +37,9 @@ export class SqlContractDao implements IContractDao {
         const daos = await getDaos();
         const homeownerDao = new daos.SqlHomeownerDao();
         const newContract = new PersistedContract();
-        newContract.id = getRandomInt();
         const homeowner = await homeownerDao.getOne(contract.homeownerId);
         if (!homeowner) {
-            throw new Error('Bad contract homeowner');
+            throw new Error(`Homeowner with id ${contract.homeownerId} not found.`);
         }
         newContract.homeowner = homeowner;
         newContract.investments = [];
@@ -48,14 +47,16 @@ export class SqlContractDao implements IContractDao {
         newContract.length = contract.length;
         newContract.monthlyPayment = contract.monthlyPayment;
         newContract.saleAmount = contract.saleAmount;
-        await getRepository(PersistedContract).save(newContract);
-        homeowner.contract = newContract;
-        return newContract;
+        const toReturn = await getRepository(PersistedContract).save(newContract);
+        homeowner.contract = toReturn;
+        return toReturn;
     }
 
 
     public async saveContract(contract: IPersistedContract): Promise<void> {
-        await getRepository(PersistedContract).save(contract);
+        await getRepository(PersistedContract).update(contract.id, {
+            length: contract.length,
+        });
         return;
     }
 }

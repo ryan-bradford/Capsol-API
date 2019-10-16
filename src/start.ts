@@ -12,8 +12,8 @@ getDaos().then((daos) => {
         new daos.SqlInvestmentDao(),
         new daos.SqlRequestDao(),
         (homeownerDao, contractDao, requestService) => new ContractService(homeownerDao, contractDao, requestService),
-        (investorDao, requestService) =>
-            new InvestmentService(investorDao, requestService),
+        (investorDao, investmentDao, requestService) =>
+            new InvestmentService(investorDao, investmentDao, requestService),
         (requestDao, investmentDao, contractDao) =>
             new RequestService(requestDao, investmentDao, contractDao))
         .listen(port, () => {

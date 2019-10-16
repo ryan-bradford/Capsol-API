@@ -1,27 +1,27 @@
 import { IStoredInvestment } from '@entities';
 
 export interface IStoredContract {
-    id: number;
+    id: string;
     saleAmount: number;
     length: number;
     monthlyPayment: number;
     investments: IStoredInvestment[];
-    homeownerId: number;
+    homeownerId: string;
 }
 
 export class StoredContract implements IStoredContract {
 
-    public id: number;
+    public id: string;
     public saleAmount: number;
     public length: number;
     public monthlyPayment: number;
-    public homeownerId: number;
+    public homeownerId: string;
     public investments: IStoredInvestment[];
 
 
-    constructor(id: number, saleAmount: number, length: number, monthlyPayment: number,
+    constructor(id: string, saleAmount: number, length: number, monthlyPayment: number,
         // tslint:disable-next-line: align
-        homeownerId: number, investments: IStoredInvestment[]) {
+        homeownerId: string, investments: IStoredInvestment[]) {
         this.id = id;
         this.saleAmount = saleAmount;
         this.length = length;

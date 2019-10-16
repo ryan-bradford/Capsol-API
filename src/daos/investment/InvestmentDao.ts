@@ -4,18 +4,18 @@ import { IPersistedInvestment, IStorableInvestment, PersistedInvestment, IPersis
 import { getDaos } from '@daos';
 
 export interface IInvestmentDao {
-    getInvestment(id: number): Promise<IPersistedInvestment | null>;
-    getInvestments(userId?: number): Promise<IPersistedInvestment[]>;
+    getInvestment(id: string): Promise<IPersistedInvestment | null>;
+    getInvestments(userId?: string): Promise<IPersistedInvestment[]>;
     createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment>;
-    deleteInvestment(id: number): Promise<void>;
-    transferInvestment(id: number, from: IPersistedInvestor, to: IPersistedInvestor): Promise<void>;
+    deleteInvestment(id: string): Promise<void>;
+    transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor): Promise<void>;
     saveInvestment(investment: IPersistedInvestment): Promise<void>;
 }
 
 export class SqlInvestmentDao implements IInvestmentDao {
 
 
-    public async getInvestments(userId?: number): Promise<IPersistedInvestment[]> {
+    public async getInvestments(userId?: string): Promise<IPersistedInvestment[]> {
         return getRepository(PersistedInvestment).find({
             relations: ['contract', 'owner'],
         }).then((investments) =>
@@ -23,7 +23,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
     }
 
 
-    public async getInvestment(id: number): Promise<IPersistedInvestment | null> {
+    public async getInvestment(id: string): Promise<IPersistedInvestment | null> {
         return getRepository(PersistedInvestment).findOne(id, {
             relations: ['contract', 'owner'],
         }).then((investment) => investment ? investment : null);
@@ -41,24 +41,23 @@ export class SqlInvestmentDao implements IInvestmentDao {
         }
         toSave.contract = contract;
         toSave.amount = investment.amount;
-        toSave.id = getRandomInt();
         const investor = await investorDao.getOne(investment.ownerId);
         if (!investor) {
             throw new Error('Investor not found');
         }
         toSave.owner = investor;
-        await getRepository(PersistedInvestment).save(toSave);
-        return toSave;
+        const toReturn = await getRepository(PersistedInvestment).save(toSave);
+        return toReturn;
     }
 
 
-    public async deleteInvestment(id: number): Promise<void> {
+    public async deleteInvestment(id: string): Promise<void> {
         await getRepository(PersistedInvestment).delete(id);
         return;
     }
 
 
-    public async transferInvestment(id: number, from: IPersistedInvestor, to: IPersistedInvestor): Promise<void> {
+    public async transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor): Promise<void> {
         const investment = await this.getInvestment(id);
         if (!investment) {
             throw new Error('Not found');
@@ -73,7 +72,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
 
 
     public async  saveInvestment(investment: IPersistedInvestment): Promise<void> {
-        await getRepository(PersistedInvestment).save(investment);
+        await getRepository(PersistedInvestment).update(investment.id, investment);
         return;
     }
 }

@@ -12,7 +12,7 @@ import sinon from 'sinon';
 import { logger, getRandomInt } from '@shared';
 
 const investor: IPersistedInvestor = {
-    id: 1,
+    id: 'a',
     email: 'asd',
     pwdHash: 'asd',
     name: 'asds',
@@ -45,18 +45,36 @@ describe('Request Service', () => {
     });
 
     it('should add a request and cancel out the old one', (done) => {
-        requestService.createSellRequest(investor, 100).then((result) => {
-            return requestDao.getRequests();
-        }).then((requests) => {
-            expect(requests.length).to.be.equal(0);
-            done();
-        });
+        requestService.createSellRequest(investor, 100).then(() => requestService.handleRequests())
+            .then((result) => {
+                return requestDao.getRequests();
+            }).then((requests) => {
+                expect(requests.length).to.be.equal(0);
+                done();
+            });
     });
 
     it('should add a bunch of requests', (done) => {
         requestService.createPurchaseRequest(investor, 100)
+            .then(() => requestService.handleRequests())
+            .then(() => requestDao.getRequests())
+            .then((requests) => {
+                expect(requests.length).to.be.equal(1);
+                expect(requests[0].amount).to.be.equal(100);
+                expect(requests[0].type).to.be.equal('purchase');
+                return Promise.resolve();
+            })
             .then(() => requestService.createSellRequest(investor, 200))
+            .then(() => requestService.handleRequests())
+            .then(() => requestDao.getRequests())
+            .then((requests) => {
+                expect(requests.length).to.be.equal(1);
+                expect(requests[0].amount).to.be.equal(100);
+                expect(requests[0].type).to.be.equal('sell');
+                return Promise.resolve();
+            })
             .then(() => requestService.createPurchaseRequest(investor, 50))
+            .then(() => requestService.handleRequests())
             .then(() => requestDao.getRequests())
             .then((requests) => {
                 expect(requests.length).to.be.equal(1);
@@ -66,11 +84,11 @@ describe('Request Service', () => {
             })
             .then(() => requestService.createPurchaseRequest(investor, 230))
             .then(() => requestService.createPurchaseRequest(investor, 50))
+            .then(() => requestService.handleRequests())
             .then(() => requestDao.getRequests())
             .then((requests) => {
-                expect(requests.length).to.be.equal(2);
-                expect(requests[1].amount).to.be.equal(50);
-                expect(requests[0].amount).to.be.equal(180);
+                expect(requests.length).to.be.equal(1);
+                expect(requests[0].amount).to.be.equal(230);
                 done();
             });
     });
@@ -83,12 +101,12 @@ describe('Request Service', () => {
 class MockInvestmentDao implements IInvestmentDao {
 
 
-    public getInvestment(id: number): Promise<IPersistedInvestment | null> {
+    public getInvestment(id: string): Promise<IPersistedInvestment | null> {
         return Promise.resolve(null);
     }
 
 
-    public getInvestments(userId?: number | undefined): Promise<IPersistedInvestment[]> {
+    public getInvestments(userId?: string | undefined): Promise<IPersistedInvestment[]> {
         return Promise.resolve([]);
     }
 
@@ -98,12 +116,12 @@ class MockInvestmentDao implements IInvestmentDao {
     }
 
 
-    public deleteInvestment(id: number): Promise<void> {
+    public deleteInvestment(id: string): Promise<void> {
         return Promise.resolve();
     }
 
 
-    public transferInvestment(id: number, from: IPersistedInvestor, to: IPersistedInvestor): Promise<void> {
+    public transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor): Promise<void> {
         return Promise.resolve();
     }
 
@@ -121,20 +139,20 @@ class MockContractDao implements IContractDao {
     private contracts: IPersistedContract[] = [];
 
 
-    public getContracts(userId?: number | undefined): Promise<IPersistedContract[]> {
+    public getContracts(userId?: string | undefined): Promise<IPersistedContract[]> {
         return Promise.resolve(
             Object.assign([], this.contracts.filter((contract) => !userId || contract.homeowner.id === userId)));
     }
 
 
-    public getContract(id: number): Promise<IPersistedContract> {
+    public getContract(id: string): Promise<IPersistedContract> {
         return Promise.resolve(this.contracts.filter((contract) => contract.id === id)[0]);
     }
 
 
     public createContract(contract: IStorableContract): Promise<IPersistedContract> {
         const newContract = new PersistedContract();
-        newContract.id = this.contracts.length;
+        newContract.id = String(getRandomInt());
         newContract.saleAmount = contract.saleAmount;
         newContract.startLength = contract.length;
         newContract.length = contract.length;
@@ -155,7 +173,7 @@ class MockRequestDao implements IRequestDao {
 
     private requests: IPersistedRequest[] = [
         {
-            id: 0,
+            id: '0',
             amount: 100,
             investor,
             dateCreated: new Date(),
@@ -173,7 +191,7 @@ class MockRequestDao implements IRequestDao {
         const newRequest = new PersistedRequest();
         newRequest.amount = toCreate.amount;
         newRequest.dateCreated = toCreate.dateCreated;
-        newRequest.id = getRandomInt();
+        newRequest.id = String(getRandomInt());
         newRequest.investor = investor;
         newRequest.type = toCreate.type;
         this.requests.push(newRequest);
@@ -181,7 +199,7 @@ class MockRequestDao implements IRequestDao {
     }
 
 
-    public deleteRequest(toDeleteId: number): Promise<void> {
+    public deleteRequest(toDeleteId: string): Promise<void> {
         this.requests = this.requests.filter((filterReq) => filterReq.id !== toDeleteId);
         return Promise.resolve();
     }

@@ -29,8 +29,8 @@ async function runSimulation() {
             new daos.SqlRequestDao(),
             (homeownerDao, contractDao, requestService) =>
                 new ContractService(homeownerDao, contractDao, requestService),
-            (investorDao, requestService) =>
-                new InvestmentService(investorDao, requestService),
+            (investorDao, investmentDao, requestService) =>
+                new InvestmentService(investorDao, investmentDao, requestService),
             (requestDao, investmentDao, contractDao) =>
                 new RequestService(requestDao, investmentDao, contractDao));
     await daos.clearDatabase();
@@ -53,7 +53,7 @@ async function runSimulation() {
 
     const investmentSizeMax = 10000;
     const contractSizeMax = 10000;
-    const simulationLength = 240;
+    const simulationLength = 5;
     const newInvestorNumber = 20;
     const newHomeownerNumber = 50;
     totalFunds = 0;
@@ -72,59 +72,94 @@ async function runSimulation() {
     for (let a = 0; a < 1; a++) {
         const homeownerEmail = await addHomeowner();
         await addContract(homeownerEmail, 10000);
+        const homeownerEmail2 = await addHomeowner();
+        await addContract(homeownerEmail2, 10000);
     }
 
     for (let i = 0; i < simulationLength; i++) {
-        logger.info(String(i));
-        //await tickMonth();
+        await handleRequests();
+        await tickMonth();
+        const homeownerToAdd = Math.random() * newHomeownerNumber;
+        const investorToAdd = Math.random() * newInvestorNumber;
+        for (let h = 0; h < homeownerToAdd; h++) {
+            const newEmail = await addHomeowner();
+            const contractSize = 1000 + Math.round(Math.random() * contractSizeMax);
+            await addContract(newEmail, contractSize);
+        }
+        for (let inv = 0; inv < investorToAdd; inv++) {
+            const newEmail = await addInvestor();
+            const investmentSize = 1000 + Math.round(Math.random() * investmentSizeMax);
+            investorToInvestment.set(newEmail, investmentSize);
+            await addInvestment(newEmail, investmentSize);
+        }
     }
-    /*
-        request(appInstance).get(`/investor`)
-            .set('Accept', 'application/json')
-            .set('Cookie', cookie)
-            .then((result) => {
-                let total = 0;
-                logger.info(JSON.stringify(result.body.users.map((user: any) => {
-                    total += user.portfolioValue;
-                    return Math.sqrt((user.portfolioValue / Number(investorToInvestment.get(user.email)) - 1));
-                })));
-                expect(total).to.be.equal(totalFunds);
-            });*/
+    request(appInstance).get(`/investor`)
+        .set('Accept', 'application/json')
+        .set('Cookie', cookie)
+        .then((result) => {
+            let total = 0;
+            logger.info(JSON.stringify(result.body.users.map((user: any) => {
+                total += user.portfolioValue;
+                logger.info(String(total));
+                return Math.pow((user.portfolioValue / Number(investorToInvestment.get(user.email))),
+                    1 / (simulationLength / 12));
+            })));
+        });
 }
 
 async function addInvestor(): Promise<string> {
     const newInvestor = new StorableInvestor(faker.name.findName(),
         faker.internet.email(), faker.internet.password());
-    const result = await request(appInstance).post('/investor')
+    const toReturn = await request(appInstance).post('/investor')
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
-        .send({ user: newInvestor });
-    return result.body.email;
+        .send({ user: newInvestor })
+        .catch((error) => {
+            logger.error(error);
+            process.exit();
+            throw error;
+        });
+    return toReturn.body.email;
 }
 
 async function addInvestment(investorEmail: string, amount: number): Promise<void> {
     await request(appInstance).put(`/investor/${investorEmail}/investment`)
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
-        .send({ amount });
+        .send({ amount })
+        .catch((error) => {
+            logger.error(error);
+            process.exit();
+            throw error;
+        });
     return;
 }
 
 async function addHomeowner(): Promise<string> {
     const newHomeowner = new StorableHomeowner(faker.name.findName(),
         faker.internet.email(), faker.internet.password());
-    const result = await request(appInstance).post('/homeowner')
+    const toReturn = await request(appInstance).post('/homeowner')
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
-        .send({ user: newHomeowner });
-    return result.body.email;
+        .send({ user: newHomeowner })
+        .catch((error) => {
+            logger.error(error);
+            process.exit();
+            throw error;
+        });
+    return toReturn.body.email;
 }
 
 async function addContract(homeownerEmail: string, amount: number): Promise<void> {
     await request(appInstance).put(`/homeowner/${homeownerEmail}/home`)
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
-        .send({ amount });
+        .send({ amount })
+        .catch((error) => {
+            logger.error(error);
+            process.exit();
+            throw error;
+        });
     return;
 }
 
@@ -133,11 +168,29 @@ async function tickMonth(): Promise<void> {
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
         .then((result) => {
+            if (result.status === 500) {
+                process.exit();
+            }
             return Promise.all(result.body.users.map((homeowner: IStoredHomeowner) => {
                 return makePayment(homeowner.email);
             }));
+        }).catch((error) => {
+            logger.error(error);
+            process.exit();
+            throw error;
         });
     return;
+}
+
+async function handleRequests(): Promise<void> {
+    await request(appInstance).post(`/investor/update`)
+        .set('Accept', 'application/json')
+        .set('Cookie', cookie)
+        .catch((error) => {
+            logger.error(error);
+            process.exit();
+            throw error;
+        });
 }
 
 async function makePayment(homeownerEmail: string): Promise<void> {
@@ -145,13 +198,20 @@ async function makePayment(homeownerEmail: string): Promise<void> {
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
         .then((result) => {
+            if (result.status === 500) {
+                process.exit();
+            }
             totalFunds += result.body.payment;
+        }).catch((error) => {
+            logger.error(error);
+            process.exit();
+            throw error;
         });
     return;
 }
 
 async function login(): Promise<string> {
-    sinon.stub(SqlHomeownerDao.prototype, 'getOne').returns((() => {
+    sinon.stub(SqlHomeownerDao.prototype, 'getOneByEmail').returns((() => {
         const toReturn = new PersistedHomeowner();
         toReturn.admin = true;
         toReturn.email = 'blorg';
@@ -177,8 +237,9 @@ function hashPwd(pwd: string) {
 describe('Simulation', function test() {
     this.timeout(50000);
     it('should run the simulation', (done) => {
-        runSimulation().then((result) => {
+        /*runSimulation().then((result) => {
             done();
-        });
+        });*/
+        done();
     });
 });

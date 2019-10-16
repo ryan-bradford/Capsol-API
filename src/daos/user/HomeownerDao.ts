@@ -10,11 +10,19 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
     /**
      * @param email
      */
-    public async getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+    public async getOne(id: string): Promise<IPersistedHomeowner | null> {
         return getRepository(PersistedHomeowner)
-            .findOne(typeof emailOrId === 'string' ? { email: emailOrId } : { id: emailOrId }, {
-                relations: ['contract'],
-            })
+            .findOne(id)
+            .then((result) => result ? result : null);
+    }
+
+
+    /**
+     * @param email
+     */
+    public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedHomeowner | null> {
+        return getRepository(PersistedHomeowner)
+            .findOne({ email })
             .then((result) => result ? result : null);
     }
 
@@ -37,7 +45,6 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
         const newHomeowner = new PersistedHomeowner();
         newHomeowner.contract = undefined;
         newHomeowner.email = homeowner.email;
-        newHomeowner.id = getRandomInt();
         newHomeowner.name = homeowner.name;
         newHomeowner.pwdHash = homeowner.pwdHash;
         newHomeowner.admin = false;
@@ -49,7 +56,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
      *
      * @param id
      */
-    public async delete(id: number): Promise<void> {
+    public async delete(id: string): Promise<void> {
         await getRepository(PersistedHomeowner).delete(id);
         return;
     }

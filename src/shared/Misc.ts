@@ -20,13 +20,6 @@ export const pwdSaltRounds = 12;
 
 /* Functions */
 
-export const pErr = (err: Error) => {
-    if (err) {
-        logger.error(err);
-    }
-};
-
-
 export const getRandomInt = () => {
     return Math.floor(Math.random() * 2_147_483_648);
 };

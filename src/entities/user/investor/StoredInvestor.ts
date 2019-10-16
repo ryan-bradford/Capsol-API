@@ -11,7 +11,7 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
     public portfolioValue: number;
 
 
-    constructor(id: number | IPersistedInvestor, portfolioValue: number,
+    constructor(id: string | IPersistedInvestor, portfolioValue: number,
         // tslint:disable-next-line: align
         name?: string, email?: string, pwdHash?: string) {
         super(id, name, email, pwdHash);

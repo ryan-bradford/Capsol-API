@@ -1,17 +1,17 @@
 export interface IStorableInvestment {
-    contractId: number;
+    contractId: string;
     amount: number;
-    ownerId: number;
+    ownerId: string;
 }
 
 export class StorableInvestment implements IStorableInvestment {
 
-    public contractId: number;
+    public contractId: string;
     public amount: number;
-    public ownerId: number;
+    public ownerId: string;
 
 
-    constructor(contractId: number, amount: number, ownerId: number) {
+    constructor(contractId: string, amount: number, ownerId: string) {
         this.contractId = contractId;
         this.amount = amount;
         this.ownerId = ownerId;

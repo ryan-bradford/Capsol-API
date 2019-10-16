@@ -17,8 +17,8 @@ describe('Request Dao', () => {
     let requestDao: IRequestDao;
     let storablePurchaseRequest: IStorableRequest;
     let storableSellRequest: IStorableRequest;
-    let purchaseId: number;
-    let sellId: number;
+    let purchaseId: string;
+    let sellId: string;
 
     before((done) => {
         getDaos().then((daos) => {

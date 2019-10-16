@@ -1,6 +1,6 @@
 
-import { OK, CREATED, NOT_FOUND, BAD_REQUEST } from 'http-status-codes';
-import { pErr, logger, pwdSaltRounds } from '@shared';
+import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
+import { logger, pwdSaltRounds } from '@shared';
 import { IUserDao, getDaos } from '@daos';
 import { IContractService, InvestmentService, RequestService } from '@services';
 import bcrypt from 'bcrypt';
@@ -20,7 +20,7 @@ chai.use(sinonChai);
 const startHomeowners = {
     users: [
         {
-            id: 1,
+            id: 'a',
             name: 'Ryan',
             email: 'test@gmail.com',
             admin: false,
@@ -31,7 +31,7 @@ const startHomeowners = {
 };
 
 const nextUser = {
-    id: 2,
+    id: 'b',
     name: 'Emma',
     email: 'blorg@gmail.com',
     pwdHash: '2',
@@ -55,7 +55,7 @@ describe('HomeownerRouter', () => {
             const requestDao = new realDaos.SqlRequestDao();
             const contractService = new MockContractService();
             const requestService = new RequestService(requestDao, investmentDao, contractDao);
-            const investmentService = new InvestmentService(investorDao, requestService);
+            const investmentService = new InvestmentService(investorDao, investmentDao, requestService);
             homeownerController = new HomeownerController(
                 homeownerDao,
                 investorDao,
@@ -86,9 +86,9 @@ describe('HomeownerRouter', () => {
         it('should return a 400', (done) => {
             sinon.stub(MockHomeownerDao.prototype, 'getAll').throws(new Error('Database query failed.'));
             callApi()
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
@@ -112,10 +112,8 @@ describe('HomeownerRouter', () => {
 
         it('should fail if missing the user', (done) => {
             callApi({})
-                .then((res) => {
-                    expect(res.status.calledWith(BAD_REQUEST)).to.equal(true);
-                    expect(res.json)
-                        .to.be.calledWith({ error: 'One or more of the required parameters was missing.' });
+                .catch((error) => {
+                    expect(error.message).to.be.equal('One or more of the required parameters was missing.');
                     done();
                 });
         });
@@ -123,10 +121,9 @@ describe('HomeownerRouter', () => {
         it('should fail if the DB fails', (done) => {
             sinon.stub(MockHomeownerDao.prototype, 'add').throws(new Error('Database query failed.'));
             callApi({ user: nextUser })
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
@@ -160,10 +157,9 @@ describe('HomeownerRouter', () => {
         it('should fail if the DB fails', (done) => {
             sinon.stub(MockHomeownerDao.prototype, 'delete').throws(new Error('Database query failed.'));
             callApi('test@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
@@ -196,12 +192,11 @@ describe('HomeownerRouter', () => {
         });
 
         it('should fail if the DB fails', (done) => {
-            sinon.stub(MockHomeownerDao.prototype, 'getOne').throws(new Error('Database query failed.'));
+            sinon.stub(MockHomeownerDao.prototype, 'getOneByEmail').throws(new Error('Database query failed.'));
             callApi('test@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
@@ -237,18 +232,16 @@ describe('HomeownerRouter', () => {
         it('should fail if the contract service fails', (done) => {
             sinon.stub(MockContractService.prototype, 'createContract').throws(new Error('Database query failed.'));
             callApi('test@gmail.com', 100)
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
-                    expect(res.json).to.be.calledWith({ error: 'Database query failed.' });
+                .catch((error) => {
                     sinon.restore();
+                    expect(error.message).to.be.equal('Database query failed.');
                     done();
                 });
         });
 
         it('should fail if amount is not included', (done) => {
             callApi('test@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(BAD_REQUEST);
+                .catch((error) => {
                     done();
                 });
         });
@@ -264,11 +257,20 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
 
 
     constructor() {
-        this.examples[0].id = 1;
+        this.examples[0].id = 'a';
     }
 
 
     public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        if (emailOrId === 'test@gmail.com') {
+            return Promise.resolve(this.examples[0]);
+        } else {
+            return Promise.resolve(null);
+        }
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
         if (emailOrId === 'test@gmail.com') {
             return Promise.resolve(this.examples[0]);
         } else {
@@ -287,8 +289,8 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
     }
 
 
-    public delete(id: number): Promise<void> {
-        if (id === 1) {
+    public delete(id: string): Promise<void> {
+        if (id === 'a') {
             return Promise.resolve();
         }
         throw new Error('Not found');
@@ -300,10 +302,10 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
 class MockContractService implements IContractService {
 
 
-    public createContract(amount: number, userId: number):
+    public createContract(amount: number, userId: string):
         Promise<IPersistedContract> {
         const toReturn = new PersistedContract();
-        toReturn.id = 5;
+        toReturn.id = 'b';
         toReturn.investments = [];
         toReturn.length = 20;
         toReturn.saleAmount = amount;
