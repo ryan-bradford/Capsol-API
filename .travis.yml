@@ -23,7 +23,7 @@ env:
   jobs:
     - NODE_ENV=test
 before_install:
-  - mysql -e 'CREATE DATABASE solar_test;'
+  - mysql -e 'CREATE DATABASE SOLAR_TEST;'
 install:
   - npm install
 script:
