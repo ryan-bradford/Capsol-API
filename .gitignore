@@ -5,3 +5,4 @@ dist
 logs
 .nyc_output
 coverage
+.env

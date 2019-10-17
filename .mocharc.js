@@ -7,7 +7,6 @@ module.exports = {
     ],
     spec: "spec/**/*.spec.ts",
     require: [
-        "./env",
         "ts-node/register",
         "tsconfig-paths/register",
         "source-map-support/register"
