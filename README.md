@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/ryan-bradford/solar-investment.svg?branch=master)](https://travis-ci.org/ryan-bradford/solar-investment)
+
+
 TODO:
 
 Add code cov stuff<br>
