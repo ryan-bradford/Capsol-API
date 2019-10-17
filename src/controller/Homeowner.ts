@@ -73,9 +73,9 @@ export default class HomeownerController {
 
     public async makePayment(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
-        let payment = await this.contractService.makePayment(email);
+        const payment = await this.contractService.makePayment(email);
         if (payment === null) {
-            payment = 0;
+            return res.status(203).end();
         }
         return res.status(OK).send({ payment });
     }

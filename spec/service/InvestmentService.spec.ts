@@ -88,7 +88,7 @@ describe('Investment Service', () => {
     it('should return the new investment', (done) => {
         investmentDao.getInvestments().then((investments) => {
             expect(investments.length).to.be.equal(1);
-            expect(investments[0].percentage).to.be.equal(0.2);
+            expect(investments[0].amount).to.be.equal(100);
             done();
         });
     });
@@ -112,7 +112,7 @@ describe('Investment Service', () => {
     it('should return the new investment', (done) => {
         investmentDao.getInvestments().then((investments) => {
             expect(investments.length).to.be.equal(1);
-            expect(investments[0].percentage).to.be.equal(1);
+            expect(investments[0].amount).to.be.equal(500);
             done();
         });
     });
@@ -127,8 +127,8 @@ describe('Investment Service', () => {
         investmentDao.getInvestments().then((investments) => {
             expect(investments.length).to.be.equal(1);
             let total = 0;
-            investments.forEach((investment) => total += Number(investment.percentage));
-            expect(total).to.be.equal(1);
+            investments.forEach((investment) => total += Number(investment.amount));
+            expect(total).to.be.equal(500);
             done();
         });
     });

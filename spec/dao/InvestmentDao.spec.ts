@@ -41,7 +41,7 @@ describe('Investment Dao', () => {
 
     it('should add an investment', (done) => {
         investmentDao.createInvestment(storableInvestment).then((result) => {
-            expect(result.percentage).to.be.equal(1);
+            expect(result.amount).to.be.equal(1000);
             done();
         });
     });

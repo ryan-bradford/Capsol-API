@@ -4,7 +4,7 @@ import { IPersistedContract, IPersistedInvestor, PersistedContract, PersistedInv
 export interface IPersistedInvestment {
     id: string;
     contract: IPersistedContract;
-    percentage: number;
+    amount: number;
     owner: IPersistedInvestor;
     readonly value: number;
 }
@@ -22,20 +22,12 @@ export class PersistedInvestment implements IPersistedInvestment {
     @Column()
     public amount!: number;
 
-    get percentage() {
-        return this.amount / this.contract.saleAmount;
-    }
-
-    set percentage(newPercentage: number) {
-        this.amount = this.contract.saleAmount * newPercentage;
-    }
-
     @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()
     public owner!: IPersistedInvestor;
 
     public get value(): number {
-        return this.percentage *
+        return this.amount / this.contract.saleAmount *
             (this.contract.saleAmount - this.contract.depreciationValue * this.contract.yearsPassed);
     }
 }

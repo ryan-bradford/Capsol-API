@@ -41,12 +41,13 @@ export class ContractService implements IContractService {
                 throw new Error('Bad request');
             }
             const contract = contracts[0];
+            logger.info(String([contract.isFulfilled, contract.id]));
             if (!contract.isFulfilled || !contract.length) {
                 return null;
             }
             await Promise.all(contract.investments.map(async (investment) => {
                 await this.requestService.createPurchaseRequest(investment.owner,
-                    investment.percentage * contract.monthlyPayment);
+                    investment.amount / contract.saleAmount * contract.monthlyPayment);
                 return;
             }));
             contract.length -= 1;

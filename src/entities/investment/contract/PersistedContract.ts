@@ -57,8 +57,8 @@ export class PersistedContract implements IPersistedContract {
     }
 
     get unsoldAmount(): number {
-        let toReturn = 1;
-        this.investments.forEach((investment) => toReturn -= Number(investment.percentage));
-        return this.saleAmount * toReturn;
+        let toReturn = this.saleAmount;
+        this.investments.forEach((investment) => toReturn -= Number(investment.amount));
+        return toReturn;
     }
 }

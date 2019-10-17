@@ -86,12 +86,14 @@ async function runSimulation() {
             const contractSize = 1000 + Math.round(Math.random() * contractSizeMax);
             await addContract(newEmail, contractSize);
         }
-        for (let inv = 0; inv < investorToAdd; inv++) {
-            const newEmail = await addInvestor();
-            const investmentSize = 1000 + Math.round(Math.random() * investmentSizeMax);
-            investorToInvestment.set(newEmail, investmentSize);
-            investorToJoinTime.set(newEmail, i + 1);
-            await addInvestment(newEmail, investmentSize);
+        if (i < simulationLength / 2) {
+            for (let inv = 0; inv < investorToAdd; inv++) {
+                const newEmail = await addInvestor();
+                const investmentSize = 1000 + Math.round(Math.random() * investmentSizeMax);
+                investorToInvestment.set(newEmail, investmentSize);
+                investorToJoinTime.set(newEmail, i + 1);
+                await addInvestment(newEmail, investmentSize);
+            }
         }
     }
     request(appInstance).get(`/investor`)
@@ -99,16 +101,16 @@ async function runSimulation() {
         .set('Cookie', cookie)
         .then((result) => {
             let totalInterest = 0;
-            logger.info(JSON.stringify(result.body.users.map((user: any) => {
+            result.body.users.map((user: any) => {
                 const initInvestment = Number(investorToInvestment.get(user.email));
                 let joinTime = Number(investorToJoinTime.get(user.email));
                 joinTime = joinTime === simulationLength ? joinTime - 1 : joinTime;
-                logger.info(String([joinTime, initInvestment]));
                 const interest = Math.pow((user.portfolioValue / initInvestment),
                     1 / ((simulationLength - joinTime) / 12));
+                // logger.info(String([joinTime, user.portfolioValue, initInvestment, interest, user.id]));
                 totalInterest += interest;
                 return interest;
-            })));
+            });
             logger.info(String(totalInterest / result.body.users.length));
         });
 }
@@ -240,8 +242,9 @@ async function login(): Promise<string> {
 function hashPwd(pwd: string) {
     return bcrypt.hashSync(pwd, pwdSaltRounds);
 }
+
 describe('Simulation', function test() {
-    this.timeout(50000);
+    this.timeout(500000);
     it('should run the simulation', (done) => {
         runSimulation().then((result) => {
             done();

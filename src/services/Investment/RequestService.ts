@@ -144,7 +144,7 @@ export class RequestService implements IRequestService {
             if (!current) {
                 investorContractToInvestment.set(key, investment);
             } else {
-                current.percentage += investment.percentage;
+                current.amount += investment.amount;
                 await this.investmentDao.deleteInvestment(investment.id);
                 await this.investmentDao.saveInvestment(current);
             }
