@@ -8,7 +8,6 @@ cache:
     - "node_modules"
 env:
   global:
-    - NODE_ENV=test
     - PORT=3000
     - HOST=localhost
     - USE_TEST_DB=true
@@ -20,6 +19,9 @@ env:
     - SECURE_COOKIE=false
     - JWT_SECRET=gssuKYUn
     - COOKIE_SECRET=FBQ8iZ5cY6kCFgsg
+    - IS_TRAVIS=true
+  jobs:
+    - NODE_ENV=test
 before_install:
   - mysql -e 'CREATE DATABASE solar_test;'
 install:
