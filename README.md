@@ -1,5 +1,6 @@
 TODO:
 
+Add code cov stuff<br>
 Add more tests<br>
     getPortfolioValue
     makePayment
@@ -7,7 +8,8 @@ Add more tests<br>
     transferInvestment
     saveInvestment
 Comment shit<br>
-Migrate away from typeorm<br>
+Improve speed of everything<br>
+Migrate away from typeorm???<br>
 Add concept of transaction history<br>
 Change deleted to table field<br>
 Add validation to entities in routers<br>

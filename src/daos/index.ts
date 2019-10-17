@@ -8,6 +8,7 @@ import { createConnection, getRepository, getConnectionManager } from 'typeorm';
 import {
     PersistedHomeowner, PersistedInvestor,
 } from '@entities';
+import { logger } from '@shared';
 
 async function getDaos() {
     if (getConnectionManager().connections.length === 0) {
@@ -22,6 +23,7 @@ async function getDaos() {
 
 async function clearDatabase() {
     if (process.env.NODE_ENV !== 'test' || process.env.USE_TEST_DB !== 'true') {
+        logger.info(String([process.env.NODE_ENV, process.env.USE_TEST_DB]));
         throw new Error('Please do not do this');
     }
     await getRepository(PersistedHomeowner).find().then((homeowners) => {

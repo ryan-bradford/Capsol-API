@@ -41,7 +41,6 @@ export class ContractService implements IContractService {
                 throw new Error('Bad request');
             }
             const contract = contracts[0];
-            logger.info(String([contract.isFulfilled, contract.id]));
             if (!contract.isFulfilled || !contract.length) {
                 return null;
             }

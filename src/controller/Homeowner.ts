@@ -79,4 +79,13 @@ export default class HomeownerController {
         }
         return res.status(OK).send({ payment });
     }
+
+
+    public async makeAllPayments(req: Request, res: Response) {
+        const allContracts = await this.contractDao.getContracts();
+        allContracts.forEach((contract) => {
+            this.contractService.makePayment(contract.homeowner.email);
+        });
+        return res.status(OK).send();
+    }
 }

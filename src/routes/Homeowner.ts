@@ -23,6 +23,8 @@ export default (
 
     router.post('', adminMW, (req, res) => controller.addUser(req, res));
 
+    router.post('/payments', adminMW, (req, res) => controller.makeAllPayments(req, res));
+
     router.get('/:email', adminMW, (req, res) => controller.getUser(req, res));
 
     router.delete('/:email', adminMW, (req, res) => controller.deleteUser(req, res));
