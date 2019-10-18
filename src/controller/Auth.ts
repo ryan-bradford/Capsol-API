@@ -6,7 +6,6 @@ import { BAD_REQUEST, UNAUTHORIZED, OK } from 'http-status-codes';
 import {
     paramMissingError,
     loginFailedErr,
-    logger,
     jwtCookieProps,
     JwtService,
 } from '@shared';
@@ -18,12 +17,19 @@ export default class AuthController {
     private jwtService = new JwtService();
 
 
+    /**
+     * Creates a `AuthController` using the given investorDao and homeownerDao.
+     */
     constructor(
         @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>) {
     }
 
 
+    /**
+     * Logs a user in given email and password in the request body.
+     * Outputs the cookie response in the given res.
+     */
     public async login(req: Request, res: Response) {
         // Check email and password present
         const { email, password } = req.body;
@@ -59,6 +65,9 @@ export default class AuthController {
     }
 
 
+    /**
+     * Logs the user out whose JWT in stored in the given res.
+     */
     public async logout(req: Request, res: Response) {
         const { key, options } = jwtCookieProps;
         res.clearCookie(key, options);

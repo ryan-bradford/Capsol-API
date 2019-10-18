@@ -23,8 +23,6 @@ export default () => {
 
     router.put('/:email/home', adminMW, (req, res) => controller.signUpHome(req, res));
 
-    router.put('/:email/payment', adminMW, (req, res) => controller.makePayment(req, res));
-
     return router;
 
 };

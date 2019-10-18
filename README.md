@@ -4,7 +4,6 @@
 
 TODO:
 
-Strange bug where investment value shows as double when first purchased<br>
 Strange bug with far too much investment transfer<br>
 Include fee in graph<br>
 Add sell investment API endpoint<br>
@@ -16,7 +15,7 @@ Add more tests<br>
     takeAssets
     transferInvestment
     saveInvestment
-Comment shit<br>
+Make error handling make sense<br>
 Improve speed of everything<br>
 Add in password salting<br>
 Migrate away from typeorm???<br>

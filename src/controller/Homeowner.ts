@@ -9,12 +9,20 @@ import { injectable, inject } from 'tsyringe';
 
 @injectable()
 export default class HomeownerController {
+
+
+    /**
+     * Constructs a  `HomeownerController` using the given homeownerDao, contractDao, and contractService.
+     */
     constructor(
         @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
         @inject('ContractDao') private contractDao: IContractDao,
         @inject('ContractService') private contractService: IContractService) { }
 
 
+    /**
+     * Returns all the homeowners as JSON in the given response.
+     */
     public async getUsers(req: Request, res: Response) {
         const users = await this.homeownerDao.getAll();
         const stored = await Promise.all(users.map(async (user) => {
@@ -36,6 +44,9 @@ export default class HomeownerController {
     }
 
 
+    /**
+     * Adds the homeowner given in the body of the req and returns the new user as JSON in the res.
+     */
     public async addUser(req: Request, res: Response) {
         // Check parameters
         const { user } = req.body;
@@ -48,6 +59,10 @@ export default class HomeownerController {
     }
 
 
+    /**
+     * Gets the specific user who's email is passed as a param in the req.
+     * Returns the result as JSON in the res.
+     */
     public async getUser(req: Request, res: Response) {
         const { email } = req.params;
         const user = await this.homeownerDao.getOneByEmail(email);
@@ -71,6 +86,9 @@ export default class HomeownerController {
     }
 
 
+    /**
+     * Deletes the user whose email is given in the params of the req.
+     */
     public async deleteUser(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const homeowner = await this.homeownerDao.getOneByEmail(email);
@@ -82,6 +100,10 @@ export default class HomeownerController {
     }
 
 
+    /**
+     * Signs up the user whose email is given in the params of the req for an
+     * investment of the amount given in the body.
+     */
     public async signUpHome(req: Request, res: Response) {
         const { email } = req.params;
         const { amount } = req.body;
@@ -98,16 +120,9 @@ export default class HomeownerController {
     }
 
 
-    public async makePayment(req: Request, res: Response) {
-        const { email } = req.params as ParamsDictionary;
-        const payment = await this.contractService.makePayment(email);
-        if (payment === null) {
-            return res.status(203).end();
-        }
-        return res.status(OK).send({ payment });
-    }
-
-
+    /**
+     * Makes a payment for all homeowners with active contracts.
+     */
     public async makeAllPayments(req: Request, res: Response) {
         const allContracts = await this.contractDao.getContracts();
         await Promise.all(allContracts.map((contract) => this.contractService.makePayment(contract.homeowner.email)));

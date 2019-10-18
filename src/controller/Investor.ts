@@ -6,16 +6,19 @@ import {
 } from '@entities';
 
 import { IInvestmentService, IRequestService } from '@services';
-import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
-import { logger, paramMissingError } from '@shared';
+import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
+import { paramMissingError } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { injectable, singleton, inject } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
 @injectable()
 export default class InvestorController {
 
 
+    /**
+     * Creates a `InvestorController` using the given investorDao, investmentService, and requestService
+     */
     constructor(
         @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         @inject('InvestmentService') private investmentService: IInvestmentService,
@@ -24,6 +27,9 @@ export default class InvestorController {
         @inject('FeeRate') private feePercentage: number) { }
 
 
+    /**
+     * Returns every investor as JSON loaded to the given res.
+     */
     public async getAll(req: Request, res: Response) {
         const users = await
             this.investorDao.getAll()
@@ -39,6 +45,9 @@ export default class InvestorController {
     }
 
 
+    /**
+     * Adds the investor given in the body of the req and returns the new user as JSON in the res.
+     */
     public async addInvestor(req: Request, res: Response) {
         // Check parameters
         const { user } = req.body;
@@ -51,6 +60,9 @@ export default class InvestorController {
     }
 
 
+    /**
+     * Returns the investor whose email is in the params of the request as JSON in the res.
+     */
     public async getInvestor(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const investor = await this.investorDao.getOneByEmail(email);
