@@ -13,7 +13,6 @@ const toExport = {
 
 if (process.env.IS_TRAVIS === 'false') {
     toExport.password = process.env.DB_PASSWORD;
-    console.log(toExport);
 }
 
 module.exports = toExport;

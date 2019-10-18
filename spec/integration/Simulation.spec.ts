@@ -112,8 +112,8 @@ async function runSimulation() {
                 return interest;
             });
             const givenInterest = totalInterest / result.body.users.length;
-            expect(Math.round(givenInterest * 100) / 100).to.be.greaterThan(0.039);
-            logger.info(String());
+            expect(Math.round(givenInterest * 100) / 100).to.be.greaterThan(1.039);
+            logger.info(String(givenInterest));
         });
 }
 
@@ -241,8 +241,8 @@ function hashPwd(pwd: string) {
 describe('Simulation', function test() {
     this.timeout(500000);
     it('should run the simulation', (done) => {
-        // runSimulation().then((result) => {
-        done();
-        // });
+        runSimulation().then((result) => {
+            done();
+        });
     });
 });
