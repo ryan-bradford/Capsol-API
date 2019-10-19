@@ -4,13 +4,13 @@ import { ParamsDictionary } from 'express-serve-static-core';
 import { adminMW, logger, paramMissingError } from '@shared';
 import { IUserDao } from '@daos';
 import { IInvestmentService, IRequestService } from '@services';
-import { IPersistedInvestor, IStoredInvestor } from '@entities';
+import { IPersistedInvestor, IStoredInvestor, IStorableInvestor } from '@entities';
 import InvestorController from 'src/controller/Investor';
 
 
 // Init shared
 export default (
-    investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
     investmentService: IInvestmentService,
     requestService: IRequestService) => {
     const router = Router();
@@ -18,7 +18,7 @@ export default (
 
     router.get('', adminMW, (req, res) => controller.getAll(req, res));
 
-    router.post('', adminMW, (req, res) => controller.addInvestor(req, res));
+    router.post('', (req, res) => controller.addInvestor(req, res));
 
     router.post('/update', adminMW, (req, res) => controller.handleInvestments(req, res));
 

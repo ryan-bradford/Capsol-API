@@ -1,7 +1,7 @@
 import { IUserDao } from '@daos';
 import { Request, Response } from 'express';
 
-import { IPersistedInvestor, IStoredInvestor, StorableInvestor, StoredInvestor } from '@entities';
+import { IPersistedInvestor, IStoredInvestor, StorableInvestor, StoredInvestor, IStorableInvestor } from '@entities';
 
 import { IInvestmentService, IRequestService } from '@services';
 import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
@@ -12,7 +12,7 @@ export default class InvestorController {
 
 
     constructor(
-        private investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
+        private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         private investmentService: IInvestmentService,
         private requestService: IRequestService) { }
 

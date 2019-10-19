@@ -13,6 +13,7 @@ Add more tests<br>
     saveInvestment
 Comment shit<br>
 Improve speed of everything<br>
+Add in password salting<br>
 Migrate away from typeorm???<br>
 Add concept of transaction history<br>
 Change deleted to table field<br>

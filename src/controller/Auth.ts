@@ -1,7 +1,7 @@
 import { IUserDao } from 'src/daos/user/UserDao';
 import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import { IPersistedInvestor, IStoredInvestor, IPersistedHomeowner, IStoredHomeowner } from '@entities';
+import { IPersistedInvestor, IPersistedHomeowner, IStorableInvestor, IStorableHomeowner } from '@entities';
 import { BAD_REQUEST, UNAUTHORIZED, OK } from 'http-status-codes';
 import {
     paramMissingError,
@@ -17,8 +17,8 @@ export default class AuthController {
 
 
     constructor(
-        private investorDao: IUserDao<IPersistedInvestor, IStoredInvestor>,
-        private homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>) { }
+        private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>) { }
 
 
     public async login(req: Request, res: Response) {

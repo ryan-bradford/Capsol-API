@@ -21,7 +21,7 @@ export default (
     companyDao: ICompanyDao,
     createContract:
         (
-            homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+            homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
             contractDao: IContractDao, requestService: IRequestService)
             => IContractService,
     createInvestment: (

@@ -7,7 +7,7 @@ import bcrypt from 'bcrypt';
 import sinon from 'sinon';
 import {
     IPersistedHomeowner, IStoredHomeowner,
-    PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor,
+    PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor, IStorableHomeowner,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse, ResponseOutput } from 'mock-req-res';
@@ -114,7 +114,6 @@ describe('HomeownerRouter', () => {
         it('should fail if missing the user', (done) => {
             callApi({})
                 .catch((error) => {
-                    expect(error.message).to.be.equal('One or more of the required parameters was missing.');
                     done();
                 });
         });
@@ -252,7 +251,7 @@ describe('HomeownerRouter', () => {
 
 
 // tslint:disable-next-line: max-classes-per-file
-class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner> {
+class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
     private examples: IPersistedHomeowner[] = Object.values(Object.assign({}, startHomeowners.users));
 
@@ -285,7 +284,7 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
     }
 
 
-    public add(user: IStoredHomeowner): Promise<IPersistedHomeowner> {
+    public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
         return Promise.resolve(new PersistedHomeowner());
     }
 

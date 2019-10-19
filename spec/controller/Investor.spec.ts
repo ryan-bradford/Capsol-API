@@ -8,6 +8,7 @@ import {
     PersistedInvestor, IStoredInvestor, IPersistedInvestor,
     IPersistedInvestment,
     StoredInvestor,
+    IStorableInvestor,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse } from 'mock-req-res';
@@ -244,7 +245,7 @@ describe('InvestorRouter', () => {
 
 
 // tslint:disable-next-line: max-classes-per-file
-class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
+class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
     private examples: IPersistedInvestor[] = Object.values(Object.assign({}, startInvestors.users));
 
@@ -277,7 +278,7 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
     }
 
 
-    public add(user: IStoredInvestor): Promise<IPersistedInvestor> {
+    public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
         return Promise.resolve(new PersistedInvestor());
     }
 

@@ -1,4 +1,4 @@
-import { IPersistedHomeowner, IStoredHomeowner, IPersistedContract, PersistedContract, StorableContract } from '@entities';
+import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHomeowner } from '@entities';
 import { IUserDao, IContractDao } from '@daos';
 import { IRequestService } from '@services';
 import { logger } from '@shared';
@@ -13,7 +13,7 @@ export class ContractService implements IContractService {
 
 
     constructor(
-        private homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+        private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
         private contractDao: IContractDao,
         private requestService: IRequestService) { }
 

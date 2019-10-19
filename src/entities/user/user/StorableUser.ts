@@ -1,19 +1,19 @@
 export interface IStorableUser {
     name: string;
     email: string;
-    pwdHash: string;
+    password: string;
 }
 
 export abstract class StorableUser implements IStorableUser {
 
     public name: string;
     public email: string;
-    public pwdHash: string;
+    public password: string;
 
 
-    constructor(name: string, email: string, pwdHash: string) {
+    constructor(name: string, email: string, password: string) {
         this.name = name;
         this.email = email;
-        this.pwdHash = pwdHash;
+        this.password = password;
     }
 }

@@ -5,12 +5,12 @@ import { adminMW, logger, paramMissingError } from '@shared';
 import { IUserDao, IContractDao } from '@daos';
 import { IContractService, IInvestmentService } from '@services';
 import { NOTFOUND } from 'dns';
-import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStorableInvestor } from '@entities';
+import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStorableInvestor, IStorableHomeowner } from '@entities';
 import HomeownerController from 'src/controller/Homeowner';
 
 
 export default (
-    homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+    homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
     investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
     contractDao: IContractDao,
     contractService: IContractService,
@@ -21,7 +21,7 @@ export default (
 
     router.get('', adminMW, (req, res) => controller.getUsers(req, res));
 
-    router.post('', adminMW, (req, res) => controller.addUser(req, res));
+    router.post('', (req, res) => controller.addUser(req, res));
 
     router.post('/payments', adminMW, (req, res) => controller.makeAllPayments(req, res));
 

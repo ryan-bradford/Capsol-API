@@ -1,7 +1,7 @@
 import { IUserDao } from './UserDao';
 import { IPersistedInvestor, PersistedInvestor, IStorableInvestor } from '@entities';
 import { getRepository } from 'typeorm';
-import { getRandomInt, logger } from '@shared';
+import bcrypt from 'bcrypt';
 
 export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
@@ -45,7 +45,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
         newInvestor.email = user.email;
         newInvestor.investments = [];
         newInvestor.name = user.name;
-        newInvestor.pwdHash = user.pwdHash;
+        newInvestor.pwdHash = bcrypt.hashSync(user.password, bcrypt.genSaltSync());
         newInvestor.admin = false;
         return getRepository(PersistedInvestor).save(newInvestor);
     }

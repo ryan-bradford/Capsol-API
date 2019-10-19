@@ -1,14 +1,14 @@
 import { Request, Response } from 'express';
 import { IUserDao, IContractDao } from '@daos';
-import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStorableInvestor } from '@entities';
+import { IPersistedHomeowner, IPersistedInvestor, IStorableInvestor, IStorableHomeowner } from '@entities';
 import { IContractService, IInvestmentService } from '@services';
-import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
+import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
 import { logger, paramMissingError } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export default class HomeownerController {
     constructor(
-        private homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
+        private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
         private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         private contractDao: IContractDao,
         private contractService: IContractService,
@@ -24,6 +24,7 @@ export default class HomeownerController {
     public async addUser(req: Request, res: Response) {
         // Check parameters
         const { user } = req.body;
+        logger.info(JSON.stringify(user.name));
         if (!user) {
             throw new Error(paramMissingError);
         }

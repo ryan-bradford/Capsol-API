@@ -3,8 +3,11 @@ import bcrypt from 'bcrypt';
 import { Response } from 'express';
 
 import { BAD_REQUEST, OK, UNAUTHORIZED } from 'http-status-codes';
-import { IPersistedInvestor, IStoredInvestor, PersistedInvestor, IPersistedHomeowner, IStoredHomeowner } from '@entities';
-import { pwdSaltRounds, jwtCookieProps, loginFailedErr, logger } from '@shared';
+import {
+    IPersistedInvestor, PersistedInvestor, IPersistedHomeowner,
+    IStorableInvestor, IStorableHomeowner,
+} from '@entities';
+import { pwdSaltRounds, jwtCookieProps, loginFailedErr } from '@shared';
 import { IUserDao } from '@daos';
 import { mockRequest, mockResponse, ResponseOutput } from 'mock-req-res';
 import AuthController from 'src/controller/Auth';
@@ -101,7 +104,7 @@ describe('AuthRouter', () => {
     });
 });
 
-class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
+class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
 
     public getOneByEmail(emailOrId: string): Promise<IPersistedInvestor | null> {
@@ -129,7 +132,7 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
     }
 
 
-    public add(user: IStoredInvestor): Promise<IPersistedInvestor> {
+    public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
         throw new Error('Not impl');
     }
 
@@ -141,7 +144,7 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStoredInvestor> {
 }
 
 // tslint:disable-next-line: max-classes-per-file
-class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner> {
+class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
 
     public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
@@ -159,7 +162,7 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStoredHomeowner
     }
 
 
-    public add(user: IStoredHomeowner): Promise<IPersistedHomeowner> {
+    public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
         throw new Error('Not impl');
     }
 

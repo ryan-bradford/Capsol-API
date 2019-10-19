@@ -2,7 +2,7 @@ import { IUserDao } from './UserDao';
 import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
 import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@entities';
-import { getDaos } from '@daos';
+import bcrypt from 'bcrypt';
 
 export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
@@ -46,7 +46,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
         newHomeowner.contract = undefined;
         newHomeowner.email = homeowner.email;
         newHomeowner.name = homeowner.name;
-        newHomeowner.pwdHash = homeowner.pwdHash;
+        newHomeowner.pwdHash = bcrypt.hashSync(homeowner.password, bcrypt.genSaltSync());
         newHomeowner.admin = false;
         return getRepository(PersistedHomeowner).save(newHomeowner);
     }
