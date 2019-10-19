@@ -43,21 +43,10 @@ export default (
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser(process.env.COOKIE_SECRET));
-    app.use(express.static(path.join(__dirname, 'public')));
     const requestService = createRequestService(requestDao, investmentDao, contractDao, companyDao);
     const contractService = createContract(homeownerDao, contractDao, requestService);
     const investmentService = createInvestment(investorDao, investmentDao, requestService);
     app.use('', BaseRouter(homeownerDao, investorDao, contractDao, contractService, investmentService, requestService));
-
-
-    /**
-     * Serve front-end content.
-     */
-    const viewsDir = path.join(__dirname, 'views');
-    app.set('views', viewsDir);
-    const staticDir = path.join(__dirname, 'public');
-    app.use(express.static(staticDir));
-    app.set('view engine', 'pug');
 
     return app;
 };

@@ -47,7 +47,7 @@ export default class AuthController {
         }
         // Setup Admin Cookie
         const jwt = await this.jwtService.getJwt({
-            role: user.admin ? 1 : 0,
+            role: 1, // TODO: FIX
         });
         const { key, options } = jwtCookieProps;
         res.cookie(key, jwt, options);

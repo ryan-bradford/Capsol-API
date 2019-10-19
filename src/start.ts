@@ -4,6 +4,7 @@ import { ContractService, InvestmentService, RequestService } from '@services';
 import { getDaos } from '@daos';
 
 // Start the server
+process.env.USE_TEST_DB = 'false';
 const port = Number(process.env.PORT || 3000);
 getDaos().then((daos) => {
     app(new daos.SqlHomeownerDao(),
