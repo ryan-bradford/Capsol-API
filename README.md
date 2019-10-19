@@ -1,6 +1,6 @@
-[![Build Status](https://travis-ci.org/ryan-bradford/Solar-API.svg?branch=master)](https://travis-ci.org/ryan-bradford/Solar-API)
+[![Build Status](https://travis-ci.org/ryan-bradford/solar-investment.svg?branch=master)](https://travis-ci.org/ryan-bradford/solar-investment)
 
-[![codecov](https://codecov.io/gh/ryan-bradford/Solar-API/branch/master/graph/badge.svg)](https://codecov.io/gh/ryan-bradford/Solar-API)
+[![codecov](https://codecov.io/gh/ryan-bradford/solar-investment/branch/master/graph/badge.svg)](https://codecov.io/gh/ryan-bradford/solar-investment)
 
 TODO:
 
