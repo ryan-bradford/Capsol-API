@@ -3,6 +3,7 @@ import { SqlHomeownerDao } from './user/HomeownerDao';
 import { SqlInvestorDao } from './user/InvestorDao';
 import { IInvestmentDao, SqlInvestmentDao } from './investment/InvestmentDao';
 import { IContractDao, SqlContractDao } from './investment/ContractDao';
+import { ICompanyDao, SqlCompanyDao } from './investment/CompanyDao';
 import { SqlRequestDao } from './investment/RequestDao';
 import { createConnection, getRepository, getConnectionManager } from 'typeorm';
 import {
@@ -17,7 +18,7 @@ async function getDaos() {
     return {
         SqlHomeownerDao, SqlInvestorDao,
         SqlInvestmentDao, SqlContractDao, clearDatabase,
-        SqlRequestDao,
+        SqlRequestDao, SqlCompanyDao,
     };
 }
 
@@ -38,5 +39,5 @@ async function clearDatabase() {
 }
 
 export {
-    IUserDao, IInvestmentDao, IContractDao, getDaos,
+    IUserDao, IInvestmentDao, IContractDao, ICompanyDao, getDaos,
 };

@@ -27,12 +27,13 @@ async function runSimulation() {
             new daos.SqlContractDao(),
             new daos.SqlInvestmentDao(),
             new daos.SqlRequestDao(),
+            new daos.SqlCompanyDao(0.01),
             (homeownerDao, contractDao, requestService) =>
                 new ContractService(homeownerDao, contractDao, requestService),
             (investorDao, investmentDao, requestService) =>
                 new InvestmentService(investorDao, investmentDao, requestService),
-            (requestDao, investmentDao, contractDao) =>
-                new RequestService(requestDao, investmentDao, contractDao));
+            (requestDao, investmentDao, contractDao, companyDao) =>
+                new RequestService(requestDao, investmentDao, contractDao, companyDao));
     await daos.clearDatabase();
     cookie = await login();
 
@@ -96,7 +97,7 @@ async function runSimulation() {
             }
         }
     }
-    request(appInstance).get(`/investor`)
+    await request(appInstance).get(`/investor`)
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
         .then((result) => {
@@ -112,8 +113,8 @@ async function runSimulation() {
                 return interest;
             });
             const givenInterest = totalInterest / result.body.users.length;
-            expect(Math.round(givenInterest * 100) / 100).to.be.greaterThan(1.039);
             logger.info(String(givenInterest));
+            expect(Math.round(givenInterest * 100) / 100).to.be.greaterThan(1.029);
         });
 }
 

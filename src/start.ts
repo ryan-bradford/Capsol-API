@@ -11,11 +11,12 @@ getDaos().then((daos) => {
         new daos.SqlContractDao(),
         new daos.SqlInvestmentDao(),
         new daos.SqlRequestDao(),
+        new daos.SqlCompanyDao(0.01),
         (homeownerDao, contractDao, requestService) => new ContractService(homeownerDao, contractDao, requestService),
         (investorDao, investmentDao, requestService) =>
             new InvestmentService(investorDao, investmentDao, requestService),
-        (requestDao, investmentDao, contractDao) =>
-            new RequestService(requestDao, investmentDao, contractDao))
+        (requestDao, investmentDao, contractDao, companyDao) =>
+            new RequestService(requestDao, investmentDao, contractDao, companyDao))
         .listen(port, () => {
             logger.info('Express server started on port: ' + port);
         });

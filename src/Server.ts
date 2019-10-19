@@ -4,7 +4,7 @@ import path from 'path';
 import logger from 'morgan';
 import BaseRouter from './routes';
 
-import { IUserDao, IContractDao, IInvestmentDao } from '@daos';
+import { IUserDao, IContractDao, IInvestmentDao, ICompanyDao } from '@daos';
 import {
     IPersistedHomeowner, IStoredHomeowner,
     IPersistedInvestor, IStoredInvestor, IStorableInvestor, IStorableHomeowner, IPersistedRequest, IStorableRequest,
@@ -18,6 +18,7 @@ export default (
     contractDao: IContractDao,
     investmentDao: IInvestmentDao,
     requestDao: IRequestDao,
+    companyDao: ICompanyDao,
     createContract:
         (
             homeownerDao: IUserDao<IPersistedHomeowner, IStoredHomeowner>,
@@ -30,7 +31,8 @@ export default (
     createRequestService: (
         requestDao: IRequestDao,
         investmentDao: IInvestmentDao,
-        contractDao: IContractDao) => IRequestService) => {
+        contractDao: IContractDao,
+        companyDao: ICompanyDao) => IRequestService) => {
     // Init express
     const app = express();
 
@@ -42,7 +44,7 @@ export default (
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser(process.env.COOKIE_SECRET));
     app.use(express.static(path.join(__dirname, 'public')));
-    const requestService = createRequestService(requestDao, investmentDao, contractDao);
+    const requestService = createRequestService(requestDao, investmentDao, contractDao, companyDao);
     const contractService = createContract(homeownerDao, contractDao, requestService);
     const investmentService = createInvestment(investorDao, investmentDao, requestService);
     app.use('', BaseRouter(homeownerDao, investorDao, contractDao, contractService, investmentService, requestService));

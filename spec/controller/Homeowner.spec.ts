@@ -53,8 +53,9 @@ describe('HomeownerRouter', () => {
             const investmentDao = new realDaos.SqlInvestmentDao();
             const contractDao = new realDaos.SqlContractDao();
             const requestDao = new realDaos.SqlRequestDao();
+            const companyDao = new realDaos.SqlCompanyDao(0.01);
             const contractService = new MockContractService();
-            const requestService = new RequestService(requestDao, investmentDao, contractDao);
+            const requestService = new RequestService(requestDao, investmentDao, contractDao, companyDao);
             const investmentService = new InvestmentService(investorDao, investmentDao, requestService);
             homeownerController = new HomeownerController(
                 homeownerDao,

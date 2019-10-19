@@ -4,7 +4,7 @@ import {
     PersistedRequest, IPersistedInvestor, IStorableContract, IPersistedContract,
     PersistedContract, PersistedInvestment, StorableRequest,
 } from '@entities';
-import { IContractDao, IInvestmentDao } from '@daos';
+import { IContractDao, IInvestmentDao, ICompanyDao } from '@daos';
 import { RequestService, IRequestService } from '@services';
 import { expect } from 'chai';
 import { request } from 'http';
@@ -26,12 +26,14 @@ describe('Request Service', () => {
     let contractDao: IContractDao;
     let requestDao: IRequestDao;
     let requestService: IRequestService;
+    let companyDao: ICompanyDao;
 
     before(() => {
         investmentDao = new MockInvestmentDao();
         contractDao = new MockContractDao();
         requestDao = new MockRequestDao();
-        requestService = new RequestService(requestDao, investmentDao, contractDao);
+        companyDao = new MockCompanyDao();
+        requestService = new RequestService(requestDao, investmentDao, contractDao, companyDao);
         sinon.stub((requestService as any), 'takeAssets').returns(Promise.resolve());
     });
 
@@ -209,4 +211,14 @@ class MockRequestDao implements IRequestDao {
         this.requests.map((mapRequest) => mapRequest.id === toSave.id ? toSave : mapRequest);
         return Promise.resolve();
     }
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockCompanyDao implements ICompanyDao {
+
+
+    public async takeFee(amount: number): Promise<number> {
+        return amount;
+    }
+
 }

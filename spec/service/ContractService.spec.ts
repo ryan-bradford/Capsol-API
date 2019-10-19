@@ -18,7 +18,8 @@ describe('Contract Service', () => {
             const investmentDao = new daos.SqlInvestmentDao();
             const investorDao = new daos.SqlInvestorDao();
             const requestDao = new daos.SqlRequestDao();
-            const requestService = new RequestService(requestDao, investmentDao, contractDao);
+            const companyDao = new daos.SqlCompanyDao(0);
+            const requestService = new RequestService(requestDao, investmentDao, contractDao, companyDao);
             contractService = new ContractService(homeownerDao, contractDao, requestService);
             return daos.clearDatabase();
         }).then((result) => {

@@ -7,6 +7,7 @@ import {
     StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment,
 } from '@entities';
 import { strict as assert } from 'assert';
+import { ICompanyDao } from 'src/daos/investment/CompanyDao';
 
 export interface IRequestService {
 
@@ -22,10 +23,12 @@ export class RequestService implements IRequestService {
     constructor(
         private requestDao: IRequestDao,
         private investmentDao: IInvestmentDao,
-        private contractDao: IContractDao) { }
+        private contractDao: IContractDao,
+        private companyDao: ICompanyDao) { }
 
 
     public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void> {
+        amount = await this.companyDao.takeFee(amount);
         const newRequest = new StorableRequest(amount, new Date(), user.id, 'purchase');
         await this.requestDao.createRequest(newRequest);
         return;

@@ -17,5 +17,6 @@ module.exports = {
     ],
     spec: "spec/**/*.spec.ts",
     require: toReturn,
-    watch: "spec/**/*.spec.ts"
+    watch: "spec/**/*.spec.ts",
+    exclude: "spec/integration/*"
 }

@@ -1,4 +1,4 @@
-import { IInvestmentDao, IContractDao, IUserDao, getDaos } from '@daos';
+import { IInvestmentDao, IContractDao, IUserDao, getDaos, ICompanyDao } from '@daos';
 import {
     IPersistedHomeowner, IStorableHomeowner, IPersistedInvestor,
     IStorableInvestor, StorableInvestor, StorableHomeowner,
@@ -16,6 +16,7 @@ describe('Investment Service', () => {
     let investmentDao: IInvestmentDao;
     let contractDao: IContractDao;
     let requestDao: IRequestDao;
+    let companyDao: ICompanyDao;
     let homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>;
     let investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>;
     let investmentService: IInvestmentService;
@@ -31,7 +32,8 @@ describe('Investment Service', () => {
             investmentDao = new daos.SqlInvestmentDao();
             investorDao = new daos.SqlInvestorDao();
             requestDao = new daos.SqlRequestDao();
-            requestService = new RequestService(requestDao, investmentDao, contractDao);
+            companyDao = new daos.SqlCompanyDao(0);
+            requestService = new RequestService(requestDao, investmentDao, contractDao, companyDao);
             contractService = new ContractService(homeownerDao, contractDao, requestService);
             investmentService = new InvestmentService(investorDao, investmentDao, requestService);
             return daos.clearDatabase();
