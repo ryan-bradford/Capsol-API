@@ -12,6 +12,7 @@ export interface IInvestmentService {
     addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]>;
     sellInvestments(userId: string, amount: number): Promise<void>;
     getPortfolioValue(userId: string): Promise<number>;
+    getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]>;
 }
 
 export class InvestmentService implements IInvestmentService {
@@ -55,6 +56,11 @@ export class InvestmentService implements IInvestmentService {
             investmentValue += investment.value;
         });
         return Number(requestValue.sum) + Number(investmentValue);
+    }
+
+
+    public async getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]> {
+        return this.investmentDao.getInvestments(userId);
     }
 
 }

@@ -4,6 +4,7 @@
 
 TODO:
 
+Max value of decimals<br>
 Add idea of funds history<br>
 Add more tests<br>
     getPortfolioValue

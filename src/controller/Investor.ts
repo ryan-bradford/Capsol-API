@@ -1,7 +1,10 @@
 import { IUserDao } from '@daos';
 import { Request, Response } from 'express';
 
-import { IPersistedInvestor, IStoredInvestor, StorableInvestor, StoredInvestor, IStorableInvestor } from '@entities';
+import {
+    IPersistedInvestor, StoredInvestor,
+    IStorableInvestor, StoredInvestment,
+} from '@entities';
 
 import { IInvestmentService, IRequestService } from '@services';
 import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
@@ -22,8 +25,12 @@ export default class InvestorController {
             this.investorDao.getAll()
                 .then((result) => Promise.all(
                     result.map(async (investor) => {
+                        const investments = (await this.investmentService.getInvestmentsFor(investor.id))
+                            .map((investment) =>
+                                new StoredInvestment(investment.id, investment.contract.id,
+                                    investment.value, investment.owner.id));
                         const portfolio = await this.investmentService.getPortfolioValue(investor.id);
-                        return new StoredInvestor(investor.id, portfolio,
+                        return new StoredInvestor(investor.id, portfolio, investments,
                             investor.name, investor.email, investor.pwdHash);
                     })));
         return res.status(OK).json({ users });
@@ -46,9 +53,14 @@ export default class InvestorController {
         const { email } = req.params as ParamsDictionary;
         const investor = await this.investorDao.getOneByEmail(email);
         if (investor) {
+            const investments = (await this.investmentService.getInvestmentsFor(investor.id))
+                .map((investment) =>
+                    new StoredInvestment(investment.id, investment.contract.id,
+                        investment.value, investment.owner.id));
             const portfolio = await this.investmentService.getPortfolioValue(investor.id);
             return res.status(OK).json(
-                new StoredInvestor(investor.id, portfolio, investor.name, investor.email, investor.pwdHash));
+                new StoredInvestor(investor.id, portfolio, investments,
+                    investor.name, investor.email, investor.pwdHash));
         } else {
             return res.status(NOT_FOUND).end();
         }

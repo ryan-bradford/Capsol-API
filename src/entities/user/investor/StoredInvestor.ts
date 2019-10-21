@@ -3,23 +3,22 @@ import { IStoredRequest } from 'src/entities/investment/request/StoredRequest';
 import { IPersistedInvestor } from './PersistedInvestor';
 
 export interface IStoredInvestor extends IStoredUser {
-    portfolioValue: number;
+    totalCash: number;
+    investments: IStoredInvestment[];
 }
 
 export class StoredInvestor extends StoredUser implements IStoredInvestor {
 
-    public portfolioValue: number;
+    public totalCash: number;
+    public investments: IStoredInvestment[];
 
 
-    constructor(id: string | IPersistedInvestor, portfolioValue: number,
+    constructor(id: string | IPersistedInvestor, totalCash: number, investments: IStoredInvestment[],
         // tslint:disable-next-line: align
         name?: string, email?: string, pwdHash?: string) {
         super(id, name, email, pwdHash);
-        if (portfolioValue) {
-            this.portfolioValue = portfolioValue;
-        } else {
-            this.portfolioValue = portfolioValue;
-        }
+        this.totalCash = totalCash;
+        this.investments = investments;
     }
 
 }

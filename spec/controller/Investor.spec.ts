@@ -37,7 +37,8 @@ const nextUser: IStoredInvestor = {
     name: 'Emma',
     email: 'blorg@gmail.com',
     pwdHash: '2',
-    portfolioValue: 1,
+    investments: [],
+    totalCash: 1,
 };
 
 
@@ -68,7 +69,7 @@ describe('InvestorRouter', () => {
                     expect(res.status).to.be.calledWith(OK);
                     expect(res.json).to.be.calledWith({
                         users: startInvestors.users.map((user) => {
-                            return new StoredInvestor(user, 1);
+                            return new StoredInvestor(user, 1, []);
                         }),
                     });
                     done();
@@ -171,7 +172,7 @@ describe('InvestorRouter', () => {
             callApi('test@gmail.com')
                 .then((res) => {
                     expect(res.status).to.be.calledWith(OK);
-                    expect(res.json).to.be.calledWith(new StoredInvestor(startInvestors.users[0], 1));
+                    expect(res.json).to.be.calledWith(new StoredInvestor(startInvestors.users[0], 1, []));
                     done();
                 });
         });
@@ -308,6 +309,11 @@ class MockInvestmentService implements IInvestmentService {
 
     public getPortfolioValue(userId: string): Promise<number> {
         return Promise.resolve(1);
+    }
+
+
+    public getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]> {
+        return Promise.resolve([]);
     }
 
 }
