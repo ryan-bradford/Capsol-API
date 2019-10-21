@@ -13,7 +13,7 @@ export class PersistedCompanyFee implements IPersistedCompanyFee {
     @PrimaryGeneratedColumn('uuid')
     public id!: string;
 
-    @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
+    @Column({ type: 'decimal', precision: 10, scale: 2, default: 0 })
     public amount!: number;
 
 }

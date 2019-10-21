@@ -10,7 +10,7 @@ export interface IPersistedRequest {
     id: string;
     amount: number;
     investor: IPersistedUser;
-    dateCreated: Date;
+    dateCreated: number;
     type: 'purchase' | 'sell';
 
 }
@@ -28,7 +28,7 @@ export class PersistedRequest implements IPersistedRequest {
     public amount!: number;
 
     @Column()
-    public dateCreated!: Date;
+    public dateCreated!: number;
 
     @ManyToOne((type) => PersistedInvestor, (investor) => investor.requests, { onDelete: 'CASCADE' })
     public investor!: IPersistedInvestor;

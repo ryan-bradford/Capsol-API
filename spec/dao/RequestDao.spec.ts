@@ -36,8 +36,8 @@ describe('Request Dao', () => {
             const newContract = new StorableContract(1000, 5, 100, newHomeowner.id);
             return contractDao.createContract(newContract);
         }).then((newContract) => {
-            storablePurchaseRequest = new StorableRequest(100, new Date(), investor.id, 'purchase');
-            storableSellRequest = new StorableRequest(100, new Date(), investor.id, 'sell');
+            storablePurchaseRequest = new StorableRequest(100, 1, investor.id, 'purchase');
+            storableSellRequest = new StorableRequest(100, 1, investor.id, 'sell');
             done();
         });
     });

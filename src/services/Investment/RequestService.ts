@@ -1,6 +1,6 @@
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { IUserDao, IInvestmentDao, IContractDao } from '@daos';
-import { logger } from '@shared';
+import { logger, getDateAsNumber } from '@shared';
 import {
     IPersistedRequest, IStorableRequest, IPersistedInvestor, IStoredInvestor,
     IPersistedHomeowner, IStoredHomeowner, IPersistedUser, isInvestor,
@@ -11,7 +11,7 @@ import { ICompanyDao } from 'src/daos/investment/CompanyDao';
 
 export interface IRequestService {
 
-    createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void>;
+    createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number>;
     createSellRequest(user: IPersistedInvestor, amount: number): Promise<void>;
     handleRequests(): Promise<void>;
 
@@ -27,17 +27,17 @@ export class RequestService implements IRequestService {
         private companyDao: ICompanyDao) { }
 
 
-    public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void> {
+    public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number> {
         amount = await this.companyDao.takeFee(amount);
-        const newRequest = new StorableRequest(amount, new Date(), user.id, 'purchase');
+        const newRequest = new StorableRequest(amount, getDateAsNumber(), user.id, 'purchase');
         await this.requestDao.createRequest(newRequest);
-        return;
+        return amount;
     }
 
 
     public async createSellRequest(user: IPersistedInvestor, amount: number): Promise<void> {
         // Literally only creates a sell request with the user ID and amount
-        const newRequest = new StorableRequest(amount, new Date(), user.id, 'sell');
+        const newRequest = new StorableRequest(amount, getDateAsNumber(), user.id, 'sell');
         await this.requestDao.createRequest(newRequest);
         return;
     }
@@ -50,7 +50,7 @@ export class RequestService implements IRequestService {
             await this.requestDao.getRequests();
         const allPurchaseRequests = requests.filter((request) => request.type === 'purchase');
         const allSellRequests = requests.filter((request) => request.type === 'sell');
-        allPurchaseRequests.sort((a, b) => a.dateCreated.getTime() - b.dateCreated.getTime());
+        allPurchaseRequests.sort((a, b) => a.dateCreated - b.dateCreated);
         allSellRequests.sort((a, b) => b.amount - a.amount);
         const allContracts = (await this.contractDao.getContracts())
             .filter((contract) => !contract.isFulfilled)
@@ -142,11 +142,11 @@ export class RequestService implements IRequestService {
         const investorContractToInvestment: Map<string, IPersistedInvestment> = new Map();
         for (const investment of investments) {
             const key: string = `${investment.contract.id}, ${investment.owner.id}`;
-            const key2 = [investment.contract.id, investment.owner.id];
             const current = investorContractToInvestment.get(key);
             if (!current) {
                 investorContractToInvestment.set(key, investment);
             } else {
+                console.log(current.amount);
                 current.amount += investment.amount;
                 await this.investmentDao.deleteInvestment(investment.id);
                 await this.investmentDao.saveInvestment(current);

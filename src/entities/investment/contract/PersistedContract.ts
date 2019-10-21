@@ -1,15 +1,15 @@
 import { Entity, PrimaryColumn, Column, OneToMany, OneToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { IPersistedInvestment, IPersistedHomeowner, PersistedInvestment, PersistedHomeowner } from '@entities';
-import { logger } from '@shared';
+import { logger, getDateAsNumber } from '@shared';
 
 export interface IPersistedContract {
     id: string;
     saleAmount: number;
-    length: number;
+    firstPaymentDate: number;
     monthlyPayment: number;
     investments: IPersistedInvestment[];
     homeowner: IPersistedHomeowner;
-    startLength: number;
+    totalLength: number;
     readonly isFulfilled: boolean;
     readonly yearsPassed: number;
     readonly depreciationValue: number;
@@ -26,10 +26,10 @@ export class PersistedContract implements IPersistedContract {
     public saleAmount!: number;
 
     @Column()
-    public startLength!: number;
+    public totalLength!: number;
 
-    @Column()
-    public length!: number;
+    @Column({ nullable: true })
+    public firstPaymentDate!: number;
 
     @Column()
     public monthlyPayment!: number;
@@ -48,12 +48,12 @@ export class PersistedContract implements IPersistedContract {
 
 
     get yearsPassed(): number {
-        return this.startLength - this.length;
+        return this.firstPaymentDate ? getDateAsNumber() - this.firstPaymentDate : 0;
     }
 
 
     get depreciationValue(): number {
-        return this.saleAmount / this.startLength;
+        return this.saleAmount / this.totalLength;
     }
 
     get unsoldAmount(): number {

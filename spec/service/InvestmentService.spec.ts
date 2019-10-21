@@ -9,6 +9,7 @@ import {
 } from '@services';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { expect } from 'chai';
+import { addMonth } from '@shared';
 
 
 describe('Investment Service', () => {
@@ -153,11 +154,12 @@ describe('Investment Service', () => {
         contractService.makePayment(homeowner.email)
             .then(() => requestService.handleRequests())
             .then(() => done());
+        addMonth();
     });
 
     it('should have a length of one less', (done) => {
         contractDao.getContracts().then((contracts) => {
-            expect(contracts[0].length).to.be.equal(239);
+            expect(contracts[0].totalLength - contracts[0].firstPaymentDate).to.be.equal(238);
             done();
         });
     });

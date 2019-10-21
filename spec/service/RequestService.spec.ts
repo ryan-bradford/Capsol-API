@@ -18,6 +18,7 @@ const investor: IPersistedInvestor = {
     name: 'asds',
     admin: true,
     requests: [],
+    cashDeposits: [],
 };
 
 describe('Request Service', () => {
@@ -156,8 +157,7 @@ class MockContractDao implements IContractDao {
         const newContract = new PersistedContract();
         newContract.id = String(getRandomInt());
         newContract.saleAmount = contract.saleAmount;
-        newContract.startLength = contract.length;
-        newContract.length = contract.length;
+        newContract.totalLength = contract.length;
         newContract.monthlyPayment = contract.monthlyPayment;
         this.contracts.push(newContract);
         return Promise.resolve(newContract);
@@ -178,7 +178,7 @@ class MockRequestDao implements IRequestDao {
             id: '0',
             amount: 100,
             investor,
-            dateCreated: new Date(),
+            dateCreated: 1,
             type: 'purchase',
         },
     ];

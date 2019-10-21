@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 
 import {
     IPersistedInvestor, StoredInvestor,
-    IStorableInvestor, StoredInvestment,
+    IStorableInvestor, StoredInvestment, StoredCashDeposit,
 } from '@entities';
 
 import { IInvestmentService, IRequestService } from '@services';
@@ -27,11 +27,15 @@ export default class InvestorController {
                     result.map(async (investor) => {
                         const investments = (await this.investmentService.getInvestmentsFor(investor.id))
                             .map((investment) =>
-                                new StoredInvestment(investment.id, investment.contract.id,
-                                    investment.value, investment.owner.id));
-                        const portfolio = await this.investmentService.getPortfolioValue(investor.id);
+                                new StoredInvestment(investment.id, investment.amount, investment.contract.totalLength,
+                                    investment.contract.firstPaymentDate, investment.owner.id,
+                                    investment.contract.monthlyPayment *
+                                    investment.amount / investment.contract.saleAmount));
+                        const portfolio = await this.investmentService.getCashValue(investor.id);
+                        const cashDeposits = (await this.investmentService.getAllCashDepositsFor(investor.id))
+                            .map((cash) => new StoredCashDeposit(cash.id, cash.amount, cash.date, cash.user.id));
                         return new StoredInvestor(investor.id, portfolio, investments,
-                            investor.name, investor.email, investor.pwdHash);
+                            cashDeposits, investor.name, investor.email, investor.pwdHash);
                     })));
         return res.status(OK).json({ users });
     }
@@ -55,12 +59,16 @@ export default class InvestorController {
         if (investor) {
             const investments = (await this.investmentService.getInvestmentsFor(investor.id))
                 .map((investment) =>
-                    new StoredInvestment(investment.id, investment.contract.id,
-                        investment.value, investment.owner.id));
-            const portfolio = await this.investmentService.getPortfolioValue(investor.id);
+                    new StoredInvestment(investment.id, investment.amount, investment.contract.totalLength,
+                        investment.contract.firstPaymentDate, investment.owner.id,
+                        investment.contract.monthlyPayment *
+                        investment.amount / investment.contract.saleAmount));
+            const portfolio = await this.investmentService.getCashValue(investor.id);
+            const cashDeposits = (await this.investmentService.getAllCashDepositsFor(investor.id)).map((cash) =>
+                new StoredCashDeposit(cash.id, cash.amount, cash.date, cash.user.id));
             return res.status(OK).json(
                 new StoredInvestor(investor.id, portfolio, investments,
-                    investor.name, investor.email, investor.pwdHash));
+                    cashDeposits, investor.name, investor.email, investor.pwdHash));
         } else {
             return res.status(NOT_FOUND).end();
         }

@@ -43,8 +43,7 @@ export class SqlContractDao implements IContractDao {
         }
         newContract.homeowner = homeowner;
         newContract.investments = [];
-        newContract.startLength = contract.length;
-        newContract.length = contract.length;
+        newContract.totalLength = contract.length;
         newContract.monthlyPayment = contract.monthlyPayment;
         newContract.saleAmount = contract.saleAmount;
         const toReturn = await getRepository(PersistedContract).save(newContract);
@@ -55,7 +54,7 @@ export class SqlContractDao implements IContractDao {
 
     public async saveContract(contract: IPersistedContract): Promise<void> {
         await getRepository(PersistedContract).update(contract.id, {
-            length: contract.length,
+            firstPaymentDate: contract.firstPaymentDate,
         });
         return;
     }

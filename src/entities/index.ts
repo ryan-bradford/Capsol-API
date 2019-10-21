@@ -16,3 +16,6 @@ export * from './investment/investment/StoredInvestment';
 export * from './investment/request/PersistedRequest';
 export * from './investment/request/StorableRequest';
 export * from './investment/request/StoredRequest';
+export * from './investment/cash/PersistedCashDeposit';
+export * from './investment/cash/StoredCashDeposit';
+export * from './investment/company/PersistedCompanyFee';

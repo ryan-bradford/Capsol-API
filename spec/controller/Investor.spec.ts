@@ -9,6 +9,7 @@ import {
     IPersistedInvestment,
     StoredInvestor,
     IStorableInvestor,
+    IPersistedCashDeposit,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse } from 'mock-req-res';
@@ -28,6 +29,7 @@ const startInvestors: { users: IPersistedInvestor[] } = {
             admin: false,
             pwdHash: '1',
             requests: [],
+            cashDeposits: [],
         },
     ],
 };
@@ -39,6 +41,7 @@ const nextUser: IStoredInvestor = {
     pwdHash: '2',
     investments: [],
     totalCash: 1,
+    cashDeposits: [],
 };
 
 
@@ -69,7 +72,7 @@ describe('InvestorRouter', () => {
                     expect(res.status).to.be.calledWith(OK);
                     expect(res.json).to.be.calledWith({
                         users: startInvestors.users.map((user) => {
-                            return new StoredInvestor(user, 1, []);
+                            return new StoredInvestor(user, 1, [], []);
                         }),
                     });
                     done();
@@ -172,7 +175,7 @@ describe('InvestorRouter', () => {
             callApi('test@gmail.com')
                 .then((res) => {
                     expect(res.status).to.be.calledWith(OK);
-                    expect(res.json).to.be.calledWith(new StoredInvestor(startInvestors.users[0], 1, []));
+                    expect(res.json).to.be.calledWith(new StoredInvestor(startInvestors.users[0], 1, [], []));
                     done();
                 });
         });
@@ -307,12 +310,17 @@ class MockInvestmentService implements IInvestmentService {
     }
 
 
-    public getPortfolioValue(userId: string): Promise<number> {
+    public getCashValue(userId: string): Promise<number> {
         return Promise.resolve(1);
     }
 
 
     public getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]> {
+        return Promise.resolve([]);
+    }
+
+
+    public getAllCashDepositsFor(userId: string): Promise<IPersistedCashDeposit[]> {
         return Promise.resolve([]);
     }
 
@@ -323,8 +331,8 @@ class MockInvestmentService implements IInvestmentService {
 class MockRequestService implements IRequestService {
 
 
-    public createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<void> {
-        return Promise.resolve();
+    public createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number> {
+        return Promise.resolve(0);
     }
 
 

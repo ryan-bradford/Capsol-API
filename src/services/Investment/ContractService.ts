@@ -1,7 +1,7 @@
 import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHomeowner } from '@entities';
 import { IUserDao, IContractDao } from '@daos';
 import { IRequestService } from '@services';
-import { logger } from '@shared';
+import { logger, getDateAsNumber } from '@shared';
 
 export interface IContractService {
     createContract(amount: number, userId: string):
@@ -41,7 +41,7 @@ export class ContractService implements IContractService {
                 throw new Error('Bad request');
             }
             const contract = contracts[0];
-            if (!contract.isFulfilled || !contract.length) {
+            if (!contract.isFulfilled || getDateAsNumber() - contract.firstPaymentDate >= contract.totalLength) {
                 return null;
             }
             await Promise.all(contract.investments.map(async (investment) => {
@@ -49,7 +49,8 @@ export class ContractService implements IContractService {
                     investment.amount / contract.saleAmount * contract.monthlyPayment);
                 return;
             }));
-            contract.length -= 1;
+            contract.firstPaymentDate = contract.firstPaymentDate ? contract.firstPaymentDate :
+                getDateAsNumber();
             await this.contractDao.saveContract(contract);
             return contract.monthlyPayment;
             return 1;

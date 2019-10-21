@@ -307,7 +307,7 @@ class MockContractService implements IContractService {
         const toReturn = new PersistedContract();
         toReturn.id = 'b';
         toReturn.investments = [];
-        toReturn.length = 20;
+        toReturn.totalLength = 20;
         toReturn.saleAmount = amount;
         return Promise.resolve(toReturn);
     }

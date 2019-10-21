@@ -3,7 +3,7 @@ import { IUserDao, IContractDao } from '@daos';
 import { IPersistedHomeowner, IPersistedInvestor, IStorableInvestor, IStorableHomeowner } from '@entities';
 import { IContractService, IInvestmentService } from '@services';
 import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { logger, paramMissingError } from '@shared';
+import { logger, paramMissingError, addMonth } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
 
 export default class HomeownerController {
@@ -87,6 +87,7 @@ export default class HomeownerController {
         allContracts.forEach((contract) => {
             this.contractService.makePayment(contract.homeowner.email);
         });
+        addMonth();
         return res.status(OK).send();
     }
 }

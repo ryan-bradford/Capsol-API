@@ -1,18 +1,18 @@
 import {
-    IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest, PersistedInvestment,
+    IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest,
+    IPersistedCashDeposit, PersistedCashDeposit,
 } from '@entities';
-import { IRequestDao } from 'src/daos/investment/RequestDao';
-import { IRequestService, RequestService } from '@services';
+import { IRequestService } from '@services';
 import { IUserDao, IInvestmentDao } from '@daos';
-import { SqlInvestorDao } from 'src/daos/user/InvestorDao';
 import { getRepository } from 'typeorm';
-import { logger } from '@shared';
+import { getDateAsNumber } from '@shared';
 
 export interface IInvestmentService {
     addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]>;
     sellInvestments(userId: string, amount: number): Promise<void>;
-    getPortfolioValue(userId: string): Promise<number>;
+    getCashValue(userId: string): Promise<number>;
     getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]>;
+    getAllCashDepositsFor(userId: string): Promise<IPersistedCashDeposit[]>;
 }
 
 export class InvestmentService implements IInvestmentService {
@@ -29,7 +29,12 @@ export class InvestmentService implements IInvestmentService {
         if (!user) {
             throw new Error('Not found');
         }
-        await this.requestService.createPurchaseRequest(user, amount);
+        amount = await this.requestService.createPurchaseRequest(user, amount);
+        const newCashDeposit = new PersistedCashDeposit();
+        newCashDeposit.amount = amount;
+        newCashDeposit.date = getDateAsNumber();
+        newCashDeposit.user = user;
+        getRepository(PersistedCashDeposit).save(newCashDeposit);
         return [];
     }
 
@@ -44,23 +49,27 @@ export class InvestmentService implements IInvestmentService {
     }
 
 
-    public async getPortfolioValue(userId: string): Promise<number> {
-        const [requestValue, investments] = await Promise.all([getRepository(PersistedRequest)
+    public async getCashValue(userId: string): Promise<number> {
+        const requestValue = await getRepository(PersistedRequest)
             .createQueryBuilder('request')
             .where('request.investorId = :userId AND request.type = "purchase"', { userId })
             .select('SUM(request.amount)', 'sum')
-            .getRawOne(),
-        this.investmentDao.getInvestments(userId)]);
-        let investmentValue = 0;
-        investments.forEach((investment) => {
-            investmentValue += investment.value;
-        });
-        return Number(requestValue.sum) + Number(investmentValue);
+            .getRawOne();
+        return Number(requestValue.sum);
     }
 
 
     public async getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]> {
         return this.investmentDao.getInvestments(userId);
+    }
+
+
+    public async getAllCashDepositsFor(userId: string): Promise<IPersistedCashDeposit[]> {
+        const user = await this.investorDao.getOne(userId);
+        if (!user) {
+            throw new Error('Not found');
+        }
+        return getRepository(PersistedCashDeposit).find({ user });
     }
 
 }

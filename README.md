@@ -4,8 +4,7 @@
 
 TODO:
 
-Max value of decimals<br>
-Add idea of funds history<br>
+Add investment history to showed who owns what when<br>
 Add more tests<br>
     getPortfolioValue
     makePayment
