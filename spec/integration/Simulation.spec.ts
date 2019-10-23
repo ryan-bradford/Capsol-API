@@ -10,6 +10,7 @@ import sinon from 'sinon';
 import bcrypt from 'bcrypt';
 import { SqlHomeownerDao } from 'src/daos/user/HomeownerDao';
 import { expect } from 'chai';
+import { container } from 'tsyringe';
 
 let appInstance: Express;
 let cookie: string;
@@ -20,20 +21,37 @@ async function runSimulation() {
 
 
     const daos = await getDaos();
-
-    appInstance =
-        app(new daos.SqlHomeownerDao(),
-            new daos.SqlInvestorDao(),
-            new daos.SqlContractDao(),
-            new daos.SqlInvestmentDao(),
-            new daos.SqlRequestDao(),
-            new daos.SqlCompanyDao(0.01),
-            (homeownerDao, contractDao, requestService) =>
-                new ContractService(homeownerDao, contractDao, requestService),
-            (investorDao, investmentDao, requestService) =>
-                new InvestmentService(investorDao, investmentDao, requestService),
-            (requestDao, investmentDao, contractDao, companyDao) =>
-                new RequestService(requestDao, investmentDao, contractDao, companyDao));
+    container.register('FeeRate', {
+        useValue: 0.01,
+    });
+    container.register('HomeownerDao', {
+        useClass: daos.SqlHomeownerDao,
+    });
+    container.register('InvestorDao', {
+        useClass: daos.SqlInvestorDao,
+    });
+    container.register('InvestmentDao', {
+        useClass: daos.SqlInvestmentDao,
+    });
+    container.register('ContractDao', {
+        useClass: daos.SqlContractDao,
+    });
+    container.register('CompanyDao', {
+        useClass: daos.SqlCompanyDao,
+    });
+    container.register('RequestDao', {
+        useClass: daos.SqlRequestDao,
+    });
+    container.register('RequestService', {
+        useClass: RequestService,
+    });
+    container.register('ContractService', {
+        useClass: ContractService,
+    });
+    container.register('InvestmentService', {
+        useClass: InvestmentService,
+    });
+    appInstance = app();
     await daos.clearDatabase();
     cookie = await login();
 

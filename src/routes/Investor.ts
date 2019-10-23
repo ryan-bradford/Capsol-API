@@ -1,20 +1,13 @@
-import { Request, Response, Router } from 'express';
-import { BAD_REQUEST, CREATED, OK, NOT_FOUND } from 'http-status-codes';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { adminMW, logger, paramMissingError } from '@shared';
-import { IUserDao } from '@daos';
-import { IInvestmentService, IRequestService } from '@services';
-import { IPersistedInvestor, IStoredInvestor, IStorableInvestor } from '@entities';
+import { Router } from 'express';
+import { adminMW } from '@shared';
 import InvestorController from 'src/controller/Investor';
+import { container } from 'tsyringe';
 
 
 // Init shared
-export default (
-    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-    investmentService: IInvestmentService,
-    requestService: IRequestService) => {
+export default () => {
     const router = Router();
-    const controller = new InvestorController(investorDao, investmentService, requestService);
+    const controller = container.resolve(InvestorController);
 
     router.get('', adminMW, (req, res) => controller.getAll(req, res));
 

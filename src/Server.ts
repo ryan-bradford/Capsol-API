@@ -1,38 +1,10 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
-import path from 'path';
 import logger from 'morgan';
 import BaseRouter from './routes';
 
-import { IUserDao, IContractDao, IInvestmentDao, ICompanyDao } from '@daos';
-import {
-    IPersistedHomeowner, IStoredHomeowner,
-    IPersistedInvestor, IStoredInvestor, IStorableInvestor, IStorableHomeowner, IPersistedRequest, IStorableRequest,
-} from '@entities';
-import { IContractService, IInvestmentService, IRequestService } from '@services';
-import { IRequestDao } from './daos/investment/RequestDao';
 
-export default (
-    homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
-    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-    contractDao: IContractDao,
-    investmentDao: IInvestmentDao,
-    requestDao: IRequestDao,
-    companyDao: ICompanyDao,
-    createContract:
-        (
-            homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
-            contractDao: IContractDao, requestService: IRequestService)
-            => IContractService,
-    createInvestment: (
-        investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-        investmentDao: IInvestmentDao,
-        requestService: IRequestService) => IInvestmentService,
-    createRequestService: (
-        requestDao: IRequestDao,
-        investmentDao: IInvestmentDao,
-        contractDao: IContractDao,
-        companyDao: ICompanyDao) => IRequestService) => {
+export default () => {
     // Init express
     const app = express();
 
@@ -43,10 +15,7 @@ export default (
     app.use(express.json());
     app.use(express.urlencoded({ extended: true }));
     app.use(cookieParser(process.env.COOKIE_SECRET));
-    const requestService = createRequestService(requestDao, investmentDao, contractDao, companyDao);
-    const contractService = createContract(homeownerDao, contractDao, requestService);
-    const investmentService = createInvestment(investorDao, investmentDao, requestService);
-    app.use('', BaseRouter(homeownerDao, investorDao, contractDao, contractService, investmentService, requestService));
+    app.use('', BaseRouter());
 
     return app;
 };

@@ -2,6 +2,7 @@ import { getRepository } from 'typeorm';
 import { IPersistedContract, PersistedContract, IStorableContract } from '@entities';
 import { getRandomInt } from '@shared';
 import { getDaos } from '@daos';
+import { singleton } from 'tsyringe';
 
 export interface IContractDao {
     getContracts(userId?: string): Promise<IPersistedContract[]>;
@@ -10,6 +11,7 @@ export interface IContractDao {
     saveContract(contract: IPersistedContract): Promise<void>;
 }
 
+@singleton()
 export class SqlContractDao implements IContractDao {
 
 
@@ -54,7 +56,7 @@ export class SqlContractDao implements IContractDao {
 
     public async saveContract(contract: IPersistedContract): Promise<void> {
         await getRepository(PersistedContract).update(contract.id, {
-            firstPaymentDate: contract.firstPaymentDate,
+            firstPaymentDate: contract.firstPaymentDate as number,
         });
         return;
     }

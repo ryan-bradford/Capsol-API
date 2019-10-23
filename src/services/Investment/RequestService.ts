@@ -8,6 +8,7 @@ import {
 } from '@entities';
 import { strict as assert } from 'assert';
 import { ICompanyDao } from 'src/daos/investment/CompanyDao';
+import { injectable, singleton, inject } from 'tsyringe';
 
 export interface IRequestService {
 
@@ -17,14 +18,15 @@ export interface IRequestService {
 
 }
 
+@injectable()
 export class RequestService implements IRequestService {
 
 
     constructor(
-        private requestDao: IRequestDao,
-        private investmentDao: IInvestmentDao,
-        private contractDao: IContractDao,
-        private companyDao: ICompanyDao) { }
+        @inject('RequestDao') private requestDao: IRequestDao,
+        @inject('InvestmentDao') private investmentDao: IInvestmentDao,
+        @inject('ContractDao') private contractDao: IContractDao,
+        @inject('CompanyDao') private companyDao: ICompanyDao) { }
 
 
     public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number> {
@@ -103,18 +105,9 @@ export class RequestService implements IRequestService {
                 if (!curInvestment) {
                     throw new Error('SEVERE');
                 }
-                if (curInvestment.value > amount) {
-                    const contract = curInvestment.contract;
-                    await this.investmentDao.deleteInvestment(curInvestment.id);
-                    await this.investmentDao.createInvestment(
-                        new StorableInvestment(contract.id, amount, to.id));
-                    await this.investmentDao.createInvestment(
-                        new StorableInvestment(contract.id, curInvestment.value - amount, from.id));
-                    amount = 0;
-                } else {
-                    amount -= curInvestment.value;
-                    await this.investmentDao.transferInvestment(curInvestment.id, from as IPersistedInvestor, to);
-                }
+                await this.investmentDao.transferInvestment(curInvestment.id, from as IPersistedInvestor, to, amount);
+                amount -= curInvestment.value;
+                amount = Math.max(amount, 0);
             }
         } else if (isHomeowner(from)) {
             from = (from as IPersistedHomeowner);
@@ -141,12 +134,11 @@ export class RequestService implements IRequestService {
         const investments = await this.investmentDao.getInvestments();
         const investorContractToInvestment: Map<string, IPersistedInvestment> = new Map();
         for (const investment of investments) {
-            const key: string = `${investment.contract.id}, ${investment.owner.id}`;
+            const key: string = `${investment.contract.id}, ${investment.owner.id}, ${investment.sellDate}`;
             const current = investorContractToInvestment.get(key);
             if (!current) {
                 investorContractToInvestment.set(key, investment);
             } else {
-                console.log(current.amount);
                 current.amount += investment.amount;
                 await this.investmentDao.deleteInvestment(investment.id);
                 await this.investmentDao.saveInvestment(current);

@@ -2,7 +2,6 @@ process.env.NODE_ENV = 'test';
 process.env.USE_TEST_DB = true;
 
 let toReturn = [
-    "ts-node/register",
     "tsconfig-paths/register",
     "source-map-support/register"
 ];

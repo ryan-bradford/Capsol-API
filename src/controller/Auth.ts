@@ -10,15 +10,18 @@ import {
     jwtCookieProps,
     JwtService,
 } from '@shared';
+import { injectable, inject } from 'tsyringe';
 
+@injectable()
 export default class AuthController {
 
     private jwtService = new JwtService();
 
 
     constructor(
-        private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-        private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>) { }
+        @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>) {
+    }
 
 
     public async login(req: Request, res: Response) {

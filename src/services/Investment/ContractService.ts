@@ -2,6 +2,7 @@ import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHom
 import { IUserDao, IContractDao } from '@daos';
 import { IRequestService } from '@services';
 import { logger, getDateAsNumber } from '@shared';
+import { injectable, singleton, inject } from 'tsyringe';
 
 export interface IContractService {
     createContract(amount: number, userId: string):
@@ -9,13 +10,14 @@ export interface IContractService {
     makePayment(email: string): Promise<number | null>;
 }
 
+@injectable()
 export class ContractService implements IContractService {
 
 
     constructor(
-        private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
-        private contractDao: IContractDao,
-        private requestService: IRequestService) { }
+        @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
+        @inject('ContractDao') private contractDao: IContractDao,
+        @inject('RequestService') private requestService: IRequestService) { }
 
 
     public async createContract(amount: number, userId: string):
@@ -41,15 +43,20 @@ export class ContractService implements IContractService {
                 throw new Error('Bad request');
             }
             const contract = contracts[0];
-            if (!contract.isFulfilled || getDateAsNumber() - contract.firstPaymentDate >= contract.totalLength) {
+            logger.info(String(contract.isFulfilled));
+            if (!contract.isFulfilled ||
+                (contract.firstPaymentDate !== null
+                    && getDateAsNumber() - contract.firstPaymentDate >= contract.totalLength)) {
                 return null;
             }
             await Promise.all(contract.investments.map(async (investment) => {
-                await this.requestService.createPurchaseRequest(investment.owner,
-                    investment.amount / contract.saleAmount * contract.monthlyPayment);
+                if (investment.sellDate === null) {
+                    await this.requestService.createPurchaseRequest(investment.owner,
+                        investment.amount / contract.saleAmount * contract.monthlyPayment);
+                }
                 return;
             }));
-            contract.firstPaymentDate = contract.firstPaymentDate ? contract.firstPaymentDate :
+            contract.firstPaymentDate = contract.firstPaymentDate !== null ? contract.firstPaymentDate :
                 getDateAsNumber();
             await this.contractDao.saveContract(contract);
             return contract.monthlyPayment;

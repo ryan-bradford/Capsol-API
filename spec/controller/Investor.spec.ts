@@ -41,7 +41,7 @@ const nextUser: IStoredInvestor = {
     pwdHash: '2',
     investments: [],
     totalCash: 1,
-    cashDeposits: [],
+    portfolioHistory: [],
 };
 
 

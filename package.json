@@ -6,7 +6,7 @@
     "lint": "tslint --project \"tsconfig.json\"",
     "start": "cross-env ENV_FILE=production node -r ./env -r module-alias/register ./dist/start.js",
     "start-dev": "nodemon --config \"./util/nodemon.json\"",
-    "test": "nyc mocha --exit",
+    "test": "nyc --require ts-node/register mocha --exit",
     "coverage": "codecov"
   },
   "_moduleAliases": {
@@ -39,6 +39,7 @@
     "reflect-metadata": "^0.1.13",
     "sinon": "^7.5.0",
     "sinon-chai": "^3.3.0",
+    "tsyringe": "^3.4.0",
     "typeorm": "^0.2.19",
     "winston": "^3.2.1"
   },

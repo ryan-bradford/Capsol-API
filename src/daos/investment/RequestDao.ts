@@ -2,6 +2,7 @@ import { getRepository } from 'typeorm';
 import { getRandomInt, logger } from '@shared';
 import { getDaos } from '@daos';
 import { IPersistedRequest, IStorableRequest, PersistedRequest, IPersistedInvestor } from '@entities';
+import { singleton } from 'tsyringe';
 
 export interface IRequestDao {
 
@@ -12,6 +13,7 @@ export interface IRequestDao {
 
 }
 
+@singleton()
 export class SqlRequestDao implements IRequestDao {
 
 

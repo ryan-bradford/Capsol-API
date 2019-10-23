@@ -4,6 +4,8 @@
 
 TODO:
 
+Add sell investment API endpoint<br>
+Add Data service<br>
 Add investment history to showed who owns what when<br>
 Add more tests<br>
     getPortfolioValue
@@ -22,6 +24,7 @@ Design better error handling<br>
 Create dashboard<br>
 Design Database/Data Structure<br>
 Add stuff about locking and transactions<br>
+Codacy integration<br>
 Make RAML<br>
 
 

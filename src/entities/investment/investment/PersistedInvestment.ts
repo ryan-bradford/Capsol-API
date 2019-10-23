@@ -6,6 +6,8 @@ export interface IPersistedInvestment {
     contract: IPersistedContract;
     amount: number;
     owner: IPersistedInvestor;
+    purchaseDate: number;
+    sellDate: number | null;
     readonly value: number;
 }
 
@@ -25,6 +27,12 @@ export class PersistedInvestment implements IPersistedInvestment {
     @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()
     public owner!: IPersistedInvestor;
+
+    @Column()
+    public purchaseDate!: number;
+
+    @Column({ nullable: true })
+    public sellDate!: number;
 
     public get value(): number {
         return this.amount / this.contract.saleAmount *

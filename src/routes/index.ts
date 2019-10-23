@@ -2,22 +2,14 @@ import { Router, NextFunction, Response, Request } from 'express';
 import InvestorRoute from './Investor';
 import HomeownerRoute from './Homeowner';
 import AuthRouter from './Auth';
-import { IUserDao, IContractDao } from '@daos';
-import {
-    IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStoredInvestor,
-    IStorableInvestor, IStorableHomeowner,
-} from '@entities';
-import { IContractService, IInvestmentService, IRequestService } from '@services';
 import { logger } from '@shared';
 import { AssertionError } from 'assert';
+import { container } from 'tsyringe';
+import InvestorController from 'src/controller/Investor';
+import AuthController from 'src/controller/Auth';
+import HomeownerController from 'src/controller/Homeowner';
 
-export default (
-    homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
-    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-    contractDao: IContractDao,
-    contractService: IContractService,
-    investmentService: IInvestmentService,
-    requestService: IRequestService) => {
+export default () => {
 
     // Init router and path
     const router = Router();
@@ -32,10 +24,12 @@ export default (
     });
 
     // Add sub-routes
-    router.use('/investor', InvestorRoute(investorDao, investmentService, requestService));
-    router.use('/homeowner', HomeownerRoute(homeownerDao, investorDao, contractDao,
-        contractService, investmentService));
-    router.use('/auth', AuthRouter(investorDao, homeownerDao));
+    const investorRoute = container.resolve(InvestorController);
+    const homeownerRoute = container.resolve(HomeownerController);
+
+    router.use('/investor', InvestorRoute());
+    router.use('/homeowner', HomeownerRoute());
+    router.use('/auth', AuthRouter());
     router.use(ClientErrorMiddleware);
     router.use(ServerErrorMiddleware);
     return router;

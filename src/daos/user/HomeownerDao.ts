@@ -3,7 +3,9 @@ import { getRepository } from 'typeorm';
 import { getRandomInt } from '@shared';
 import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@entities';
 import bcrypt from 'bcrypt';
+import { singleton } from 'tsyringe';
 
+@singleton()
 export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
 

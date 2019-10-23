@@ -2,22 +2,23 @@ import { IUserDao } from '@daos';
 import { Request, Response } from 'express';
 
 import {
-    IPersistedInvestor, StoredInvestor,
-    IStorableInvestor, StoredInvestment, StoredCashDeposit,
+    IPersistedInvestor, StoredInvestor, IStorableInvestor,
 } from '@entities';
 
 import { IInvestmentService, IRequestService } from '@services';
 import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
 import { logger, paramMissingError } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
+import { injectable, singleton, inject } from 'tsyringe';
 
+@injectable()
 export default class InvestorController {
 
 
     constructor(
-        private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-        private investmentService: IInvestmentService,
-        private requestService: IRequestService) { }
+        @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        @inject('InvestmentService') private investmentService: IInvestmentService,
+        @inject('RequestService') private requestService: IRequestService) { }
 
 
     public async getAll(req: Request, res: Response) {
@@ -25,17 +26,10 @@ export default class InvestorController {
             this.investorDao.getAll()
                 .then((result) => Promise.all(
                     result.map(async (investor) => {
-                        const investments = (await this.investmentService.getInvestmentsFor(investor.id))
-                            .map((investment) =>
-                                new StoredInvestment(investment.id, investment.amount, investment.contract.totalLength,
-                                    investment.contract.firstPaymentDate, investment.owner.id,
-                                    investment.contract.monthlyPayment *
-                                    investment.amount / investment.contract.saleAmount));
+                        const investments = await this.investmentService.getInvestmentsFor(investor.id);
                         const portfolio = await this.investmentService.getCashValue(investor.id);
-                        const cashDeposits = (await this.investmentService.getAllCashDepositsFor(investor.id))
-                            .map((cash) => new StoredCashDeposit(cash.id, cash.amount, cash.date, cash.user.id));
-                        return new StoredInvestor(investor.id, portfolio, investments,
-                            cashDeposits, investor.name, investor.email, investor.pwdHash);
+                        const cashDeposits = await this.investmentService.getAllCashDepositsFor(investor.id);
+                        return StoredInvestor.fromData(investor, investments, cashDeposits, portfolio);
                     })));
         return res.status(OK).json({ users });
     }
@@ -57,18 +51,11 @@ export default class InvestorController {
         const { email } = req.params as ParamsDictionary;
         const investor = await this.investorDao.getOneByEmail(email);
         if (investor) {
-            const investments = (await this.investmentService.getInvestmentsFor(investor.id))
-                .map((investment) =>
-                    new StoredInvestment(investment.id, investment.amount, investment.contract.totalLength,
-                        investment.contract.firstPaymentDate, investment.owner.id,
-                        investment.contract.monthlyPayment *
-                        investment.amount / investment.contract.saleAmount));
+            const investments = await this.investmentService.getInvestmentsFor(investor.id);
             const portfolio = await this.investmentService.getCashValue(investor.id);
-            const cashDeposits = (await this.investmentService.getAllCashDepositsFor(investor.id)).map((cash) =>
-                new StoredCashDeposit(cash.id, cash.amount, cash.date, cash.user.id));
+            const cashDeposits = await this.investmentService.getAllCashDepositsFor(investor.id);
             return res.status(OK).json(
-                new StoredInvestor(investor.id, portfolio, investments,
-                    cashDeposits, investor.name, investor.email, investor.pwdHash));
+                StoredInvestor.fromData(investor, investments, cashDeposits, portfolio));
         } else {
             return res.status(NOT_FOUND).end();
         }

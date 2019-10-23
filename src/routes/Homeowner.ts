@@ -1,23 +1,13 @@
 import { Request, Response, Router } from 'express';
 import { BAD_REQUEST, CREATED, OK, NOT_FOUND } from 'http-status-codes';
-import { ParamsDictionary } from 'express-serve-static-core';
-import { adminMW, logger, paramMissingError } from '@shared';
-import { IUserDao, IContractDao } from '@daos';
-import { IContractService, IInvestmentService } from '@services';
-import { NOTFOUND } from 'dns';
-import { IPersistedHomeowner, IStoredHomeowner, IPersistedInvestor, IStorableInvestor, IStorableHomeowner } from '@entities';
+import { adminMW } from '@shared';
 import HomeownerController from 'src/controller/Homeowner';
+import { container } from 'tsyringe';
 
 
-export default (
-    homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
-    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-    contractDao: IContractDao,
-    contractService: IContractService,
-    investmentService: IInvestmentService) => {
+export default () => {
     const router = Router();
-    const controller = new HomeownerController(homeownerDao, investorDao, contractDao,
-        contractService, investmentService);
+    const controller = container.resolve(HomeownerController);
 
     router.get('', adminMW, (req, res) => controller.getUsers(req, res));
 

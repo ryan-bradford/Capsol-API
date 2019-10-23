@@ -56,13 +56,10 @@ describe('HomeownerRouter', () => {
             const companyDao = new realDaos.SqlCompanyDao(0.01);
             const contractService = new MockContractService();
             const requestService = new RequestService(requestDao, investmentDao, contractDao, companyDao);
-            const investmentService = new InvestmentService(investorDao, investmentDao, requestService);
             homeownerController = new HomeownerController(
                 homeownerDao,
-                investorDao,
                 contractDao,
-                contractService,
-                investmentService);
+                contractService);
             done();
         });
     });

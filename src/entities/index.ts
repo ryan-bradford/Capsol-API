@@ -19,3 +19,4 @@ export * from './investment/request/StoredRequest';
 export * from './investment/cash/PersistedCashDeposit';
 export * from './investment/cash/StoredCashDeposit';
 export * from './investment/company/PersistedCompanyFee';
+export * from './investment/portfolio/StoredPortfolioHistory';

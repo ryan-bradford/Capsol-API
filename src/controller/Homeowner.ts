@@ -5,14 +5,14 @@ import { IContractService, IInvestmentService } from '@services';
 import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
 import { logger, paramMissingError, addMonth } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
+import { injectable, singleton, inject } from 'tsyringe';
 
+@injectable()
 export default class HomeownerController {
     constructor(
-        private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
-        private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-        private contractDao: IContractDao,
-        private contractService: IContractService,
-        private investmentService: IInvestmentService) { }
+        @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
+        @inject('ContractDao') private contractDao: IContractDao,
+        @inject('ContractService') private contractService: IContractService) { }
 
 
     public async getUsers(req: Request, res: Response) {

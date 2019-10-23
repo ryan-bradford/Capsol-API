@@ -6,12 +6,12 @@ import {
 import { IUserDao } from '@daos';
 import { IPersistedInvestor, IPersistedHomeowner, IStorableInvestor, IStorableHomeowner } from '@entities';
 import AuthController from 'src/controller/Auth';
+import { container } from 'tsyringe';
 
-export default (
-    investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-    homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>) => {
+export default () => {
     const router = Router();
-    const controller = new AuthController(investorDao, homeownerDao);
+    const controller = container.resolve(AuthController);
+
     /******************************************************************************
      *                      Login User - "POST /api/auth/login"
      ******************************************************************************/

@@ -9,7 +9,7 @@ import {
 } from '@services';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { expect } from 'chai';
-import { addMonth } from '@shared';
+import { addMonth, getDateAsNumber, logger } from '@shared';
 
 
 describe('Investment Service', () => {
@@ -128,10 +128,10 @@ describe('Investment Service', () => {
 
     it('should not return the new investment', (done) => {
         investmentDao.getInvestments().then((investments) => {
-            expect(investments.length).to.be.equal(1);
+            expect(investments.length).to.be.equal(2);
             let total = 0;
             investments.forEach((investment) => total += Number(investment.amount));
-            expect(total).to.be.equal(500);
+            expect(total).to.be.equal(700);
             done();
         });
     });
@@ -159,7 +159,7 @@ describe('Investment Service', () => {
 
     it('should have a length of one less', (done) => {
         contractDao.getContracts().then((contracts) => {
-            expect(contracts[0].totalLength - contracts[0].firstPaymentDate).to.be.equal(238);
+            expect(contracts[0].totalLength - getDateAsNumber()).to.be.equal(238);
             done();
         });
     });

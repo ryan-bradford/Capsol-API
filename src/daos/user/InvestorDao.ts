@@ -2,7 +2,9 @@ import { IUserDao } from './UserDao';
 import { IPersistedInvestor, PersistedInvestor, IStorableInvestor } from '@entities';
 import { getRepository } from 'typeorm';
 import bcrypt from 'bcrypt';
+import { singleton } from 'tsyringe';
 
+@singleton()
 export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
 

@@ -5,7 +5,7 @@ import { logger, getDateAsNumber } from '@shared';
 export interface IPersistedContract {
     id: string;
     saleAmount: number;
-    firstPaymentDate: number;
+    firstPaymentDate: number | null;
     monthlyPayment: number;
     investments: IPersistedInvestment[];
     homeowner: IPersistedHomeowner;
@@ -58,7 +58,8 @@ export class PersistedContract implements IPersistedContract {
 
     get unsoldAmount(): number {
         let toReturn = this.saleAmount;
-        this.investments.forEach((investment) => toReturn -= Number(investment.amount));
+        this.investments.forEach((investment) => toReturn -=
+            Number(investment.sellDate === null ? investment.amount : 0));
         return toReturn;
     }
 }

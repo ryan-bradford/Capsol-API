@@ -6,6 +6,7 @@ import { IRequestService } from '@services';
 import { IUserDao, IInvestmentDao } from '@daos';
 import { getRepository } from 'typeorm';
 import { getDateAsNumber } from '@shared';
+import { injectable, singleton, inject } from 'tsyringe';
 
 export interface IInvestmentService {
     addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]>;
@@ -15,13 +16,14 @@ export interface IInvestmentService {
     getAllCashDepositsFor(userId: string): Promise<IPersistedCashDeposit[]>;
 }
 
+@injectable()
 export class InvestmentService implements IInvestmentService {
 
 
     constructor(
-        private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
-        private investmentDao: IInvestmentDao,
-        private requestService: IRequestService) { }
+        @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        @inject('InvestmentDao') private investmentDao: IInvestmentDao,
+        @inject('RequestService') private requestService: IRequestService) { }
 
 
     public async addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]> {
