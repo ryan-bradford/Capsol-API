@@ -4,6 +4,7 @@ import { IPersistedInvestment } from 'src/entities/investment/investment/Persist
 import { IPersistedCashDeposit } from 'src/entities/investment/cash/PersistedCashDeposit';
 import { StoredInvestment } from 'src/entities/investment/investment/StoredInvestment';
 import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/StoredPortfolioHistory';
+import { getDateAsNumber } from '@shared';
 
 export interface IStoredInvestor extends IStoredUser {
     totalCash: number;
@@ -38,7 +39,7 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
                 investment.contract.firstPaymentDate, investment.owner.id,
                 investment.contract.monthlyPayment * investment.amount / investment.contract.saleAmount));
         const portfolioHistory: IStoredPortfolioHistory[] = [];
-        for (let i = getEarliestMonth(investments, cashDeposits); i <= getLastMonth(investments, cashDeposits); i++) {
+        for (let i = getEarliestMonth(investments, cashDeposits); i <= getDateAsNumber(); i++) {
             const cash = getCashValueAtMonth(cashDeposits, i);
             const investmentReturns = getNetReturnsAtMonth(investments, i);
             portfolioHistory.push(new StoredPortfolioHistory(i, cash, investmentReturns + cash));
@@ -53,15 +54,6 @@ function getEarliestMonth(investments: IPersistedInvestment[], cashDeposits: IPe
     investments.map((investment) => minMonth = Math.min(minMonth, investment.purchaseDate));
     cashDeposits.map((cash) => minMonth = Math.min(minMonth, cash.date));
     return minMonth;
-}
-
-function getLastMonth(investments: IPersistedInvestment[], cashDeposits: IPersistedCashDeposit[]): number {
-    let maxMonth = 0;
-    investments.map((investment) => maxMonth = Math.max(maxMonth,
-        investment.contract.firstPaymentDate ? investment.contract.firstPaymentDate + investment.contract.totalLength :
-            investment.purchaseDate));
-    cashDeposits.map((cash) => maxMonth = Math.max(maxMonth, cash.date));
-    return maxMonth;
 }
 
 function getCashValueAtMonth(cashDeposits: IPersistedCashDeposit[], month: number) {
@@ -89,7 +81,7 @@ function getInvestmentReturnedAtMonth(investment: IPersistedInvestment, month: n
         return monthlyIncome * investment.contract.totalLength;
     }
     const endMonth = Math.min(month, investment.sellDate ? investment.sellDate : month);
-    return (endMonth - investment.contract.firstPaymentDate) * monthlyIncome;
+    return ((endMonth - investment.contract.firstPaymentDate) + 1) * monthlyIncome;
 }
 
 

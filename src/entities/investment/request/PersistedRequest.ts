@@ -1,6 +1,5 @@
 import {
-    IPersistedUser, PersistedInvestor, IPersistedInvestor,
-    PersistedHomeowner, IPersistedHomeowner, isInvestor, PersistedUser,
+    PersistedInvestor, IPersistedInvestor,
 } from '@entities';
 import { PrimaryColumn, Column, JoinColumn, ManyToOne, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -9,7 +8,7 @@ export interface IPersistedRequest {
 
     id: string;
     amount: number;
-    investor: IPersistedUser;
+    investor: IPersistedInvestor;
     dateCreated: number;
     type: 'purchase' | 'sell';
 
@@ -30,7 +29,7 @@ export class PersistedRequest implements IPersistedRequest {
     @Column()
     public dateCreated!: number;
 
-    @ManyToOne((type) => PersistedInvestor, (investor) => investor.requests, { onDelete: 'CASCADE' })
+    @ManyToOne((type) => PersistedInvestor, (investor) => investor.requests, { onDelete: 'CASCADE', eager: true })
     public investor!: IPersistedInvestor;
 
 }

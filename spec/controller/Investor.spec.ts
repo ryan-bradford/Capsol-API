@@ -17,6 +17,7 @@ import sinonChai from 'sinon-chai';
 import chai from 'chai';
 import InvestorController from 'src/controller/Investor';
 import { start } from 'repl';
+import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
 chai.use(sinonChai);
 
@@ -55,7 +56,8 @@ describe('InvestorRouter', () => {
         investorController = new InvestorController(
             new MockInvestorDao(),
             new MockInvestmentService(),
-            new MockRequestService());
+            new MockRequestService(),
+            new MockCashDepositDao());
     });
 
     describe(`"GET":${investorPath}`, () => {
@@ -320,10 +322,6 @@ class MockInvestmentService implements IInvestmentService {
     }
 
 
-    public getAllCashDepositsFor(userId: string): Promise<IPersistedCashDeposit[]> {
-        return Promise.resolve([]);
-    }
-
 }
 
 
@@ -344,11 +342,20 @@ class MockRequestService implements IRequestService {
     public handleRequests(): Promise<void> {
         return Promise.resolve();
     }
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockCashDepositDao implements ICashDepositDao {
 
 
+    public makeDeposit(amount: number, user: IPersistedInvestor): Promise<void> {
+        return Promise.resolve();
+    }
 
+
+    public getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]> {
+        return Promise.resolve([]);
+    }
 
 
 }
-
-

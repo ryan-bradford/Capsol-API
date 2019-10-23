@@ -34,9 +34,10 @@ describe('Investment Service', () => {
             investorDao = new daos.SqlInvestorDao();
             requestDao = new daos.SqlRequestDao();
             companyDao = new daos.SqlCompanyDao(0);
-            requestService = new RequestService(requestDao, investmentDao, contractDao, companyDao);
-            contractService = new ContractService(homeownerDao, contractDao, requestService);
-            investmentService = new InvestmentService(investorDao, investmentDao, requestService);
+            const cashDepositDao = new daos.SqlCashDepositDao();
+            requestService = new RequestService(requestDao, investmentDao, contractDao, cashDepositDao);
+            contractService = new ContractService(homeownerDao, contractDao, requestService, companyDao);
+            investmentService = new InvestmentService(investorDao, investmentDao, requestService, cashDepositDao);
             return daos.clearDatabase();
         }).then(() => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));

@@ -2,7 +2,7 @@ import { IRequestDao } from 'src/daos/investment/RequestDao';
 import {
     IPersistedRequest, IStorableRequest, IPersistedUser, IPersistedInvestment, IStorableInvestment,
     PersistedRequest, IPersistedInvestor, IStorableContract, IPersistedContract,
-    PersistedContract, PersistedInvestment, StorableRequest,
+    PersistedContract, PersistedInvestment, StorableRequest, IPersistedCashDeposit,
 } from '@entities';
 import { IContractDao, IInvestmentDao, ICompanyDao } from '@daos';
 import { RequestService, IRequestService } from '@services';
@@ -10,6 +10,7 @@ import { expect } from 'chai';
 import { request } from 'http';
 import sinon from 'sinon';
 import { logger, getRandomInt } from '@shared';
+import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
 const investor: IPersistedInvestor = {
     id: 'a',
@@ -34,7 +35,7 @@ describe('Request Service', () => {
         contractDao = new MockContractDao();
         requestDao = new MockRequestDao();
         companyDao = new MockCompanyDao();
-        requestService = new RequestService(requestDao, investmentDao, contractDao, companyDao);
+        requestService = new RequestService(requestDao, investmentDao, contractDao, new MockCashDepositDao());
         sinon.stub((requestService as any), 'takeAssets').returns(Promise.resolve());
     });
 
@@ -220,5 +221,21 @@ class MockCompanyDao implements ICompanyDao {
     public async takeFee(amount: number): Promise<number> {
         return amount;
     }
+
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockCashDepositDao implements ICashDepositDao {
+
+
+    public makeDeposit(amount: number, user: IPersistedInvestor): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+    public getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]> {
+        return Promise.resolve([]);
+    }
+
 
 }

@@ -21,5 +21,7 @@ export default () => {
 
     router.put('/:email/investment', adminMW, (req, res) => controller.addInvestment(req, res));
 
+    router.put('/:email/sell', adminMW, (req, res) => controller.sellInvestment(req, res));
+
     return router;
 };

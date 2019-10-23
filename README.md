@@ -5,7 +5,7 @@
 TODO:
 
 Add sell investment API endpoint<br>
-Add Data service<br>
+Add Cash Deposit service/dao<br>
 Add investment history to showed who owns what when<br>
 Add more tests<br>
     getPortfolioValue

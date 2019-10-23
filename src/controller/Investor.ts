@@ -10,6 +10,7 @@ import { OK, BAD_REQUEST, CREATED, NOT_FOUND } from 'http-status-codes';
 import { logger, paramMissingError } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { injectable, singleton, inject } from 'tsyringe';
+import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
 @injectable()
 export default class InvestorController {
@@ -18,7 +19,8 @@ export default class InvestorController {
     constructor(
         @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         @inject('InvestmentService') private investmentService: IInvestmentService,
-        @inject('RequestService') private requestService: IRequestService) { }
+        @inject('RequestService') private requestService: IRequestService,
+        @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
 
 
     public async getAll(req: Request, res: Response) {
@@ -28,7 +30,7 @@ export default class InvestorController {
                     result.map(async (investor) => {
                         const investments = await this.investmentService.getInvestmentsFor(investor.id);
                         const portfolio = await this.investmentService.getCashValue(investor.id);
-                        const cashDeposits = await this.investmentService.getAllCashDepositsFor(investor.id);
+                        const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
                         return StoredInvestor.fromData(investor, investments, cashDeposits, portfolio);
                     })));
         return res.status(OK).json({ users });
@@ -53,7 +55,7 @@ export default class InvestorController {
         if (investor) {
             const investments = await this.investmentService.getInvestmentsFor(investor.id);
             const portfolio = await this.investmentService.getCashValue(investor.id);
-            const cashDeposits = await this.investmentService.getAllCashDepositsFor(investor.id);
+            const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
             return res.status(OK).json(
                 StoredInvestor.fromData(investor, investments, cashDeposits, portfolio));
         } else {
@@ -79,6 +81,19 @@ export default class InvestorController {
         const user = await this.investorDao.getOneByEmail(email);
         if (user && user.id) {
             await this.investmentService.addFunds(user.id, amount);
+            return res.status(OK).end();
+        } else {
+            return res.status(NOT_FOUND).end();
+        }
+    }
+
+
+    public async sellInvestment(req: Request, res: Response) {
+        const { email } = req.params as ParamsDictionary;
+        const { amount } = req.body;
+        const user = await this.investorDao.getOneByEmail(email);
+        if (user && user.id) {
+            await this.requestService.createSellRequest(user, amount);
             return res.status(OK).end();
         } else {
             return res.status(NOT_FOUND).end();

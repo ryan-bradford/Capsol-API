@@ -10,6 +10,7 @@ import {
     PersistedHomeowner, PersistedInvestor,
 } from '@entities';
 import { logger } from '@shared';
+import { SqlCashDepositDao } from './investment/CashDepositDao';
 
 async function getDaos() {
     if (getConnectionManager().connections.length === 0) {
@@ -18,7 +19,7 @@ async function getDaos() {
     return {
         SqlHomeownerDao, SqlInvestorDao,
         SqlInvestmentDao, SqlContractDao, clearDatabase,
-        SqlRequestDao, SqlCompanyDao,
+        SqlRequestDao, SqlCompanyDao, SqlCashDepositDao,
     };
 }
 

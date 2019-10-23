@@ -20,7 +20,7 @@ export class PersistedCashDeposit implements IPersistedCashDeposit {
     @Column()
     public date!: number;
 
-    @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE', eager: true })
+    @ManyToOne((type) => PersistedInvestor, (investor) => investor.cashDeposits, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()
     public user!: IPersistedInvestor;
 

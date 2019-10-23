@@ -13,6 +13,9 @@ getDaos().then((daos) => {
     container.register('FeeRate', {
         useValue: 0.01,
     });
+    container.register('CashDepositDao', {
+        useClass: daos.SqlCashDepositDao,
+    });
     container.register('HomeownerDao', {
         useClass: daos.SqlHomeownerDao,
     });

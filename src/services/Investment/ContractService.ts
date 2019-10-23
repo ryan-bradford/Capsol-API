@@ -1,5 +1,5 @@
 import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHomeowner } from '@entities';
-import { IUserDao, IContractDao } from '@daos';
+import { IUserDao, IContractDao, ICompanyDao } from '@daos';
 import { IRequestService } from '@services';
 import { logger, getDateAsNumber } from '@shared';
 import { injectable, singleton, inject } from 'tsyringe';
@@ -17,7 +17,8 @@ export class ContractService implements IContractService {
     constructor(
         @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
         @inject('ContractDao') private contractDao: IContractDao,
-        @inject('RequestService') private requestService: IRequestService) { }
+        @inject('RequestService') private requestService: IRequestService,
+        @inject('CompanyDao') private companyDao: ICompanyDao) { }
 
 
     public async createContract(amount: number, userId: string):
@@ -51,8 +52,9 @@ export class ContractService implements IContractService {
             }
             await Promise.all(contract.investments.map(async (investment) => {
                 if (investment.sellDate === null) {
-                    await this.requestService.createPurchaseRequest(investment.owner,
-                        investment.amount / contract.saleAmount * contract.monthlyPayment);
+                    const amount = await this.companyDao.takeFee(investment.amount / contract.saleAmount *
+                        contract.monthlyPayment);
+                    await this.requestService.createPurchaseRequest(investment.owner, amount);
                 }
                 return;
             }));

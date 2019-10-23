@@ -4,11 +4,11 @@ import { logger, getDateAsNumber } from '@shared';
 import {
     IPersistedRequest, IStorableRequest, IPersistedInvestor, IStoredInvestor,
     IPersistedHomeowner, IStoredHomeowner, IPersistedUser, isInvestor,
-    StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment,
+    StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment, PersistedCashDeposit,
 } from '@entities';
 import { strict as assert } from 'assert';
-import { ICompanyDao } from 'src/daos/investment/CompanyDao';
-import { injectable, singleton, inject } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
+import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
 export interface IRequestService {
 
@@ -26,11 +26,10 @@ export class RequestService implements IRequestService {
         @inject('RequestDao') private requestDao: IRequestDao,
         @inject('InvestmentDao') private investmentDao: IInvestmentDao,
         @inject('ContractDao') private contractDao: IContractDao,
-        @inject('CompanyDao') private companyDao: ICompanyDao) { }
+        @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
 
 
     public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number> {
-        amount = await this.companyDao.takeFee(amount);
         const newRequest = new StorableRequest(amount, getDateAsNumber(), user.id, 'purchase');
         await this.requestDao.createRequest(newRequest);
         return amount;
@@ -67,6 +66,7 @@ export class RequestService implements IRequestService {
                     currentSell.investor, currentPurchase.investor as IPersistedInvestor);
                 currentPurchase.amount -= transactionAmount;
                 currentSell.amount -= transactionAmount;
+                await this.cashDepositDao.makeDeposit(-transactionAmount, currentSell.investor);
                 await this.requestDao.saveRequest(currentSell);
                 if (currentSell.amount === 0) {
                     await this.requestDao.deleteRequest(currentSell.id);
