@@ -7,7 +7,8 @@
     "start": "cross-env ENV_FILE=production node -r ./env -r module-alias/register ./dist/start.js",
     "start-dev": "nodemon --config \"./util/nodemon.json\"",
     "test": "nyc --require ts-node/register mocha --exit --bail",
-    "coverage": "nyc report --reporter=json && codecov"
+    "posttest": "nyc report --reporter=json",
+    "codecov": "codecov"
   },
   "_moduleAliases": {
     "@daos": "dist/daos",
