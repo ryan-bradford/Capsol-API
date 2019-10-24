@@ -94,8 +94,8 @@ async function simulate() {
 describe('Simulation', function test() {
     this.timeout(500000);
     it('should run the simulation', (done) => {
-        //simulate().then(() => {
-        done();
-        //});
+        simulate().then(() => {
+            done();
+        });
     });
 });
