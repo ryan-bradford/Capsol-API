@@ -8,3 +8,7 @@ export function getDateAsNumber(): number {
 export function addMonth() {
     currentMonth += 1;
 }
+
+export function resetDate() {
+    currentMonth = 1;
+}

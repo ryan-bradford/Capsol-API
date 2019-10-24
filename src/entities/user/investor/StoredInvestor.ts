@@ -4,7 +4,7 @@ import { IPersistedInvestment } from 'src/entities/investment/investment/Persist
 import { IPersistedCashDeposit } from 'src/entities/investment/cash/PersistedCashDeposit';
 import { StoredInvestment } from 'src/entities/investment/investment/StoredInvestment';
 import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/StoredPortfolioHistory';
-import { getDateAsNumber } from '@shared';
+import { getDateAsNumber, logger } from '@shared';
 
 export interface IStoredInvestor extends IStoredUser {
     totalCash: number;
@@ -65,40 +65,34 @@ function getCashValueAtMonth(cashDeposits: IPersistedCashDeposit[], month: numbe
 function getNetReturnsAtMonth(investments: IPersistedInvestment[], month: number): number {
     let total = 0;
     investments.forEach((investment) => total += getInvestmentReturnedAtMonth(investment, month));
-    investments.forEach((investment) => total += getInvestmentValueAtMonth(investment, month) - investment.amount);
+    investments.forEach((investment) => total += getInvestmentDepreciation(investment, month));
     return total;
 }
 
 function getInvestmentReturnedAtMonth(investment: IPersistedInvestment, month: number): number {
-    if (investment.contract.firstPaymentDate === null) {
-        return 0;
-    }
-    if (month < investment.contract.firstPaymentDate) {
-        return 0;
+    if (investment.purchaseDate > month ||
+        investment.contract.firstPaymentDate === null || month < investment.contract.firstPaymentDate) {
+        return investment.amount;
     }
     const monthlyIncome = investment.contract.monthlyPayment * investment.amount / investment.contract.saleAmount;
     if (month - investment.contract.firstPaymentDate > investment.contract.totalLength) {
         return monthlyIncome * investment.contract.totalLength;
     }
-    const endMonth = Math.min(month, investment.sellDate ? investment.sellDate : month);
-    return ((endMonth - investment.contract.firstPaymentDate) + 1) * monthlyIncome;
+    const endMonth = Math.min(month + 1, investment.sellDate ? investment.sellDate : month + 1);
+    const firstMonth = Math.max(investment.contract.firstPaymentDate, investment.purchaseDate);
+    return (endMonth - firstMonth) * monthlyIncome;
 }
 
 
-function getInvestmentValueAtMonth(investment: IPersistedInvestment, month: number): number {
-    if (investment.sellDate !== null && investment.sellDate >= month) {
+function getInvestmentDepreciation(investment: IPersistedInvestment, month: number): number {
+    if (investment.purchaseDate > month) {
+        return -investment.amount;
+    }
+    if ((investment.contract.firstPaymentDate === null || month < investment.contract.firstPaymentDate)
+        || (investment.sellDate !== null && investment.sellDate <= month)) {
         return 0;
     }
-    if (investment.contract.firstPaymentDate === null) {
-        return investment.amount;
-    }
-    if (month < investment.contract.firstPaymentDate) {
-        return investment.amount;
-    }
-    if (month - investment.contract.firstPaymentDate > investment.contract.totalLength) {
-        return 0;
-    }
-    return investment.amount - investment.amount *
-        (month - investment.contract.firstPaymentDate) / investment.contract.totalLength;
+    return Math.max(investment.amount - investment.amount *
+        (month - investment.contract.firstPaymentDate + 1) / investment.contract.totalLength, 0) - investment.amount;
 }
 

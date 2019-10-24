@@ -1,5 +1,5 @@
 import { getRepository } from 'typeorm';
-import { getDateAsNumber } from '@shared';
+import { getDateAsNumber, logger } from '@shared';
 import { IPersistedInvestment, IStorableInvestment, PersistedInvestment, IPersistedInvestor, StorableInvestment } from '@entities';
 import { getDaos } from '@daos';
 import { singleton } from 'tsyringe';
@@ -9,7 +9,7 @@ export interface IInvestmentDao {
     getInvestments(userId?: string): Promise<IPersistedInvestment[]>;
     createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment>;
     deleteInvestment(id: string): Promise<void>;
-    transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number): Promise<void>;
+    transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number): Promise<number>;
     saveInvestment(investment: IPersistedInvestment): Promise<void>;
 }
 
@@ -61,7 +61,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
 
 
     public async transferInvestment(
-        id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number): Promise<void> {
+        id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number): Promise<number> {
         const investment = await this.getInvestment(id);
         if (!investment) {
             throw new Error('Not found');
@@ -71,15 +71,15 @@ export class SqlInvestmentDao implements IInvestmentDao {
         }
         const contract = investment.contract;
         investment.sellDate = getDateAsNumber();
+        const amountToTake = investment.amount * amount / investment.value;
         await this.createInvestment(
-            new StorableInvestment(contract.id, amount, to.id));
+            new StorableInvestment(contract.id, amountToTake, to.id));
         if (investment.value - amount > 0) {
             await this.createInvestment(
-                new StorableInvestment(contract.id, investment.value - amount, from.id));
+                new StorableInvestment(contract.id, investment.amount - amountToTake, from.id));
         }
-        investment.amount = amount;
         await this.saveInvestment(investment);
-        return;
+        return amountToTake;
     }
 
 

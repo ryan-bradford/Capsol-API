@@ -24,7 +24,6 @@ export default class HomeownerController {
     public async addUser(req: Request, res: Response) {
         // Check parameters
         const { user } = req.body;
-        logger.info(JSON.stringify(user.name));
         if (!user) {
             throw new Error(paramMissingError);
         }
@@ -84,9 +83,7 @@ export default class HomeownerController {
 
     public async makeAllPayments(req: Request, res: Response) {
         const allContracts = await this.contractDao.getContracts();
-        allContracts.forEach((contract) => {
-            this.contractService.makePayment(contract.homeowner.email);
-        });
+        await Promise.all(allContracts.map((contract) => this.contractService.makePayment(contract.homeowner.email)));
         addMonth();
         return res.status(OK).send();
     }

@@ -4,6 +4,7 @@
 
 TODO:
 
+Include fee in graph<br>
 Add sell investment API endpoint<br>
 Add Cash Deposit service/dao<br>
 Add investment history to showed who owns what when<br>

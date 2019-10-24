@@ -91,8 +91,10 @@ describe('Request Service', () => {
             .then(() => requestService.handleRequests())
             .then(() => requestDao.getRequests())
             .then((requests) => {
-                expect(requests.length).to.be.equal(1);
-                expect(requests[0].amount).to.be.equal(230);
+                expect(requests.length).to.be.equal(2);
+                let total = 0;
+                requests.map((toUse) => total += toUse.amount);
+                expect(total).to.be.equal(230);
                 done();
             });
     });
@@ -125,8 +127,8 @@ class MockInvestmentDao implements IInvestmentDao {
     }
 
 
-    public transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor): Promise<void> {
-        return Promise.resolve();
+    public transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor): Promise<number> {
+        return Promise.resolve(0);
     }
 
 

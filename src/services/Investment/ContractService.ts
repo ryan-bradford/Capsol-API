@@ -44,7 +44,6 @@ export class ContractService implements IContractService {
                 throw new Error('Bad request');
             }
             const contract = contracts[0];
-            logger.info(String(contract.isFulfilled));
             if (!contract.isFulfilled ||
                 (contract.firstPaymentDate !== null
                     && getDateAsNumber() - contract.firstPaymentDate >= contract.totalLength)) {
@@ -56,13 +55,10 @@ export class ContractService implements IContractService {
                         contract.monthlyPayment);
                     await this.requestService.createPurchaseRequest(investment.owner, amount);
                 }
-                return;
             }));
-            contract.firstPaymentDate = contract.firstPaymentDate !== null ? contract.firstPaymentDate :
-                getDateAsNumber();
+            contract.firstPaymentDate = contract.firstPaymentDate || getDateAsNumber();
             await this.contractDao.saveContract(contract);
             return contract.monthlyPayment;
-            return 1;
         } else {
             throw new Error('Not found');
         }

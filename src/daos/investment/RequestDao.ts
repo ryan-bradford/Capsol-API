@@ -44,7 +44,9 @@ export class SqlRequestDao implements IRequestDao {
 
 
     public async saveRequest(toSave: IPersistedRequest): Promise<void> {
-        await getRepository(PersistedRequest).update(toSave.id, toSave);
+        await getRepository(PersistedRequest).update(toSave.id, {
+            amount: toSave.amount,
+        });
         return;
     }
 }

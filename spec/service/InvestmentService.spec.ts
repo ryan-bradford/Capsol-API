@@ -9,7 +9,7 @@ import {
 } from '@services';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { expect } from 'chai';
-import { addMonth, getDateAsNumber, logger } from '@shared';
+import { addMonth, getDateAsNumber, resetDate } from '@shared';
 
 
 describe('Investment Service', () => {
@@ -38,6 +38,7 @@ describe('Investment Service', () => {
             requestService = new RequestService(requestDao, investmentDao, contractDao, cashDepositDao);
             contractService = new ContractService(homeownerDao, contractDao, requestService, companyDao);
             investmentService = new InvestmentService(investorDao, investmentDao, requestService, cashDepositDao);
+            resetDate();
             return daos.clearDatabase();
         }).then(() => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));
@@ -121,6 +122,7 @@ describe('Investment Service', () => {
         });
     });
 
+    addMonth();
     it('should sell the investment to satisfy purchase requests', (done) => {
         investmentService.sellInvestments(investor.id, 200)
             .then(() => requestService.handleRequests())
@@ -132,7 +134,7 @@ describe('Investment Service', () => {
             expect(investments.length).to.be.equal(2);
             let total = 0;
             investments.forEach((investment) => total += Number(investment.amount));
-            expect(total).to.be.equal(700);
+            expect(total).to.be.equal(1000);
             done();
         });
     });

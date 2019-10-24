@@ -49,10 +49,11 @@ export class RequestService implements IRequestService {
         // When a match is made, looks into sellers portfolio and determines what to transfer
         const requests =
             await this.requestDao.getRequests();
-        const allPurchaseRequests = requests.filter((request) => request.type === 'purchase');
-        const allSellRequests = requests.filter((request) => request.type === 'sell');
-        allPurchaseRequests.sort((a, b) => a.dateCreated - b.dateCreated);
-        allSellRequests.sort((a, b) => b.amount - a.amount);
+        let allPurchaseRequests = requests.filter((request) => request.type === 'purchase');
+        let allSellRequests = requests.filter((request) => request.type === 'sell');
+        allPurchaseRequests = allPurchaseRequests.sort((a, b) => a.amount - b.amount);
+        allPurchaseRequests = allPurchaseRequests.sort((a, b) => b.dateCreated - a.dateCreated);
+        allSellRequests = allSellRequests.sort((a, b) => b.amount - a.amount);
         const allContracts = (await this.contractDao.getContracts())
             .filter((contract) => !contract.isFulfilled)
             .sort((a, b) => b.unsoldAmount / b.saleAmount - a.unsoldAmount / a.saleAmount);
@@ -75,7 +76,7 @@ export class RequestService implements IRequestService {
             } else {
                 const transactionAmount = Math.min(currentSell.unsoldAmount, currentPurchase.amount);
                 const investment = await this.takeAssets(transactionAmount,
-                    currentSell.homeowner, currentPurchase.investor as IPersistedInvestor);
+                    currentSell.homeowner, currentPurchase.investor);
                 if (!investment) {
                     throw new Error('Bad');
                 }
@@ -105,8 +106,8 @@ export class RequestService implements IRequestService {
                 if (!curInvestment) {
                     throw new Error('SEVERE');
                 }
-                await this.investmentDao.transferInvestment(curInvestment.id, from as IPersistedInvestor, to, amount);
-                amount -= curInvestment.value;
+                amount -= await this.investmentDao.transferInvestment(curInvestment.id,
+                    from as IPersistedInvestor, to, amount);
                 amount = Math.max(amount, 0);
             }
         } else if (isHomeowner(from)) {
@@ -134,7 +135,7 @@ export class RequestService implements IRequestService {
         const investments = await this.investmentDao.getInvestments();
         const investorContractToInvestment: Map<string, IPersistedInvestment> = new Map();
         for (const investment of investments) {
-            const key: string = `${investment.contract.id}, ${investment.owner.id}, ${investment.sellDate}`;
+            const key: string = `${investment.contract.id}, ${investment.owner.id}, ${investment.sellDate}, ${investment.purchaseDate}`;
             const current = investorContractToInvestment.get(key);
             if (!current) {
                 investorContractToInvestment.set(key, investment);
