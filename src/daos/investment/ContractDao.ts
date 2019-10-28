@@ -73,8 +73,8 @@ export class SqlContractDao implements IContractDao {
     }
 
 
-    // TODO: make actually work!
     public async  getContractPositionInQueue(unsoldAmount: number): Promise<number> {
-        return (await getRepository(PersistedContract).findAndCount())[1] - 1;
+        const allContracts = await this.getContracts();
+        return allContracts.filter((contract) => contract.unsoldAmount < unsoldAmount).length + 1;
     }
 }

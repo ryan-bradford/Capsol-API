@@ -1,3 +1,4 @@
+// TODO: convert to service
 let currentMonth = 10;
 
 export function getDateAsNumber(): number {

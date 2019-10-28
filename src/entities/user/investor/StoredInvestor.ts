@@ -7,7 +7,6 @@ import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/Stored
 import { getDateAsNumber, logger } from '@shared';
 
 // TODO: also supply interest rate.
-// TODO: fix bug with double value.
 export interface IStoredInvestor extends IStoredUser {
     totalCash: number;
     investments: IStoredInvestment[];
@@ -74,7 +73,7 @@ function getNetReturnsAtMonth(investments: IPersistedInvestment[], month: number
 function getInvestmentReturnedAtMonth(investment: IPersistedInvestment, month: number): number {
     if (investment.purchaseDate > month ||
         investment.contract.firstPaymentDate === null || month < investment.contract.firstPaymentDate) {
-        return investment.amount;
+        return 0;
     }
     const monthlyIncome = investment.contract.monthlyPayment * investment.amount / investment.contract.saleAmount;
     if (month - investment.contract.firstPaymentDate > investment.contract.totalLength) {
@@ -88,7 +87,7 @@ function getInvestmentReturnedAtMonth(investment: IPersistedInvestment, month: n
 
 function getInvestmentDepreciation(investment: IPersistedInvestment, month: number): number {
     if (investment.purchaseDate > month) {
-        return -investment.amount;
+        return 0;
     }
     if ((investment.contract.firstPaymentDate === null || month < investment.contract.firstPaymentDate)
         || (investment.sellDate !== null && investment.sellDate <= month)) {
