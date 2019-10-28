@@ -6,6 +6,8 @@ import { StoredInvestment } from 'src/entities/investment/investment/StoredInves
 import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/StoredPortfolioHistory';
 import { getDateAsNumber, logger } from '@shared';
 
+// TODO: also supply interest rate.
+// TODO: fix bug with double value.
 export interface IStoredInvestor extends IStoredUser {
     totalCash: number;
     investments: IStoredInvestment[];

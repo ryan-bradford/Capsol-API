@@ -7,7 +7,7 @@ export interface IContractDao {
     getContracts(userId?: string): Promise<IPersistedContract[]>;
     getContract(id: string): Promise<IPersistedContract>;
     getInvestmentsForContract(contractId?: string): Promise<IPersistedInvestment[]>;
-    createContract(contract: IStorableContract): Promise<IPersistedContract>;
+    createContract(contract: IStorableContract, dontSave?: boolean): Promise<IPersistedContract>;
     saveContract(contract: IPersistedContract): Promise<void>;
     getContractPositionInQueue(unsoldAmount: number): Promise<number>;
 }
@@ -44,7 +44,7 @@ export class SqlContractDao implements IContractDao {
     }
 
 
-    public async createContract(contract: IStorableContract): Promise<IPersistedContract> {
+    public async createContract(contract: IStorableContract, dontSave?: boolean): Promise<IPersistedContract> {
         const daos = await getDaos();
         const homeownerDao = new daos.SqlHomeownerDao();
         const newContract = new PersistedContract();
@@ -57,9 +57,11 @@ export class SqlContractDao implements IContractDao {
         newContract.totalLength = contract.length;
         newContract.monthlyPayment = contract.monthlyPayment;
         newContract.saleAmount = contract.saleAmount;
-        const toReturn = await getRepository(PersistedContract).save(newContract);
-        homeowner.contract = toReturn;
-        return toReturn;
+        if (dontSave !== true) {
+            const toReturn = await getRepository(PersistedContract).save(newContract);
+            homeowner.contract = toReturn;
+        }
+        return newContract;
     }
 
 

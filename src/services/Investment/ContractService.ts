@@ -5,7 +5,7 @@ import { logger, getDateAsNumber } from '@shared';
 import { injectable, singleton, inject } from 'tsyringe';
 
 export interface IContractService {
-    createContract(amount: number, userId: string):
+    createContract(amount: number, userId: string, dontSave?: boolean):
         Promise<IPersistedContract>;
     makePayment(email: string): Promise<number | null>;
 }
@@ -21,7 +21,7 @@ export class ContractService implements IContractService {
         @inject('CompanyDao') private companyDao: ICompanyDao) { }
 
 
-    public async createContract(amount: number, userId: string):
+    public async createContract(amount: number, userId: string, dontSave?: boolean):
         Promise<IPersistedContract> {
         const homeowner = await this.homeownerDao.getOne(userId);
         if (!homeowner) {
@@ -31,7 +31,7 @@ export class ContractService implements IContractService {
         const lengthInYears = 20;
         const yearlyPayment = amount * (1 / 20 + interestRate);
         const newContract = new StorableContract(amount, lengthInYears * 12, yearlyPayment / 12, homeowner.id);
-        const toReturn = await this.contractDao.createContract(newContract);
+        const toReturn = await this.contractDao.createContract(newContract, dontSave);
         return toReturn;
     }
 
