@@ -11,6 +11,8 @@ export default () => {
 
     router.get('', adminMW, (req, res) => controller.getUsers(req, res));
 
+    router.get('/options/:option', adminMW, (req, res) => controller.getOptionDetails(req, res));
+
     router.post('', (req, res) => controller.addUser(req, res));
 
     router.post('/payments', adminMW, (req, res) => controller.makeAllPayments(req, res));

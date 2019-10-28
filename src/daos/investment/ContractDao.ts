@@ -1,14 +1,15 @@
-import { getRepository } from 'typeorm';
-import { IPersistedContract, PersistedContract, IStorableContract } from '@entities';
-import { getRandomInt } from '@shared';
+import { getRepository, LessThan } from 'typeorm';
+import { IPersistedContract, PersistedContract, IStorableContract, IPersistedInvestment, PersistedInvestment } from '@entities';
 import { getDaos } from '@daos';
 import { singleton } from 'tsyringe';
 
 export interface IContractDao {
     getContracts(userId?: string): Promise<IPersistedContract[]>;
     getContract(id: string): Promise<IPersistedContract>;
+    getInvestmentsForContract(contractId?: string): Promise<IPersistedInvestment[]>;
     createContract(contract: IStorableContract): Promise<IPersistedContract>;
     saveContract(contract: IPersistedContract): Promise<void>;
+    getContractPositionInQueue(unsoldAmount: number): Promise<number>;
 }
 
 @singleton()
@@ -32,6 +33,14 @@ export class SqlContractDao implements IContractDao {
             relations: ['homeowner', 'investments'],
         }).then((contracts: IPersistedContract[]) =>
             contracts.filter((contract) => !userId || contract.homeowner.id === userId));
+    }
+
+
+    public async getInvestmentsForContract(contractId: string): Promise<IPersistedInvestment[]> {
+        return getRepository(PersistedInvestment).find({
+            relations: ['contract', 'owner'],
+            where: { contractId },
+        });
     }
 
 
@@ -59,5 +68,11 @@ export class SqlContractDao implements IContractDao {
             firstPaymentDate: contract.firstPaymentDate as number,
         });
         return;
+    }
+
+
+    // TODO: make actually work!
+    public async  getContractPositionInQueue(unsoldAmount: number): Promise<number> {
+        return (await getRepository(PersistedContract).findAndCount())[1] - 1;
     }
 }

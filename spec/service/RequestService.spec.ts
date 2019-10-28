@@ -151,6 +151,11 @@ class MockContractDao implements IContractDao {
     }
 
 
+    public getInvestmentsForContract(contractId?: string | undefined): Promise<IPersistedInvestment[]> {
+        return Promise.resolve([]);
+    }
+
+
     public getContract(id: string): Promise<IPersistedContract> {
         return Promise.resolve(this.contracts.filter((contract) => contract.id === id)[0]);
     }
@@ -170,6 +175,11 @@ class MockContractDao implements IContractDao {
     public saveContract(toSave: IPersistedContract): Promise<void> {
         this.contracts.map((mapContract) => mapContract.id === toSave.id ? toSave : mapContract);
         return Promise.resolve();
+    }
+
+
+    public getContractPositionInQueue(unsoldAmount: number): Promise<number> {
+        return Promise.resolve(1);
     }
 }
 

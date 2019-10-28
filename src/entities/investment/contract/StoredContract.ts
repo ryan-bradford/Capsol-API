@@ -5,7 +5,9 @@ export interface IStoredContract {
     saleAmount: number;
     length: number;
     monthlyPayment: number;
-    investments: IStoredInvestment[];
+    firstPaymentDate: number | null;
+    percentFulfilled: number;
+    positionInQueue: number | null;
     homeownerId: string;
 }
 
@@ -16,17 +18,22 @@ export class StoredContract implements IStoredContract {
     public length: number;
     public monthlyPayment: number;
     public homeownerId: string;
-    public investments: IStoredInvestment[];
+    public firstPaymentDate: number | null;
+    public percentFulfilled: number;
+    public positionInQueue: number | null;
 
 
-    constructor(id: string, saleAmount: number, length: number, monthlyPayment: number,
-        // tslint:disable-next-line: align
-        homeownerId: string, investments: IStoredInvestment[]) {
+    constructor(
+        id: string, saleAmount: number, length: number, monthlyPayment: number,
+        firstPaymentDate: number | null, percentFulfilled: number, positionInQueue: number | null,
+        homeownerId: string) {
         this.id = id;
         this.saleAmount = saleAmount;
         this.length = length;
         this.monthlyPayment = monthlyPayment;
         this.homeownerId = homeownerId;
-        this.investments = investments;
+        this.firstPaymentDate = firstPaymentDate;
+        this.percentFulfilled = percentFulfilled;
+        this.positionInQueue = positionInQueue;
     }
 }

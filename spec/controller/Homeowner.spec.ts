@@ -7,13 +7,14 @@ import bcrypt from 'bcrypt';
 import sinon from 'sinon';
 import {
     IPersistedHomeowner, IStoredHomeowner,
-    PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor, IStorableHomeowner,
+    PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor, IStorableHomeowner, StoredHomeowner,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse, ResponseOutput } from 'mock-req-res';
 import sinonChai from 'sinon-chai';
 import chai from 'chai';
 import HomeownerController from 'src/controller/Homeowner';
+import { start } from 'repl';
 
 chai.use(sinonChai);
 
@@ -71,7 +72,9 @@ describe('HomeownerRouter', () => {
             callApi()
                 .then((res) => {
                     expect(res.status).to.be.calledWith(OK);
-                    expect(res.json).to.be.calledWith({ users: startHomeowners.users });
+                    const realUsers = startHomeowners.users.map((user) =>
+                        new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, undefined));
+                    expect(res.json).to.be.calledWith({ users: realUsers });
                     done();
                 });
         });
@@ -170,7 +173,9 @@ describe('HomeownerRouter', () => {
             callApi('test@gmail.com')
                 .then((res) => {
                     expect(res.status).to.be.calledWith(OK);
-                    expect(res.json).to.be.calledWith(startHomeowners.users[0]);
+                    const user = new StoredHomeowner(startHomeowners.users[0].id, startHomeowners.users[0].name,
+                        startHomeowners.users[0].email, startHomeowners.users[0].pwdHash, undefined);
+                    expect(res.json).to.be.calledWith(user);
                     done();
                 });
         });

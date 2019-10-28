@@ -78,6 +78,9 @@ export default class InvestorController {
     public async addInvestment(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
+        if (amount <= 0) {
+            throw new Error('Bad amount');
+        }
         const user = await this.investorDao.getOneByEmail(email);
         if (user && user.id) {
             await this.investmentService.addFunds(user.id, amount);

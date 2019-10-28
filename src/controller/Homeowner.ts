@@ -1,11 +1,11 @@
 import { Request, Response } from 'express';
 import { IUserDao, IContractDao } from '@daos';
-import { IPersistedHomeowner, IPersistedInvestor, IStorableInvestor, IStorableHomeowner } from '@entities';
-import { IContractService, IInvestmentService } from '@services';
+import { IPersistedHomeowner, IStorableHomeowner, StoredHomeowner, StoredContract } from '@entities';
+import { IContractService } from '@services';
 import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { logger, paramMissingError, addMonth } from '@shared';
+import { paramMissingError, addMonth, logger } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
-import { injectable, singleton, inject } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
 
 @injectable()
 export default class HomeownerController {
@@ -15,9 +15,25 @@ export default class HomeownerController {
         @inject('ContractService') private contractService: IContractService) { }
 
 
+    // TODO: fix loading contract bug
     public async getUsers(req: Request, res: Response) {
         const users = await this.homeownerDao.getAll();
-        return res.status(OK).json({ users });
+        const stored = await Promise.all(users.map(async (user) => {
+            let contract: StoredContract | undefined;
+            if (user.contract) {
+                const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
+                let investmentValue = 0;
+                user.contract.investments = contractInvestments;
+                const positionInQueue = await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount);
+                logger.info(JSON.stringify(contractInvestments));
+                contractInvestments.forEach((investment) => investmentValue += investment.amount);
+                contract = new StoredContract(user.contract.id, user.contract.saleAmount,
+                    user.contract.totalLength, user.contract.monthlyPayment, user.contract.firstPaymentDate,
+                    investmentValue / user.contract.saleAmount, positionInQueue, user.id);
+            }
+            return new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, contract);
+        }));
+        return res.status(OK).json({ users: stored });
     }
 
 
@@ -37,7 +53,19 @@ export default class HomeownerController {
         const { email } = req.params;
         const user = await this.homeownerDao.getOneByEmail(email);
         if (user) {
-            return res.status(OK).json(user);
+            let contract: StoredContract | undefined;
+            if (user.contract) {
+                const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
+                user.contract.investments = contractInvestments;
+                const positionInQueue = await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount);
+                let investmentValue = 0;
+                logger.info(JSON.stringify(contractInvestments));
+                contractInvestments.forEach((investment) => investmentValue += investment.amount);
+                contract = new StoredContract(user.contract.id, user.contract.saleAmount,
+                    user.contract.totalLength, user.contract.monthlyPayment, user.contract.firstPaymentDate,
+                    investmentValue / user.contract.saleAmount, positionInQueue, user.id);
+            }
+            return res.status(OK).json(new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, contract));
         } else {
             return res.status(NOT_FOUND).end();
         }
@@ -56,7 +84,7 @@ export default class HomeownerController {
 
 
     public async signUpHome(req: Request, res: Response) {
-        const { email } = req.params as ParamsDictionary;
+        const { email } = req.params;
         const { amount } = req.body;
         if (!amount && !(typeof amount === 'number')) {
             throw new Error('Bad amount');
@@ -86,5 +114,29 @@ export default class HomeownerController {
         await Promise.all(allContracts.map((contract) => this.contractService.makePayment(contract.homeowner.email)));
         addMonth();
         return res.status(OK).send();
+    }
+
+
+    // TODO: make correct!
+    public async getOptionDetails(req: Request, res: Response) {
+        const { option } = req.params;
+        switch (option) {
+            case '0': return {
+                electricity: 60,
+                contractSize: 6000,
+                monthlyPayment: 50,
+            };
+            case '1': return {
+                electricity: 100,
+                contractSize: 10000,
+                monthlyPayment: 100,
+            };
+            case '2': return {
+                electricity: 150,
+                contractSize: 15000,
+                monthlyPayment: 150,
+            };
+            default: throw new Error('Invalid option');
+        }
     }
 }

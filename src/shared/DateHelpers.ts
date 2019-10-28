@@ -1,4 +1,4 @@
-let currentMonth = 1;
+let currentMonth = 10;
 
 export function getDateAsNumber(): number {
     // return new Date().getMonth() + 12 * new Date().getFullYear();
