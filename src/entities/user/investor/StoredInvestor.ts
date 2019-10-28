@@ -4,13 +4,13 @@ import { IPersistedInvestment } from 'src/entities/investment/investment/Persist
 import { IPersistedCashDeposit } from 'src/entities/investment/cash/PersistedCashDeposit';
 import { StoredInvestment } from 'src/entities/investment/investment/StoredInvestment';
 import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/StoredPortfolioHistory';
-import { getDateAsNumber, logger } from '@shared';
+import { getDateAsNumber } from '@shared';
 
-// TODO: also supply interest rate.
 export interface IStoredInvestor extends IStoredUser {
     totalCash: number;
     investments: IStoredInvestment[];
     portfolioHistory: IStoredPortfolioHistory[];
+    interestRate: number;
 }
 
 export class StoredInvestor extends StoredUser implements IStoredInvestor {
@@ -18,15 +18,18 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
     public totalCash: number;
     public investments: IStoredInvestment[];
     public portfolioHistory: IStoredPortfolioHistory[];
+    public interestRate: number;
 
 
-    constructor(id: string | IPersistedInvestor, totalCash: number, investments: IStoredInvestment[],
-        // tslint:disable-next-line: align
-        portfolioHistory: IStoredPortfolioHistory[], name?: string, email?: string, pwdHash?: string) {
+    constructor(
+        id: string | IPersistedInvestor, totalCash: number, investments: IStoredInvestment[],
+        portfolioHistory: IStoredPortfolioHistory[], interestRate: number,
+        name?: string, email?: string, pwdHash?: string) {
         super(id, name, email, pwdHash);
         this.totalCash = totalCash;
         this.investments = investments;
         this.portfolioHistory = portfolioHistory;
+        this.interestRate = interestRate;
     }
 
 
@@ -45,9 +48,26 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
             const investmentReturns = getNetReturnsAtMonth(investments, i);
             portfolioHistory.push(new StoredPortfolioHistory(i, cash, investmentReturns + cash));
         }
-        return new StoredInvestor(investor, portfolioValue, storedInvestments, portfolioHistory);
+        return new StoredInvestor(investor, portfolioValue, storedInvestments, portfolioHistory,
+            getEffectiveInterest(portfolioHistory));
     }
 
+}
+
+function getEffectiveInterest(history: IStoredPortfolioHistory[]): number {
+    let interest: number | null = null;
+    for (let i = 1; i < history.length; i++) {
+        const periodInterest = 12 * (history[i].totalValue / history[i - 1].totalValue - 1);
+        if (interest !== null) {
+            interest = (periodInterest + interest * (i - 1)) / i;
+        } else {
+            interest = periodInterest;
+        }
+    }
+    if (interest === null) {
+        return 0;
+    }
+    return interest;
 }
 
 function getEarliestMonth(investments: IPersistedInvestment[], cashDeposits: IPersistedCashDeposit[]): number {
