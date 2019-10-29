@@ -25,7 +25,7 @@ import {
 
 async function simulate() {
 
-    await startApp(0.01);
+    await startApp(0.1);
 
     const investmentSizeMax = 10000;
     const contractSizeMax = 10000;
@@ -86,7 +86,8 @@ async function simulate() {
                 return interest;
             });
             const givenInterest = totalInterest / result.body.users.length;
-            expect(Math.round(givenInterest * 100) / 100).to.be.greaterThan(1.029);
+            logger.info(String(Math.round(givenInterest * 10000) / 10000));
+            expect(Math.round(givenInterest * 10000) / 10000).to.be.greaterThan(1.029);
         });
 
 }

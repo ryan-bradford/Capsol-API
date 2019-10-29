@@ -1,6 +1,7 @@
 import { PersistedCompanyFee } from 'src/entities/investment/company/PersistedCompanyFee';
 import { getRepository } from 'typeorm';
 import { singleton, injectable, inject } from 'tsyringe';
+import { logger } from '@shared';
 
 export interface ICompanyDao {
     takeFee(amount: number): Promise<number>;
@@ -11,13 +12,14 @@ export interface ICompanyDao {
 export class SqlCompanyDao implements ICompanyDao {
 
 
-    constructor(@inject('FeeRate') private feePercentage: number) { }
+    constructor(@inject('FeeRate') private feePercentage: number) {
+    }
 
 
     public async takeFee(amount: number): Promise<number> {
         const toSave = new PersistedCompanyFee();
         const feeToTake = amount * this.feePercentage;
-        toSave.amount = amount;
+        toSave.amount = feeToTake;
         await getRepository(PersistedCompanyFee).save(toSave);
         return amount - feeToTake;
     }

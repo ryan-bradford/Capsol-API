@@ -7,7 +7,7 @@ import { ICompanyDao, SqlCompanyDao } from './investment/CompanyDao';
 import { SqlRequestDao } from './investment/RequestDao';
 import { createConnection, getRepository, getConnectionManager } from 'typeorm';
 import {
-    PersistedHomeowner, PersistedInvestor,
+    PersistedHomeowner, PersistedInvestor, PersistedCompanyFee,
 } from '@entities';
 import { logger } from '@shared';
 import { SqlCashDepositDao } from './investment/CashDepositDao';
@@ -34,6 +34,10 @@ async function clearDatabase() {
 
     await getRepository(PersistedInvestor).find().then((investors) => {
         return Promise.all(investors.map((investor) => getRepository(PersistedInvestor).delete(investor)));
+    });
+
+    await getRepository(PersistedCompanyFee).find().then((cashDeposits) => {
+        return Promise.all(cashDeposits.map((cash) => getRepository(PersistedCompanyFee).delete(cash)));
     });
 
     return 'Done!';

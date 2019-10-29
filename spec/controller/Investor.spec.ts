@@ -58,7 +58,7 @@ describe('InvestorRouter', () => {
             new MockInvestorDao(),
             new MockInvestmentService(),
             new MockRequestService(),
-            new MockCashDepositDao());
+            new MockCashDepositDao(), 0);
     });
 
     describe(`"GET":${investorPath}`, () => {

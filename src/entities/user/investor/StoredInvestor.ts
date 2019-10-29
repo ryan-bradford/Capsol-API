@@ -37,7 +37,8 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
         investor: IPersistedInvestor,
         investments: IPersistedInvestment[],
         cashDeposits: IPersistedCashDeposit[],
-        portfolioValue: number): IStoredInvestor {
+        portfolioValue: number,
+        feePercentage: number): IStoredInvestor {
         const storedInvestments = investments.map((investment) =>
             new StoredInvestment(investment.id, investment.amount, investment.contract.totalLength,
                 investment.contract.firstPaymentDate, investment.owner.id,
@@ -45,7 +46,7 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
         const portfolioHistory: IStoredPortfolioHistory[] = [];
         for (let i = getEarliestMonth(investments, cashDeposits); i <= getDateAsNumber(); i++) {
             const cash = getCashValueAtMonth(cashDeposits, i);
-            const investmentReturns = getNetReturnsAtMonth(investments, i);
+            const investmentReturns = getNetReturnsAtMonth(investments, i, feePercentage);
             portfolioHistory.push(new StoredPortfolioHistory(i, cash, investmentReturns + cash));
         }
         return new StoredInvestor(investor, portfolioValue, storedInvestments, portfolioHistory,
@@ -83,25 +84,25 @@ function getCashValueAtMonth(cashDeposits: IPersistedCashDeposit[], month: numbe
     return totalValue;
 }
 
-function getNetReturnsAtMonth(investments: IPersistedInvestment[], month: number): number {
+function getNetReturnsAtMonth(investments: IPersistedInvestment[], month: number, feePercentage: number): number {
     let total = 0;
-    investments.forEach((investment) => total += getInvestmentReturnedAtMonth(investment, month));
+    investments.forEach((investment) => total += getInvestmentReturnedAtMonth(investment, month, feePercentage));
     investments.forEach((investment) => total += getInvestmentDepreciation(investment, month));
     return total;
 }
 
-function getInvestmentReturnedAtMonth(investment: IPersistedInvestment, month: number): number {
+function getInvestmentReturnedAtMonth(investment: IPersistedInvestment, month: number, feePercentage: number): number {
     if (investment.purchaseDate > month ||
         investment.contract.firstPaymentDate === null || month < investment.contract.firstPaymentDate) {
         return 0;
     }
     const monthlyIncome = investment.contract.monthlyPayment * investment.amount / investment.contract.saleAmount;
     if (month - investment.contract.firstPaymentDate > investment.contract.totalLength) {
-        return monthlyIncome * investment.contract.totalLength;
+        return monthlyIncome * investment.contract.totalLength * (1 - feePercentage);
     }
     const endMonth = Math.min(month + 1, investment.sellDate ? investment.sellDate : month + 1);
     const firstMonth = Math.max(investment.contract.firstPaymentDate, investment.purchaseDate);
-    return (endMonth - firstMonth) * monthlyIncome;
+    return (endMonth - firstMonth) * monthlyIncome * (1 - feePercentage);
 }
 
 

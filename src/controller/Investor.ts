@@ -20,7 +20,8 @@ export default class InvestorController {
         @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         @inject('InvestmentService') private investmentService: IInvestmentService,
         @inject('RequestService') private requestService: IRequestService,
-        @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
+        @inject('CashDepositDao') private cashDepositDao: ICashDepositDao,
+        @inject('FeeRate') private feePercentage: number) { }
 
 
     public async getAll(req: Request, res: Response) {
@@ -31,7 +32,8 @@ export default class InvestorController {
                         const investments = await this.investmentService.getInvestmentsFor(investor.id);
                         const portfolio = await this.investmentService.getCashValue(investor.id);
                         const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
-                        return StoredInvestor.fromData(investor, investments, cashDeposits, portfolio);
+                        return StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
+                            this.feePercentage);
                     })));
         return res.status(OK).json({ users });
     }
@@ -57,7 +59,8 @@ export default class InvestorController {
             const portfolio = await this.investmentService.getCashValue(investor.id);
             const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
             return res.status(OK).json(
-                StoredInvestor.fromData(investor, investments, cashDeposits, portfolio));
+                StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
+                    this.feePercentage));
         } else {
             return res.status(NOT_FOUND).end();
         }
