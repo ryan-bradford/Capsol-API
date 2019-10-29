@@ -1,19 +1,35 @@
 import { IPersistedInvestor, IPersistedCashDeposit, PersistedCashDeposit } from '@entities';
-import { getDateAsNumber, logger } from '@shared';
+import { getDateAsNumber } from '@shared';
 import { getRepository } from 'typeorm';
 import { singleton } from 'tsyringe';
 
+/**
+ * `ICashDepositDao` is a database interface for dealing with cash deposits.
+ */
 export interface ICashDepositDao {
 
+    /**
+     * Creates a deposit of the given amount for the given user.
+     */
     makeDeposit(amount: number, user: IPersistedInvestor): Promise<void>;
+
+    /**
+     * Gets all deposits that the given user has made.
+     */
     getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]>;
 
 }
 
+/**
+ * `SqlCashDepositDao` is a specific implementation of `ICashDepositDao` for interfacing with MySQL using TypeORM.
+ */
 @singleton()
 export class SqlCashDepositDao implements ICashDepositDao {
 
 
+    /**
+     * @inheritdoc
+     */
     public async makeDeposit(amount: number, user: IPersistedInvestor): Promise<void> {
         const newCashDeposit = new PersistedCashDeposit();
         newCashDeposit.amount = amount;
@@ -23,6 +39,9 @@ export class SqlCashDepositDao implements ICashDepositDao {
     }
 
 
+    /**
+     * @inheritdoc
+     */
     public async getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]> {
         return getRepository(PersistedCashDeposit).find({ user });
     }
