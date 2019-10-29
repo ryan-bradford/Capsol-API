@@ -131,7 +131,9 @@ export default class HomeownerController {
     }
 
 
-    // TODO: make better
+    /**
+     * Returns the details about the given option for the given homeowner.
+     */
     public async getOptionDetails(req: Request, res: Response) {
         const { option, email } = req.params;
         let contractSize;

@@ -79,6 +79,9 @@ export default class InvestorController {
     }
 
 
+    /**
+     * Deletes the account and all associated information for the given investor.
+     */
     public async deleteInvestor(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const investor = await this.investorDao.getOneByEmail(email);
@@ -90,6 +93,9 @@ export default class InvestorController {
     }
 
 
+    /**
+     * Adds an investment of the given amount for the given investor.
+     */
     public async addInvestment(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
@@ -106,6 +112,9 @@ export default class InvestorController {
     }
 
 
+    /**
+     * Sells investments of the given amount for the given investor.
+     */
     public async sellInvestment(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
@@ -119,6 +128,9 @@ export default class InvestorController {
     }
 
 
+    /**
+     * Pairs purchase and sell requests and makes the magic happen.
+     */
     public async handleInvestments(req: Request, res: Response) {
         await this.requestService.handleRequests();
         res.status(200).send();
