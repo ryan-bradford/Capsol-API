@@ -5,12 +5,16 @@ import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@en
 import bcrypt from 'bcrypt';
 import { singleton } from 'tsyringe';
 
+/**
+ * `SqlHomeownerDao` is a specific implementation of `IUserDao` for `IPersistedHomeowner`s
+ *  for interfacing with MySQL using TypeORM.
+ */
 @singleton()
 export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOne(id: string): Promise<IPersistedHomeowner | null> {
         return getRepository(PersistedHomeowner)
@@ -22,7 +26,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedHomeowner | null> {
         return getRepository(PersistedHomeowner)
@@ -34,7 +38,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
 
 
     /**
-     *
+     * @inheritdoc
      */
     public async getAll(): Promise<IPersistedHomeowner[]> {
         return getRepository(PersistedHomeowner).find({
@@ -44,8 +48,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
 
 
     /**
-     *
-     * @param user
+     * @inheritdoc
      */
     public async add(homeowner: IStorableHomeowner): Promise<IPersistedHomeowner> {
         const newHomeowner = new PersistedHomeowner();
@@ -59,11 +62,13 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
 
 
     /**
-     *
-     * @param id
+     * @inheritdoc
      */
     public async delete(id: string): Promise<void> {
-        await getRepository(PersistedHomeowner).delete(id);
+        const result = await getRepository(PersistedHomeowner).delete(id);
+        if (result.affected === 0) {
+            throw new Error('Investment not found');
+        }
         return;
     }
 }

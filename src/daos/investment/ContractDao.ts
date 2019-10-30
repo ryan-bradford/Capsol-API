@@ -21,7 +21,6 @@ export interface IContractDao {
      * Returns all investments that are related to the given contractId.
      */
     getInvestmentsForContract(contractId: string): Promise<IPersistedInvestment[]>;
-    // TODO: make this split with the service better. Should take in a persisted probably.
     /**
      * Creates a contract with the information in the given `IStorableContract`.
      *

@@ -1,22 +1,47 @@
 import { getRepository } from 'typeorm';
-import { getRandomInt, logger } from '@shared';
 import { getDaos } from '@daos';
 import { IPersistedRequest, IStorableRequest, PersistedRequest, IPersistedInvestor } from '@entities';
 import { singleton } from 'tsyringe';
+import { logger } from '@shared';
 
+/**
+ * `IRequestDao` is a database interface for dealing with requests.
+ */
 export interface IRequestDao {
 
+    /**
+     * Returns all requests in the database.
+     */
     getRequests(): Promise<IPersistedRequest[]>;
+    /**
+     * Creates a request with the given information.
+     */
     createRequest(toCreate: IStorableRequest): Promise<IPersistedRequest>;
+    /**
+     * Deletes the request with the given ID.
+     *
+     * @throws Error if the request didn't exist.
+     */
     deleteRequest(toDeleteId: string): Promise<void>;
+    /**
+     * Saves the given request.
+     *
+     * @throws Error if the request didn't exist.
+     */
     saveRequest(toSave: IPersistedRequest): Promise<void>;
 
 }
 
+/**
+ * `SqlRequestDao` is a specific implementation of `IRequestDao` for interfacing with MySQL using TypeORM.
+ */
 @singleton()
 export class SqlRequestDao implements IRequestDao {
 
 
+    /**
+     * @inheritdoc
+     */
     public getRequests(): Promise<IPersistedRequest[]> {
         return getRepository(PersistedRequest).find({
             relations: ['investor'],
@@ -24,6 +49,9 @@ export class SqlRequestDao implements IRequestDao {
     }
 
 
+    /**
+     * @inheritdoc
+     */
     public async createRequest(toCreate: IStorableRequest): Promise<IPersistedRequest> {
         const daos = await getDaos();
         const persistedRequest = new PersistedRequest();
@@ -37,16 +65,28 @@ export class SqlRequestDao implements IRequestDao {
     }
 
 
+    /**
+     * @inheritdoc
+     */
     public async deleteRequest(toDeleteId: string): Promise<void> {
-        await getRepository(PersistedRequest).delete(toDeleteId);
+        const result = await getRepository(PersistedRequest).delete(toDeleteId);
+        if (result.affected === 0) {
+            throw new Error('Not found!');
+        }
         return;
     }
 
 
+    /**
+     * @inheritdoc
+     */
     public async saveRequest(toSave: IPersistedRequest): Promise<void> {
-        await getRepository(PersistedRequest).update(toSave.id, {
+        const result = await getRepository(PersistedRequest).update(toSave.id, {
             amount: toSave.amount,
         });
+        if (result.affected === 0) {
+            throw new Error('Not found!');
+        }
         return;
     }
 }

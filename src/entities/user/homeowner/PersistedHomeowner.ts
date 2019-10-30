@@ -1,7 +1,6 @@
-import { OneToOne, Entity, OneToMany, ChildEntity } from 'typeorm';
+import { OneToOne, ChildEntity } from 'typeorm';
 import {
-    IPersistedUser, IPersistedContract, PersistedUser, PersistedContract,
-    PersistedRequest, IPersistedRequest, isInvestor,
+    IPersistedUser, IPersistedContract, PersistedUser, PersistedContract, isInvestor,
 } from '@entities';
 
 export interface IPersistedHomeowner extends IPersistedUser {

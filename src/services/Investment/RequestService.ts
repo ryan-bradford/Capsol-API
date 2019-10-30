@@ -83,7 +83,6 @@ export class RequestService implements IRequestService {
                 currentPurchase.amount -= transactionAmount;
                 currentSell.investments.push(investment);
                 if (currentSell.isFulfilled) {
-                    await this.requestDao.deleteRequest(currentSell.id);
                     currentSell = allSellRequests.pop() || allContracts.pop();
                 }
             }

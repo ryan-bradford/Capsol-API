@@ -1,7 +1,26 @@
+/**
+ * Stores all the information that should be made public about a cash deposit.
+ */
 export interface IStoredCashDeposit {
+    /**
+     * The UUID of this cash deposit.
+     *
+     * @unique
+     */
     id: string;
+    /**
+     * The amount that was deposited.
+     *
+     * @invariant amount >= 0
+     */
     amount: number;
+    /**
+     * The month this amount was deposited on as a number.
+     */
     date: number;
+    /**
+     * The UUID of the user who made this deposit.
+     */
     userId: string;
 }
 

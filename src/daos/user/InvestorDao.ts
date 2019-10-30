@@ -4,12 +4,16 @@ import { getRepository } from 'typeorm';
 import bcrypt from 'bcrypt';
 import { singleton } from 'tsyringe';
 
+/**
+ * `SqlInvestorDao` is a specific implementation of `IUserDao` for `IPersistedInvestor`s
+ *  for interfacing with MySQL using TypeORM.
+ */
 @singleton()
 export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOne(id: string, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
         return getRepository(PersistedInvestor)
@@ -19,7 +23,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
         return getRepository(PersistedInvestor)
@@ -29,7 +33,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
 
 
     /**
-     *
+     * @inheritdoc
      */
     public async getAll(loadRequests?: boolean): Promise<IPersistedInvestor[]> {
         return getRepository(PersistedInvestor).find({
@@ -39,8 +43,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
 
 
     /**
-     *
-     * @param user
+     * @inheritdoc
      */
     public async add(user: IStorableInvestor): Promise<IPersistedInvestor> {
         const newInvestor = new PersistedInvestor();
@@ -54,11 +57,13 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
 
 
     /**
-     *
-     * @param id
+     * @inheritdoc
      */
     public async delete(id: string): Promise<void> {
-        await getRepository(PersistedInvestor).delete(id);
+        const result = await getRepository(PersistedInvestor).delete(id);
+        if (result.affected === 0) {
+            throw new Error('Investment not found');
+        }
         return;
     }
 }

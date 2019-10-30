@@ -1,6 +1,18 @@
+/**
+ * Stores all the information that should be made public about a item in an investors portfolio history.
+ */
 export interface IStoredPortfolioHistory {
+    /**
+     * The month this history item relates to.
+     */
     month: number;
+    /**
+     * The amount of cash the user had deposited at this time.
+     */
     cashDeposit: number;
+    /**
+     * The total value of the investments at this time.
+     */
     totalValue: number;
 }
 
