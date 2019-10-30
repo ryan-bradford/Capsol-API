@@ -20,6 +20,7 @@ const investor: IPersistedInvestor = {
     admin: true,
     requests: [],
     cashDeposits: [],
+    investments: [],
 };
 
 describe('Request Service', () => {

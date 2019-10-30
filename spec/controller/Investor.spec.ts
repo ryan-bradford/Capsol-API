@@ -31,6 +31,7 @@ const startInvestors: { users: IPersistedInvestor[] } = {
             pwdHash: '1',
             requests: [],
             cashDeposits: [],
+            investments: [],
         },
     ],
 };
