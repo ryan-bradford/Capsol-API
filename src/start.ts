@@ -10,6 +10,7 @@ const port = Number(process.env.PORT || 3000);
 
 
 getDaos().then((daos) => {
+    // TODO: make target rate an injected item
     container.register('FeeRate', {
         useValue: 0.01,
     });
