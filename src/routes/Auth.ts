@@ -1,10 +1,4 @@
-import { Request, Response, Router } from 'express';
-
-import {
-    JwtService,
-} from '@shared';
-import { IUserDao } from '@daos';
-import { IPersistedInvestor, IPersistedHomeowner, IStorableInvestor, IStorableHomeowner } from '@entities';
+import { Router } from 'express';
 import AuthController from 'src/controller/Auth';
 import { container } from 'tsyringe';
 
@@ -12,21 +6,22 @@ export default () => {
     const router = Router();
     const controller = container.resolve(AuthController);
 
-    /******************************************************************************
-     *                      Login User - "POST /api/auth/login"
-     ******************************************************************************/
+    /**
+     * Logs this user in and returns their JWT Token in the cookie if successful.
+     *
+     * @param username the username of the user stored in the request body.
+     * @param password the text password of the user stored in the request body.
+     *
+     * @throws 401 if the user was found but the login was invalid.
+     * @throws 404 if the user was not found.
+     */
     router.post('/login', (req, res) => controller.login(req, res));
 
 
-    /******************************************************************************
-     *                      Logout - "GET /api/auth/logout"
-     ******************************************************************************/
+    /**
+     * Logs this user out by removing their JWT Token from the cookies.
+     */
     router.post('/logout', controller.logout);
-
-
-    /******************************************************************************
-     *                                 Export Router
-     ******************************************************************************/
 
     return router;
 

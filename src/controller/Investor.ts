@@ -120,7 +120,7 @@ export default class InvestorController {
         const { amount } = req.body;
         const user = await this.investorDao.getOneByEmail(email);
         if (user && user.id) {
-            await this.requestService.createSellRequest(user, amount);
+            await this.investmentService.sellInvestments(user.id, amount);
             return res.status(OK).end();
         } else {
             return res.status(NOT_FOUND).end();

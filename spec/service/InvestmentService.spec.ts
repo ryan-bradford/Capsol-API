@@ -36,8 +36,8 @@ describe('Investment Service', () => {
             companyDao = new daos.SqlCompanyDao(0);
             const cashDepositDao = new daos.SqlCashDepositDao();
             requestService = new RequestService(requestDao, investmentDao, contractDao, cashDepositDao);
-            contractService = new ContractService(homeownerDao, contractDao, requestService, companyDao);
-            investmentService = new InvestmentService(investorDao, investmentDao, requestService, cashDepositDao);
+            contractService = new ContractService(homeownerDao, contractDao, requestDao, companyDao);
+            investmentService = new InvestmentService(investorDao, investmentDao, requestDao, cashDepositDao);
             resetDate();
             return daos.clearDatabase();
         }).then(() => {

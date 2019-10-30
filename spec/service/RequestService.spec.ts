@@ -50,7 +50,8 @@ describe('Request Service', () => {
     });
 
     it('should add a request and cancel out the old one', (done) => {
-        requestService.createSellRequest(investor, 100).then(() => requestService.handleRequests())
+        requestDao.createRequest(new StorableRequest(100, 0, investor.id, 'sell'))
+            .then(() => requestService.handleRequests())
             .then((result) => {
                 return requestDao.getRequests();
             }).then((requests) => {
@@ -60,7 +61,7 @@ describe('Request Service', () => {
     });
 
     it('should add a bunch of requests', (done) => {
-        requestService.createPurchaseRequest(investor, 100)
+        requestDao.createRequest(new StorableRequest(100, 0, investor.id, 'purchase'))
             .then(() => requestService.handleRequests())
             .then(() => requestDao.getRequests())
             .then((requests) => {
@@ -69,7 +70,7 @@ describe('Request Service', () => {
                 expect(requests[0].type).to.be.equal('purchase');
                 return Promise.resolve();
             })
-            .then(() => requestService.createSellRequest(investor, 200))
+            .then(() => requestDao.createRequest(new StorableRequest(200, 0, investor.id, 'sell')))
             .then(() => requestService.handleRequests())
             .then(() => requestDao.getRequests())
             .then((requests) => {
@@ -78,7 +79,7 @@ describe('Request Service', () => {
                 expect(requests[0].type).to.be.equal('sell');
                 return Promise.resolve();
             })
-            .then(() => requestService.createPurchaseRequest(investor, 50))
+            .then(() => requestDao.createRequest(new StorableRequest(50, 0, investor.id, 'purchase')))
             .then(() => requestService.handleRequests())
             .then(() => requestDao.getRequests())
             .then((requests) => {
@@ -87,8 +88,8 @@ describe('Request Service', () => {
                 expect(requests[0].type).to.be.equal('sell');
                 return Promise.resolve();
             })
-            .then(() => requestService.createPurchaseRequest(investor, 230))
-            .then(() => requestService.createPurchaseRequest(investor, 50))
+            .then(() => requestDao.createRequest(new StorableRequest(230, 0, investor.id, 'purchase')))
+            .then(() => requestDao.createRequest(new StorableRequest(50, 0, investor.id, 'purchase')))
             .then(() => requestService.handleRequests())
             .then(() => requestDao.getRequests())
             .then((requests) => {

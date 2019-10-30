@@ -24,9 +24,6 @@ export default () => {
     });
 
     // Add sub-routes
-    const investorRoute = container.resolve(InvestorController);
-    const homeownerRoute = container.resolve(HomeownerController);
-
     router.use('/investor', InvestorRoute());
     router.use('/homeowner', HomeownerRoute());
     router.use('/auth', AuthRouter());
@@ -35,6 +32,7 @@ export default () => {
     return router;
 
 };
+// TODO: improve error handling
 
 function ClientErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {
     if ((error as AssertionError).actual !== undefined) {

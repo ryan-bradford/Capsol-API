@@ -15,14 +15,6 @@ import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
  */
 export interface IRequestService {
     /**
-     * Creates a purchase request owned by the given user for the given amount.
-     */
-    createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number>;
-    /**
-     * Creates a sell request owned by the given user for the given amount.
-     */
-    createSellRequest(user: IPersistedInvestor, amount: number): Promise<void>;
-    /**
      * Pairs purchase with sell requests first, and then contracts.
      * When a pairing is made, if the sell request is a contract, adds a new investment to the contract.
      * If the sell request is by an investor, transfers investments from the investor to the purchaser.
@@ -44,21 +36,6 @@ export class RequestService implements IRequestService {
         @inject('InvestmentDao') private investmentDao: IInvestmentDao,
         @inject('ContractDao') private contractDao: IContractDao,
         @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
-
-
-    public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number> {
-        const newRequest = new StorableRequest(amount, getDateAsNumber(), user.id, 'purchase');
-        await this.requestDao.createRequest(newRequest);
-        return amount;
-    }
-
-
-    public async createSellRequest(user: IPersistedInvestor, amount: number): Promise<void> {
-        // Literally only creates a sell request with the user ID and amount
-        const newRequest = new StorableRequest(amount, getDateAsNumber(), user.id, 'sell');
-        await this.requestDao.createRequest(newRequest);
-        return;
-    }
 
 
     public async handleRequests(): Promise<void> {

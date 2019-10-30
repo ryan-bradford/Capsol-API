@@ -1,11 +1,13 @@
 import {
-    IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest,
+    IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest, StorableRequest,
 } from '@entities';
 import { IRequestService } from '@services';
 import { IUserDao, IInvestmentDao } from '@daos';
 import { getRepository } from 'typeorm';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
+import { IRequestDao } from 'src/daos/investment/RequestDao';
+import { getDateAsNumber } from '@shared';
 
 /**
  * All the actions that are needed for business operations on investments.
@@ -42,7 +44,7 @@ export class InvestmentService implements IInvestmentService {
     constructor(
         @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         @inject('InvestmentDao') private investmentDao: IInvestmentDao,
-        @inject('RequestService') private requestService: IRequestService,
+        @inject('RequestDao') private requestDao: IRequestDao,
         @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
 
 
@@ -51,7 +53,8 @@ export class InvestmentService implements IInvestmentService {
         if (!user) {
             throw new Error('Not found');
         }
-        amount = await this.requestService.createPurchaseRequest(user, amount);
+        amount = (await
+            this.requestDao.createRequest(new StorableRequest(amount, getDateAsNumber(), user.id, 'purchase'))).amount;
         await this.cashDepositDao.makeDeposit(amount, user);
         return [];
     }
@@ -62,7 +65,8 @@ export class InvestmentService implements IInvestmentService {
         if (!user) {
             throw new Error('Not found');
         }
-        await this.requestService.createSellRequest(user, amount);
+        amount = (await
+            this.requestDao.createRequest(new StorableRequest(amount, getDateAsNumber(), user.id, 'sell'))).amount;
         return;
     }
 
