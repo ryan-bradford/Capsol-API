@@ -1,18 +1,37 @@
 import {
     IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest,
-    IPersistedCashDeposit, PersistedCashDeposit,
 } from '@entities';
 import { IRequestService } from '@services';
 import { IUserDao, IInvestmentDao } from '@daos';
 import { getRepository } from 'typeorm';
-import { getDateAsNumber } from '@shared';
-import { injectable, singleton, inject } from 'tsyringe';
+import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
+/**
+ * All the actions that are needed for business operations on investments.
+ */
 export interface IInvestmentService {
+    /**
+     * Adds `amount` of funds to the investor represented by the given `userId`.
+     *
+     * @throws Error if the user was not found.
+     */
     addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]>;
+    // TODO: implement second throws
+    /**
+     * Sells `amount` of funds from the investor represented by the given `userId`.
+     *
+     * @throws Error if the user was not found.
+     * @throws Error if the investor does not have enough funds to sell.
+     */
     sellInvestments(userId: string, amount: number): Promise<void>;
+    /**
+     * Returns the total amount of cash the given investor has uninvested.
+     */
     getCashValue(userId: string): Promise<number>;
+    /**
+     * Returns every investment owned by the given investor.
+     */
     getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]>;
 }
 

@@ -1,19 +1,36 @@
 import { IRequestDao } from 'src/daos/investment/RequestDao';
-import { IUserDao, IInvestmentDao, IContractDao } from '@daos';
-import { logger, getDateAsNumber } from '@shared';
+import { IInvestmentDao, IContractDao } from '@daos';
+import { getDateAsNumber } from '@shared';
 import {
-    IPersistedRequest, IStorableRequest, IPersistedInvestor, IStoredInvestor,
-    IPersistedHomeowner, IStoredHomeowner, IPersistedUser, isInvestor,
+    IPersistedRequest, IPersistedInvestor,
+    IPersistedHomeowner, IPersistedUser, isInvestor,
     StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment, PersistedCashDeposit,
 } from '@entities';
 import { strict as assert } from 'assert';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
+/**
+ * All the actions that are needed for business operations on requests.
+ */
 export interface IRequestService {
-
+    /**
+     * Creates a purchase request owned by the given user for the given amount.
+     */
     createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number>;
+    /**
+     * Creates a sell request owned by the given user for the given amount.
+     */
     createSellRequest(user: IPersistedInvestor, amount: number): Promise<void>;
+    /**
+     * Pairs purchase with sell requests first, and then contracts.
+     * When a pairing is made, if the sell request is a contract, adds a new investment to the contract.
+     * If the sell request is by an investor, transfers investments from the investor to the purchaser.
+     * Saves a record that the investment was once owned by the sell investor.
+     * After that all is done, merges investments within the table to be more simple.
+     *
+     * @throws Error if the selling investor does not own enough investments to satisfy the sell request.
+     */
     handleRequests(): Promise<void>;
 
 }

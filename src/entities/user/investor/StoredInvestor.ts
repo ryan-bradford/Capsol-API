@@ -6,10 +6,25 @@ import { StoredInvestment } from 'src/entities/investment/investment/StoredInves
 import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/StoredPortfolioHistory';
 import { getDateAsNumber } from '@shared';
 
+/**
+ * The information that should be made public about an investor.
+ */
 export interface IStoredInvestor extends IStoredUser {
+    /**
+     * The total cash this investor has uninvested.
+     */
     totalCash: number;
+    /**
+     * All the investments this investor currently owns.
+     */
     investments: IStoredInvestment[];
+    /**
+     * The history of this investors portfolio since the day their account was created.
+     */
     portfolioHistory: IStoredPortfolioHistory[];
+    /**
+     * The interest rate this investor has effectively achieved.
+     */
     interestRate: number;
 }
 

@@ -3,7 +3,14 @@ import {
     IPersistedUser, IPersistedContract, PersistedUser, PersistedContract, isInvestor,
 } from '@entities';
 
+/**
+ * `IPersistedHomeowner` is a `IPersistedUser` that can have a contract.
+ */
 export interface IPersistedHomeowner extends IPersistedUser {
+    /**
+     * The contract that this homeowner owns.
+     * Undefined if this homeowner has not signed up yet.
+     */
     contract?: IPersistedContract;
 }
 

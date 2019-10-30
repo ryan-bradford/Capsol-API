@@ -1,12 +1,33 @@
 import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHomeowner } from '@entities';
 import { IUserDao, IContractDao, ICompanyDao } from '@daos';
 import { IRequestService } from '@services';
-import { logger, getDateAsNumber } from '@shared';
-import { injectable, singleton, inject } from 'tsyringe';
+import { getDateAsNumber } from '@shared';
+import { injectable, inject } from 'tsyringe';
 
+/**
+ * The actions that are required by the business related to contracts.
+ */
 export interface IContractService {
+    /**
+     * Creates a contract for the user represented by the given `userId` for the amount
+     * of the given `amount`.
+     *
+     * If dontSave is true, does not save the contract to the database.
+     *
+     * @throws Error if the user was not found.
+     */
     createContract(amount: number, userId: string, dontSave?: boolean):
         Promise<IPersistedContract>;
+    /**
+     * Makes a payment for the homeowner with the given `email`.
+     * Distributes this payment to all the investors who own investments for this contract.
+     * Takes the proper fee for the company based on `ICompanyDao.takeFee()`
+     *
+     * @throws Error if the user was not found or they do not own a contract.
+     *
+     * @returns null if the user's contract has been fully paid.
+     * @returns a number representing how much the user paid.
+     */
     makePayment(email: string): Promise<number | null>;
 }
 
