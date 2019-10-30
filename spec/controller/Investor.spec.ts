@@ -16,7 +16,6 @@ import { mockRequest, mockResponse } from 'mock-req-res';
 import sinonChai from 'sinon-chai';
 import chai from 'chai';
 import InvestorController from 'src/controller/Investor';
-import { start } from 'repl';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
 chai.use(sinonChai);
