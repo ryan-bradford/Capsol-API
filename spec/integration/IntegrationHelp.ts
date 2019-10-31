@@ -18,6 +18,9 @@ export async function startApp(fee: number) {
 
     resetDate();
     const daos = await getDaos();
+    container.register('TargetRate', {
+        useValue: 0.04,
+    });
     container.register('FeeRate', {
         useValue: fee,
     });

@@ -31,8 +31,8 @@ export default class HomeownerController {
                 const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
                 let investmentValue = 0;
                 user.contract.investments = contractInvestments;
-                const positionInQueue = user.contract.unsoldAmount !== 0 ?
-                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount) : null;
+                const positionInQueue = user.contract.unsoldAmount() !== 0 ?
+                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount()) : null;
                 contractInvestments.forEach((investment) => investmentValue += investment.amount);
                 contract = new StoredContract(user.contract.id, user.contract.saleAmount,
                     user.contract.totalLength, user.contract.monthlyPayment, user.contract.firstPaymentDate,
@@ -71,8 +71,8 @@ export default class HomeownerController {
             if (user.contract) {
                 const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
                 user.contract.investments = contractInvestments;
-                const positionInQueue = user.contract.unsoldAmount !== 0 ?
-                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount) : null;
+                const positionInQueue = user.contract.unsoldAmount() !== 0 ?
+                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount()) : null;
                 let investmentValue = 0;
                 contractInvestments.forEach((investment) => investmentValue += investment.amount);
                 contract = new StoredContract(user.contract.id, user.contract.saleAmount,

@@ -4,10 +4,6 @@ import HomeownerRoute from './Homeowner';
 import AuthRouter from './Auth';
 import { logger } from '@shared';
 import { AssertionError } from 'assert';
-import { container } from 'tsyringe';
-import InvestorController from 'src/controller/Investor';
-import AuthController from 'src/controller/Auth';
-import HomeownerController from 'src/controller/Homeowner';
 
 export default () => {
 

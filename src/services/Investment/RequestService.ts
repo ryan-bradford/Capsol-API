@@ -1,6 +1,6 @@
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { IInvestmentDao, IContractDao } from '@daos';
-import { getDateAsNumber } from '@shared';
+import { getDateAsNumber, logger } from '@shared';
 import {
     IPersistedRequest, IPersistedInvestor,
     IPersistedHomeowner, IPersistedUser, isInvestor,
@@ -49,8 +49,8 @@ export class RequestService implements IRequestService {
         allPurchaseRequests = allPurchaseRequests.sort((a, b) => b.dateCreated - a.dateCreated);
         allSellRequests = allSellRequests.sort((a, b) => b.amount - a.amount);
         const allContracts = (await this.contractDao.getContracts())
-            .filter((contract) => !contract.isFulfilled)
-            .sort((a, b) => b.unsoldAmount / b.saleAmount - a.unsoldAmount / a.saleAmount);
+            .filter((contract) => !contract.isFulfilled())
+            .sort((a, b) => b.unsoldAmount() / b.saleAmount - a.unsoldAmount() / a.saleAmount);
         let currentPurchase = allPurchaseRequests.pop();
         let currentSell: (IPersistedRequest | IPersistedContract | undefined) =
             allSellRequests.pop() || allContracts.pop();
@@ -68,7 +68,7 @@ export class RequestService implements IRequestService {
                     currentSell = allSellRequests.pop() || allContracts.pop();
                 }
             } else {
-                const transactionAmount = Math.min(currentSell.unsoldAmount, currentPurchase.amount);
+                const transactionAmount = Math.min(currentSell.unsoldAmount(), currentPurchase.amount);
                 const investment = await this.takeAssets(transactionAmount,
                     currentSell.homeowner, currentPurchase.investor);
                 if (!investment) {
@@ -76,7 +76,7 @@ export class RequestService implements IRequestService {
                 }
                 currentPurchase.amount -= transactionAmount;
                 currentSell.investments.push(investment);
-                if (currentSell.isFulfilled) {
+                if (currentSell.isFulfilled()) {
                     currentSell = allSellRequests.pop() || allContracts.pop();
                 }
             }
@@ -114,10 +114,10 @@ export class RequestService implements IRequestService {
             }
             const contract = contracts[0];
             const toCreate = new StorableInvestment(contract.id, amount, to.id);
-            const oldValue = contract.unsoldAmount;
+            const oldValue = contract.unsoldAmount();
             const newInvestment = await this.investmentDao.createInvestment(toCreate);
             contract.investments.push(newInvestment);
-            assert(Math.round(oldValue - amount) === Math.round(contract.unsoldAmount),
+            assert(Math.round(oldValue - amount) === Math.round(contract.unsoldAmount()),
                 `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount}`);
             return newInvestment;
         }

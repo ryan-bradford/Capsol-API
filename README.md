@@ -5,10 +5,6 @@
 TODO:
 
 Strange bug with far too much investment transfer<br>
-Include fee in graph<br>
-Add sell investment API endpoint<br>
-Add Cash Deposit service/dao<br>
-Add investment history to showed who owns what when<br>
 Add more tests<br>
     getPortfolioValue
     makePayment
@@ -17,14 +13,10 @@ Add more tests<br>
     saveInvestment
 Make error handling make sense<br>
 Improve speed of everything<br>
-Add in password salting<br>
-Migrate away from typeorm???<br>
-Add concept of transaction history<br>
 Change deleted to table field<br>
 Add validation to entities in routers<br>
 Design better error handling<br>
 Create dashboard<br>
-Design Database/Data Structure<br>
 Add stuff about locking and transactions<br>
 Codacy integration<br>
 Make RAML<br>

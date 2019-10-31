@@ -36,7 +36,7 @@ describe('Investment Service', () => {
             companyDao = new daos.SqlCompanyDao(0);
             const cashDepositDao = new daos.SqlCashDepositDao();
             requestService = new RequestService(requestDao, investmentDao, contractDao, cashDepositDao);
-            contractService = new ContractService(homeownerDao, contractDao, requestDao, companyDao);
+            contractService = new ContractService(homeownerDao, contractDao, requestDao, companyDao, 0.04);
             investmentService = new InvestmentService(investorDao, investmentDao, requestDao, cashDepositDao);
             resetDate();
             return daos.clearDatabase();
@@ -78,7 +78,7 @@ describe('Investment Service', () => {
             .then(() => contractDao.getContracts())
             .then((result) => {
                 expect(result.length).to.be.equal(1);
-                expect(result[0].unsoldAmount).to.be.equal(400);
+                expect(result[0].unsoldAmount()).to.be.equal(400);
                 done();
             });
     });

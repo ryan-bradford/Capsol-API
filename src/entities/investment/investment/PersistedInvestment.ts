@@ -33,9 +33,9 @@ export interface IPersistedInvestment {
      */
     sellDate: number | null;
     /**
-     * The value of this contract if it was sold to another investor.
+     * The value of this investment if it was sold to another investor.
      */
-    readonly value: number;
+    value(): number;
 }
 
 @Entity('investment')
@@ -61,8 +61,9 @@ export class PersistedInvestment implements IPersistedInvestment {
     @Column({ nullable: true })
     public sellDate!: number;
 
-    public get value(): number {
+
+    public value(): number {
         return this.amount / this.contract.saleAmount *
-            (this.contract.saleAmount - this.contract.depreciationValue * this.contract.monthsPassed);
+            (this.contract.saleAmount - this.contract.depreciationValue() * this.contract.monthsPassed());
     }
 }

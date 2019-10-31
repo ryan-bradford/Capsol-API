@@ -36,10 +36,27 @@ export default () => {
      */
     router.get('/:email', adminMW, (req, res) => controller.getUser(req, res));
 
+    /**
+     * Deletes the homeowner and all associated information represented by the email.
+     *
+     * @throws 404 if the user was not found.
+     */
     router.delete('/:email', adminMW, (req, res) => controller.deleteUser(req, res));
 
+    /**
+     * Signs the user given by the email up for a contract.
+     *
+     * @param amount the total size of the contract.
+     *
+     * @throws 404 if the user was not found.
+     */
     router.put('/:email/home', adminMW, (req, res) => controller.signUpHome(req, res));
 
+    /**
+     * Returns information about the given option for the given user.
+     *
+     * @throws 404 if the user was not found.
+     */
     router.get('/:email/options/:option', adminMW, (req, res) => controller.getOptionDetails(req, res));
 
     return router;

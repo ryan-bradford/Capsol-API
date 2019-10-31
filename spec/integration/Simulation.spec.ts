@@ -79,6 +79,7 @@ async function simulate() {
                 const initInvestment = Number(investorToInvestment.get(user.email));
                 let joinTime = Number(investorToJoinTime.get(user.email));
                 joinTime = joinTime === simulationLength ? joinTime - 1 : joinTime;
+                logger.info(JSON.stringify(user.portfolioHistory));
                 const portValue = user.portfolioHistory[user.portfolioHistory.length - 1].totalValue;
                 const interest = Math.pow((portValue / initInvestment),
                     1 / ((simulationLength - joinTime) / 12));

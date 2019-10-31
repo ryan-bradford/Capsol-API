@@ -1,7 +1,7 @@
 import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHomeowner, StorableRequest } from '@entities';
 import { IUserDao, IContractDao, ICompanyDao } from '@daos';
 import { IRequestService } from '@services';
-import { getDateAsNumber } from '@shared';
+import { getDateAsNumber, logger } from '@shared';
 import { injectable, inject } from 'tsyringe';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 
@@ -40,7 +40,8 @@ export class ContractService implements IContractService {
         @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
         @inject('ContractDao') private contractDao: IContractDao,
         @inject('RequestDao') private requestDao: IRequestDao,
-        @inject('CompanyDao') private companyDao: ICompanyDao) { }
+        @inject('CompanyDao') private companyDao: ICompanyDao,
+        @inject('TargetRate') private targetRate: number) { }
 
 
     public async createContract(amount: number, userId: string, dontSave?: boolean):
@@ -49,7 +50,7 @@ export class ContractService implements IContractService {
         if (!homeowner) {
             throw new Error('Not found');
         }
-        const interestRate = 0.04;
+        const interestRate = this.targetRate;
         const lengthInYears = 20;
         const yearlyPayment = amount * (1 / 20 + interestRate);
         const newContract = new StorableContract(amount, lengthInYears * 12, yearlyPayment / 12, homeowner.id);
@@ -66,7 +67,7 @@ export class ContractService implements IContractService {
                 throw new Error('Bad request');
             }
             const contract = contracts[0];
-            if (!contract.isFulfilled ||
+            if (!contract.isFulfilled() ||
                 (contract.firstPaymentDate !== null
                     && getDateAsNumber() - contract.firstPaymentDate >= contract.totalLength)) {
                 return null;

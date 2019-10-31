@@ -45,29 +45,28 @@ export interface IPersistedContract {
      * @invariant totalLength > 0
      */
     totalLength: number;
-    // TODO: convert readonly variables to methods.
     /**
      * Whether or not this contract is fully fulfilled with investments.
      */
-    readonly isFulfilled: boolean;
+    isFulfilled(): boolean;
     /**
      * The number of months passed since the contract first payment.
      *
      * @invariant monthsPassed >= 0
      */
-    readonly monthsPassed: number;
+    monthsPassed(): number;
     /**
      * The amount this contract decreases in value every month.
      *
      * @invariant depreciationValue > 0
      */
-    readonly depreciationValue: number;
+    depreciationValue(): number;
     /**
      * The amount of this contract that remains unsold to investors.
      *
      * @invariant unsoldAmount >= 0
      */
-    readonly unsoldAmount: number;
+    unsoldAmount(): number;
 }
 
 @Entity('contract')
@@ -96,21 +95,22 @@ export class PersistedContract implements IPersistedContract {
     public homeowner!: IPersistedHomeowner;
 
 
-    get isFulfilled(): boolean {
-        return this.unsoldAmount === 0;
+    public isFulfilled(): boolean {
+        return this.unsoldAmount() === 0;
     }
 
 
-    get monthsPassed(): number {
+    public monthsPassed(): number {
         return this.firstPaymentDate ? getDateAsNumber() - this.firstPaymentDate : 0;
     }
 
 
-    get depreciationValue(): number {
+    public depreciationValue(): number {
         return this.saleAmount / this.totalLength;
     }
 
-    get unsoldAmount(): number {
+
+    public unsoldAmount(): number {
         let toReturn = this.saleAmount;
         this.investments.forEach((investment) => toReturn -=
             Number(investment.sellDate === null ? investment.amount : 0));

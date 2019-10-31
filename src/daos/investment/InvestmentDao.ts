@@ -120,10 +120,10 @@ export class SqlInvestmentDao implements IInvestmentDao {
         }
         const contract = investment.contract;
         investment.sellDate = getDateAsNumber();
-        const amountToTake = investment.amount * amount / investment.value;
+        const amountToTake = investment.amount * amount / investment.value();
         await this.createInvestment(
             new StorableInvestment(contract.id, amountToTake, to.id));
-        if (investment.value - amount > 0) {
+        if (investment.value() - amount > 0) {
             await this.createInvestment(
                 new StorableInvestment(contract.id, investment.amount - amountToTake, from.id));
         }

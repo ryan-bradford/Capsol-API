@@ -19,7 +19,7 @@ describe('Contract Service', () => {
             const requestDao = new daos.SqlRequestDao();
             const companyDao = new daos.SqlCompanyDao(0);
             const cashDepositDao = new daos.SqlCashDepositDao();
-            contractService = new ContractService(homeownerDao, contractDao, requestDao, companyDao);
+            contractService = new ContractService(homeownerDao, contractDao, requestDao, companyDao, 0.04);
             return daos.clearDatabase();
         }).then((result) => {
             return homeownerDao.add(new StorableHomeowner('Austina', 'test@gmail.com', 'skjndf'));
