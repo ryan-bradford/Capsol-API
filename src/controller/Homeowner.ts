@@ -1,14 +1,20 @@
 import { Request, Response } from 'express';
 import { IUserDao, IContractDao } from '@daos';
-import { IPersistedHomeowner, IStorableHomeowner, StoredHomeowner, StoredContract } from '@entities';
+import {
+    IPersistedHomeowner, IStorableHomeowner, StoredHomeowner, StoredContract, StorableHomeowner,
+    IPersistedInvestor, IStorableInvestor,
+} from '@entities';
 import { IContractService } from '@services';
 import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { paramMissingError, logger } from '@shared';
+import { paramMissingError } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { injectable, inject } from 'tsyringe';
 import { IDateService } from 'src/services/DateService';
-import { assert } from 'console';
+import { strict as assert } from 'assert';
+import { ClientError } from 'src/shared/error/ClientError';
+import { NotFoundError } from 'src/shared/error/NotFound';
 
+// TODO: add input validation.
 @injectable()
 export default class HomeownerController {
 
@@ -18,6 +24,7 @@ export default class HomeownerController {
      */
     constructor(
         @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
+        @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         @inject('ContractDao') private contractDao: IContractDao,
         @inject('ContractService') private contractService: IContractService,
         @inject('DateService') private dateService: IDateService) { }
@@ -54,10 +61,16 @@ export default class HomeownerController {
         // Check parameters
         const { user } = req.body;
         if (!user) {
-            throw new Error(paramMissingError);
+            throw new ClientError(`Need to provide a user in the JSON body`);
         }
         // Add new user
-        await this.homeownerDao.add(user);
+        const currentHomeowner = await this.homeownerDao.getOne(user.email);
+        const currentInvestor = await this.investorDao.getOne(user.email);
+        if (currentHomeowner || currentInvestor) {
+            throw new ClientError(`User wth email ${user.email} already exists`);
+        }
+        const toAdd = new StorableHomeowner(user.name, user.email, user.password);
+        await this.homeownerDao.add(toAdd);
         return res.status(CREATED).send(user);
     }
 
@@ -84,7 +97,7 @@ export default class HomeownerController {
             }
             return res.status(OK).json(new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, contract));
         } else {
-            return res.status(NOT_FOUND).end();
+            throw new NotFoundError(`User with email ${email} was not found`);
         }
     }
 
@@ -95,8 +108,8 @@ export default class HomeownerController {
     public async deleteUser(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const homeowner = await this.homeownerDao.getOneByEmail(email);
-        if (!homeowner || !homeowner.id) {
-            return res.status(NOT_FOUND).end();
+        if (!homeowner) {
+            throw new NotFoundError(`User with email ${email} was not found`);
         }
         await this.homeownerDao.delete(homeowner.id);
         return res.status(OK).end();
@@ -110,15 +123,12 @@ export default class HomeownerController {
     public async signUpHome(req: Request, res: Response) {
         const { email } = req.params;
         const { amount } = req.body;
-        if (!amount && !(typeof amount === 'number')) {
-            throw new Error('Bad amount');
-        }
         const user = await this.homeownerDao.getOneByEmail(email);
-        if (user && user.id) {
+        if (user) {
             await this.contractService.createContract(amount, user.id);
             return res.status(OK).end();
         } else {
-            return res.status(NOT_FOUND).end();
+            throw new NotFoundError(`User with email ${email} was not found`);
         }
     }
 
@@ -133,7 +143,7 @@ export default class HomeownerController {
             this.contractService.makePayment(contract.homeowner.email, date)));
         await this.dateService.tickTime();
         const newDate = await this.dateService.getDateAsNumber();
-        assert(date === newDate - 1);
+        assert(date === newDate - 1, `Date did not decrease by one`);
         return res.status(OK).send();
     }
 
@@ -143,6 +153,10 @@ export default class HomeownerController {
      */
     public async getOptionDetails(req: Request, res: Response) {
         const { option, email } = req.params;
+        const homeowner = await this.homeownerDao.getOneByEmail(email);
+        if (!homeowner) {
+            throw new NotFoundError(`User with email ${email} was not found`);
+        }
         let contractSize;
         let electricity;
         switch (option) {
@@ -161,11 +175,7 @@ export default class HomeownerController {
                 electricity = 150;
                 break;
             }
-            default: throw new Error('Invalid option');
-        }
-        const homeowner = await this.homeownerDao.getOneByEmail(email);
-        if (!homeowner) {
-            throw new Error('Not found');
+            default: throw new ClientError('Invalid option');
         }
         const proposedContract = await this.contractService.createContract(contractSize, homeowner.id, true);
         return res.json({

@@ -1,9 +1,9 @@
 import { IUserDao } from './UserDao';
 import { getRepository } from 'typeorm';
-import { getRandomInt } from '@shared';
 import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@entities';
 import bcrypt from 'bcrypt';
 import { singleton } from 'tsyringe';
+import { strict as assert } from 'assert';
 
 /**
  * `SqlHomeownerDao` is a specific implementation of `IUserDao` for `IPersistedHomeowner`s
@@ -57,7 +57,8 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
         newHomeowner.name = homeowner.name;
         newHomeowner.pwdHash = bcrypt.hashSync(homeowner.password, bcrypt.genSaltSync());
         newHomeowner.admin = false;
-        return getRepository(PersistedHomeowner).save(newHomeowner);
+        await getRepository(PersistedHomeowner).insert(newHomeowner);
+        return newHomeowner;
     }
 
 
@@ -66,9 +67,6 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
      */
     public async delete(id: string): Promise<void> {
         const result = await getRepository(PersistedHomeowner).delete(id);
-        if (result.affected === 0) {
-            throw new Error('Investment not found');
-        }
-        return;
+        assert(result.affected === 1, `Did not delete homeowner row with ID ${id}`);
     }
 }

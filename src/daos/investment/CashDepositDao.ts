@@ -14,6 +14,7 @@ export interface ICashDepositDao {
 
     /**
      * Gets all deposits that the given user has made.
+     * Will not throw an error if the user does not exist.
      */
     getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]>;
 
@@ -34,7 +35,7 @@ export class SqlCashDepositDao implements ICashDepositDao {
         newCashDeposit.amount = amount;
         newCashDeposit.date = date;
         newCashDeposit.user = user;
-        getRepository(PersistedCashDeposit).save(newCashDeposit);
+        await getRepository(PersistedCashDeposit).insert(newCashDeposit);
     }
 
 

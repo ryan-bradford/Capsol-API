@@ -2,6 +2,8 @@ import { getRepository, LessThan } from 'typeorm';
 import { IPersistedContract, PersistedContract, IStorableContract, IPersistedInvestment, PersistedInvestment } from '@entities';
 import { getDaos } from '@daos';
 import { singleton } from 'tsyringe';
+import { strict as assert } from 'assert';
+import { DaoError } from 'src/shared/error/DaoError';
 
 /**
  * `IContractDao` is a database interface for dealing with contracts.
@@ -16,7 +18,7 @@ export interface IContractDao {
      *
      * @throws Error if the contract was not found.
      */
-    getContract(id: string): Promise<IPersistedContract>;
+    getContract(id: string): Promise<IPersistedContract | null>;
     /**
      * Returns all investments that are related to the given contractId.
      */
@@ -50,15 +52,10 @@ export class SqlContractDao implements IContractDao {
     /**
      * @inheritdoc
      */
-    public async getContract(id: string): Promise<IPersistedContract> {
+    public async getContract(id: string): Promise<IPersistedContract | null> {
         return getRepository(PersistedContract).findOne(id, {
             relations: ['homeowner', 'investments'],
-        }).then((contract) => {
-            if (!contract) {
-                throw new Error('not found');
-            }
-            return contract;
-        });
+        }).then((returnVal) => returnVal ? returnVal : null);
     }
 
 
@@ -93,7 +90,7 @@ export class SqlContractDao implements IContractDao {
         const newContract = new PersistedContract();
         const homeowner = await homeownerDao.getOne(contract.homeownerId);
         if (!homeowner) {
-            throw new Error(`Homeowner with id ${contract.homeownerId} not found.`);
+            throw new DaoError(`Homeowner with id ${contract.homeownerId} not found.`);
         }
         newContract.homeowner = homeowner;
         newContract.investments = [];
@@ -101,8 +98,8 @@ export class SqlContractDao implements IContractDao {
         newContract.monthlyPayment = contract.monthlyPayment;
         newContract.saleAmount = contract.saleAmount;
         if (dontSave !== true) {
-            const toReturn = await getRepository(PersistedContract).save(newContract);
-            homeowner.contract = toReturn;
+            await getRepository(PersistedContract).insert(newContract);
+            homeowner.contract = newContract;
         }
         return newContract;
     }
@@ -112,9 +109,10 @@ export class SqlContractDao implements IContractDao {
      * @inheritdoc
      */
     public async saveContract(contract: IPersistedContract): Promise<void> {
-        await getRepository(PersistedContract).update(contract.id, {
+        const result = await getRepository(PersistedContract).update(contract.id, {
             firstPaymentDate: contract.firstPaymentDate as number,
         });
+        assert(result.raw.affectedRows === 1, `Did not update contract with ID ${contract.id}`);
         return;
     }
 

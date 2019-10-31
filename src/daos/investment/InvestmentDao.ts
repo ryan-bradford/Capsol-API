@@ -2,6 +2,8 @@ import { getRepository } from 'typeorm';
 import { IPersistedInvestment, IStorableInvestment, PersistedInvestment, IPersistedInvestor, StorableInvestment } from '@entities';
 import { getDaos } from '@daos';
 import { singleton } from 'tsyringe';
+import { strict as assert } from 'assert';
+import { DaoError } from 'src/shared/error/DaoError';
 
 /**
  * `IInvestmentDao` is a database interface for dealing with investments.
@@ -80,18 +82,18 @@ export class SqlInvestmentDao implements IInvestmentDao {
         const toSave = new PersistedInvestment();
         const contract = await contractDao.getContract(investment.contractId);
         if (!contract) {
-            throw new Error('Contract not found');
+            throw new DaoError('Contract not found');
         }
         toSave.contract = contract;
         toSave.amount = investment.amount;
         toSave.purchaseDate = date;
         const investor = await investorDao.getOne(investment.ownerId);
         if (!investor) {
-            throw new Error('Investor not found');
+            throw new DaoError('Investor not found');
         }
         toSave.owner = investor;
-        const toReturn = await getRepository(PersistedInvestment).save(toSave);
-        return toReturn;
+        await getRepository(PersistedInvestment).insert(toSave);
+        return toSave;
     }
 
 
@@ -100,10 +102,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
      */
     public async deleteInvestment(id: string): Promise<void> {
         const result = await getRepository(PersistedInvestment).delete(id);
-        if (result.affected === 0) {
-            throw new Error('Investment not found');
-        }
-        return;
+        assert(result.affected === 1, `Did not delete investment row with ID ${id}`);
     }
 
 
@@ -114,10 +113,11 @@ export class SqlInvestmentDao implements IInvestmentDao {
         id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number, date: number): Promise<number> {
         const investment = await this.getInvestment(id);
         if (!investment) {
-            throw new Error('Not found');
+            throw new DaoError('Not found');
         }
         if (investment.owner.id !== from.id) {
-            throw new Error('Not right owner');
+            throw new DaoError(`Investment ${investment.id} is not owned by
+            ${from.id} but instead by ${investment.owner.id}`);
         }
         const contract = investment.contract;
         investment.sellDate = date;
@@ -137,7 +137,9 @@ export class SqlInvestmentDao implements IInvestmentDao {
      * @inheritdoc
      */
     public async saveInvestment(investment: IPersistedInvestment): Promise<void> {
-        await getRepository(PersistedInvestment).update(investment.id, investment as PersistedInvestment);
+        const result = await getRepository(PersistedInvestment)
+            .update(investment.id, investment as PersistedInvestment);
+        assert(result.raw.affectedRows === 1, `Did not update contract with ID ${investment.id}`);
         return;
     }
 }

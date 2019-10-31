@@ -2,16 +2,17 @@ import { IUserDao } from '@daos';
 import { Request, Response } from 'express';
 
 import {
-    IPersistedInvestor, StoredInvestor, IStorableInvestor,
+    IPersistedInvestor, StoredInvestor, IStorableInvestor, StorableInvestor, IPersistedHomeowner, IStorableHomeowner,
 } from '@entities';
 
 import { IInvestmentService, IRequestService } from '@services';
-import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { paramMissingError, logger } from '@shared';
+import { OK, CREATED } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 import { IDateService } from 'src/services/DateService';
+import { NotFoundError } from 'src/shared/error/NotFound';
+import { ClientError } from 'src/shared/error/ClientError';
 
 @injectable()
 export default class InvestorController {
@@ -22,6 +23,7 @@ export default class InvestorController {
      */
     constructor(
         @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
+        @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
         @inject('InvestmentService') private investmentService: IInvestmentService,
         @inject('RequestService') private requestService: IRequestService,
         @inject('CashDepositDao') private cashDepositDao: ICashDepositDao,
@@ -54,11 +56,14 @@ export default class InvestorController {
     public async addInvestor(req: Request, res: Response) {
         // Check parameters
         const { user } = req.body;
-        if (!user) {
-            throw new Error(paramMissingError);
+        const toAdd = new StorableInvestor(user.name, user.email, user.password);
+        const currentInvestor = await this.investorDao.getOne(toAdd.email);
+        const currentHomeowner = await this.homeownerDao.getOne(toAdd.email);
+        if (currentHomeowner || currentInvestor) {
+            throw new ClientError(`User wth email ${user.email} already exists`);
         }
         // Add new user
-        await this.investorDao.add(user);
+        await this.investorDao.add(toAdd);
         return res.status(CREATED).send(user);
     }
 
@@ -78,7 +83,7 @@ export default class InvestorController {
                 StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
                     this.feePercentage, currentDate));
         } else {
-            return res.status(NOT_FOUND).end();
+            throw new NotFoundError(`User with email ${email} was not found`);
         }
     }
 
@@ -89,8 +94,8 @@ export default class InvestorController {
     public async deleteInvestor(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
         const investor = await this.investorDao.getOneByEmail(email);
-        if (!investor || !investor.id) {
-            return res.status(NOT_FOUND).end();
+        if (!investor) {
+            throw new NotFoundError(`User with email ${email} was not found`);
         }
         await this.investorDao.delete(investor.id);
         return res.status(OK).end();
@@ -102,18 +107,17 @@ export default class InvestorController {
      */
     public async addInvestment(req: Request, res: Response) {
         const currentDate = await this.dateService.getDateAsNumber();
-        logger.info(String(currentDate));
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
         if (amount <= 0) {
-            throw new Error('Bad amount');
+            throw new ClientError('Bad amount');
         }
         const user = await this.investorDao.getOneByEmail(email);
-        if (user && user.id) {
+        if (user) {
             await this.investmentService.addFunds(user.id, amount, currentDate);
             return res.status(OK).end();
         } else {
-            return res.status(NOT_FOUND).end();
+            throw new NotFoundError(`User with email ${email} was not found`);
         }
     }
 
@@ -126,11 +130,11 @@ export default class InvestorController {
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
         const user = await this.investorDao.getOneByEmail(email);
-        if (user && user.id) {
+        if (user) {
             await this.investmentService.sellInvestments(user.id, amount, currentDate);
             return res.status(OK).end();
         } else {
-            return res.status(NOT_FOUND).end();
+            throw new NotFoundError(`User with email ${email} was not found`);
         }
     }
 

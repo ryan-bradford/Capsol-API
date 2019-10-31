@@ -1,5 +1,5 @@
 
-import { OK, CREATED, NOT_FOUND, BAD_REQUEST } from 'http-status-codes';
+import { OK, CREATED } from 'http-status-codes';
 import { IUserDao } from '@daos';
 import { IInvestmentService, IRequestService } from '@services';
 import sinon from 'sinon';
@@ -10,6 +10,8 @@ import {
     StoredInvestor,
     IStorableInvestor,
     IPersistedCashDeposit,
+    IPersistedHomeowner,
+    IStorableHomeowner,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse } from 'mock-req-res';
@@ -57,6 +59,7 @@ describe('InvestorRouter', () => {
     before(() => {
         investorController = new InvestorController(
             new MockInvestorDao(),
+            new MockHomeownerDao(),
             new MockInvestmentService(),
             new MockRequestService(),
             new MockCashDepositDao(), new MockDateService(), 0);
@@ -114,7 +117,7 @@ describe('InvestorRouter', () => {
         it('should fail if missing the user', (done) => {
             callApi({})
                 .catch((error) => {
-                    expect(error.message).to.be.equal('One or more of the required parameters was missing.');
+                    expect(error.message).to.not.be.equal(undefined);
                     done();
                 });
         });
@@ -149,8 +152,8 @@ describe('InvestorRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -186,8 +189,8 @@ describe('InvestorRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -225,8 +228,8 @@ describe('InvestorRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com', 100)
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -379,4 +382,39 @@ class MockDateService implements IDateService {
     public calibrateMonth(): Promise<number> {
         return Promise.resolve(1);
     }
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
+
+    private examples: IPersistedHomeowner[] = [];
+
+
+    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getAll(): Promise<IPersistedHomeowner[]> {
+        return Promise.resolve(this.examples);
+    }
+
+
+    public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
+        return Promise.resolve(new PersistedInvestor());
+    }
+
+
+    public delete(id: string): Promise<void> {
+        if (id === 'a') {
+            return Promise.resolve();
+        }
+        throw new Error('Not found');
+    }
+
 }

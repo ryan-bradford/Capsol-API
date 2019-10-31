@@ -1,8 +1,12 @@
 import { getRepository } from 'typeorm';
-import { getDaos } from '@daos';
-import { IPersistedRequest, IStorableRequest, PersistedRequest, IPersistedInvestor } from '@entities';
-import { singleton } from 'tsyringe';
-import { logger } from '@shared';
+import { IUserDao } from '@daos';
+import {
+    IPersistedRequest, IStorableRequest, PersistedRequest,
+    IPersistedInvestor, IStorableInvestor,
+} from '@entities';
+import { singleton, inject } from 'tsyringe';
+import { SqlInvestorDao } from '../user/InvestorDao';
+import { strict as assert } from 'assert';
 
 /**
  * `IRequestDao` is a database interface for dealing with requests.
@@ -39,6 +43,9 @@ export interface IRequestDao {
 export class SqlRequestDao implements IRequestDao {
 
 
+    constructor(@inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>) { }
+
+
     /**
      * @inheritdoc
      */
@@ -53,15 +60,14 @@ export class SqlRequestDao implements IRequestDao {
      * @inheritdoc
      */
     public async createRequest(toCreate: IStorableRequest): Promise<IPersistedRequest> {
-        const daos = await getDaos();
         const persistedRequest = new PersistedRequest();
         persistedRequest.amount = toCreate.amount;
         persistedRequest.dateCreated = toCreate.dateCreated;
         persistedRequest.type = toCreate.type;
-        const investor = await new daos.SqlInvestorDao().getOne(toCreate.userId, false);
+        const investor = await (this.investorDao as SqlInvestorDao).getOne(toCreate.userId, false);
         persistedRequest.investor = investor as IPersistedInvestor;
-        const toReturn = await getRepository(PersistedRequest).save(persistedRequest);
-        return toReturn;
+        await getRepository(PersistedRequest).insert(persistedRequest);
+        return persistedRequest;
     }
 
 
@@ -70,9 +76,7 @@ export class SqlRequestDao implements IRequestDao {
      */
     public async deleteRequest(toDeleteId: string): Promise<void> {
         const result = await getRepository(PersistedRequest).delete(toDeleteId);
-        if (result.affected === 0) {
-            throw new Error('Not found!');
-        }
+        assert(result.affected === 1, `Did not delete request row with ID ${toDeleteId}`);
         return;
     }
 
@@ -81,12 +85,10 @@ export class SqlRequestDao implements IRequestDao {
      * @inheritdoc
      */
     public async saveRequest(toSave: IPersistedRequest): Promise<void> {
-        const result = await getRepository(PersistedRequest).update(toSave.id, {
+        const result = await getRepository(PersistedRequest).update({ id: toSave.id }, {
             amount: toSave.amount,
         });
-        if (result.affected === 0) {
-            throw new Error('Not found!');
-        }
+        assert(result.raw.affectedRows, `Did not save request row with ID ${toSave.id}`);
         return;
     }
 }

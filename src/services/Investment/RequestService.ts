@@ -3,11 +3,12 @@ import { IInvestmentDao, IContractDao } from '@daos';
 import {
     IPersistedRequest, IPersistedInvestor,
     IPersistedHomeowner, IPersistedUser, isInvestor,
-    StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment, PersistedCashDeposit,
+    StorableInvestment, isHomeowner, IPersistedContract, IPersistedInvestment,
 } from '@entities';
 import { strict as assert } from 'assert';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
+import { ServiceError } from 'src/shared/error/ServiceError';
 
 /**
  * All the actions that are needed for business operations on requests.
@@ -74,7 +75,7 @@ export class RequestService implements IRequestService {
                 const investment = await this.takeAssets(transactionAmount,
                     currentSell.homeowner, currentPurchase.investor, date);
                 if (!investment) {
-                    throw new Error('Bad');
+                    throw new ServiceError(`User was a homeowner, but no investment was created.`);
                 }
                 currentPurchase.amount -= transactionAmount;
                 currentSell.investments.push(investment);
@@ -99,7 +100,8 @@ export class RequestService implements IRequestService {
             while (amount > 0) {
                 const curInvestment = investments.pop();
                 if (!curInvestment) {
-                    throw new Error('SEVERE');
+                    throw new ServiceError(`User with ID ${from.id} did not have enough
+                     investments to process the transaction of size ${amount}`);
                 }
                 amount -= await this.investmentDao.transferInvestment(curInvestment.id,
                     from as IPersistedInvestor, to, amount, date);
@@ -107,12 +109,9 @@ export class RequestService implements IRequestService {
             }
         } else if (isHomeowner(from)) {
             from = (from as IPersistedHomeowner);
-            if (!from.id) {
-                throw new Error('bad user');
-            }
             const contracts = await this.contractDao.getContracts(from.id);
             if (contracts.length !== 1) {
-                throw new Error(`Bad ${contracts.length} ${from.id}`);
+                throw new ServiceError(`Homeowner with id ${from.id} does not own a contract.`);
             }
             const contract = contracts[0];
             const toCreate = new StorableInvestment(contract.id, amount, to.id);
@@ -120,7 +119,7 @@ export class RequestService implements IRequestService {
             const newInvestment = await this.investmentDao.createInvestment(toCreate, date);
             contract.investments.push(newInvestment);
             assert(Math.round(oldValue - amount) === Math.round(contract.unsoldAmount()),
-                `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount}`);
+                `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount()}`);
             return newInvestment;
         }
     }

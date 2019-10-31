@@ -2,6 +2,7 @@ import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHom
 import { IUserDao, IContractDao, ICompanyDao } from '@daos';
 import { injectable, inject } from 'tsyringe';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
+import { ServiceError } from 'src/shared/error/ServiceError';
 
 /**
  * The actions that are required by the business related to contracts.
@@ -49,7 +50,7 @@ export class ContractService implements IContractService {
         Promise<IPersistedContract> {
         const homeowner = await this.homeownerDao.getOne(userId);
         if (!homeowner) {
-            throw new Error('Not found');
+            throw new ServiceError(`Homeowner with ID ${userId} was not found.`);
         }
         const interestRate = this.targetRate;
         const lengthInYears = 20;
@@ -68,7 +69,7 @@ export class ContractService implements IContractService {
         if (user && user.id) {
             const contracts = await this.contractDao.getContracts(user.id);
             if (contracts.length !== 1) {
-                throw new Error('Bad request');
+                throw new ServiceError(`User with ID ${user.id} does not own a contract.`);
             }
             const contract = contracts[0];
             if (!contract.isFulfilled() ||
@@ -77,7 +78,7 @@ export class ContractService implements IContractService {
                 return null;
             }
             await Promise.all(contract.investments.map(async (investment) => {
-                if (investment.sellDate === null) {
+                if (!investment.sellDate) {
                     const amount = await this.companyDao.takeFee(investment.amount / contract.saleAmount *
                         contract.monthlyPayment);
                     await this.requestDao.createRequest(
@@ -88,7 +89,7 @@ export class ContractService implements IContractService {
             await this.contractDao.saveContract(contract);
             return contract.monthlyPayment;
         } else {
-            throw new Error('Not found');
+            throw new ServiceError(`User with email ${email} was not found.`);
         }
     }
 }

@@ -6,6 +6,10 @@ import { singleton, injectable, inject } from 'tsyringe';
  * `ICompanyDao` is a database interface for dealing with company fees.
  */
 export interface ICompanyDao {
+    /**
+     * Takes a fee away from the given amount.
+     * Returns the amount after the fee has been taken.
+     */
     takeFee(amount: number): Promise<number>;
 }
 
@@ -32,7 +36,7 @@ export class SqlCompanyDao implements ICompanyDao {
         const toSave = new PersistedCompanyFee();
         const feeToTake = amount * this.feePercentage;
         toSave.amount = feeToTake;
-        await getRepository(PersistedCompanyFee).save(toSave);
+        await getRepository(PersistedCompanyFee).insert(toSave);
         return amount - feeToTake;
     }
 }

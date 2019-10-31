@@ -1,5 +1,6 @@
 import { IStoredRequest } from 'src/entities/investment/request/StoredRequest';
 import { IPersistedUser } from './PersistedUser';
+import { strict as assert, AssertionError } from 'assert';
 
 /**
  * The information that should be made public about a user.
@@ -38,7 +39,7 @@ export abstract class StoredUser implements IStoredUser {
     constructor(id: string | IPersistedUser, name?: string, email?: string, pwdHash?: string) {
         if (typeof id === 'string') {
             if (!name || !email || !pwdHash) {
-                throw new Error('Bad!');
+                throw new AssertionError();
             }
             this.id = id;
             this.name = name;

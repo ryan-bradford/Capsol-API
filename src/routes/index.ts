@@ -4,6 +4,8 @@ import HomeownerRoute from './Homeowner';
 import AuthRouter from './Auth';
 import { logger } from '@shared';
 import { AssertionError } from 'assert';
+import { ClientError } from 'src/shared/error/ClientError';
+import { NotFoundError } from 'src/shared/error/NotFound';
 
 export default () => {
 
@@ -28,14 +30,14 @@ export default () => {
     return router;
 
 };
-// TODO: improve error handling
 
 function ClientErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {
-    if ((error as AssertionError).actual !== undefined) {
-        next(error);
-    } else {
+    if ((error as ClientError).type === ClientError.type) {
         response.status(400).send(error.message);
+    } else if ((error as NotFoundError).type === NotFoundError.type) {
+        response.status(404).send(error.message);
     }
+    next(error);
 }
 
 function ServerErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {

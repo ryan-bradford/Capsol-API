@@ -6,6 +6,7 @@ import { getRepository } from 'typeorm';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
+import { ServiceError } from 'src/shared/error/ServiceError';
 
 /**
  * All the actions that are needed for business operations on investments.
@@ -52,7 +53,7 @@ export class InvestmentService implements IInvestmentService {
     public async addFunds(userId: string, amount: number, date: number): Promise<IPersistedInvestment[]> {
         const user = await this.investorDao.getOne(userId);
         if (!user) {
-            throw new Error('Not found');
+            throw new ServiceError(`User with ID ${userId} was not found.`);
         }
         amount = (await
             this.requestDao.createRequest(new StorableRequest(amount, date, user.id, 'purchase'))).amount;
@@ -67,7 +68,7 @@ export class InvestmentService implements IInvestmentService {
     public async sellInvestments(userId: string, amount: number, date: number): Promise<void> {
         const user = await this.investorDao.getOne(userId);
         if (!user) {
-            throw new Error('Not found');
+            throw new ServiceError(`User with ID ${userId} was not found.`);
         }
         amount = (await
             this.requestDao.createRequest(new StorableRequest(amount, date, user.id, 'sell'))).amount;

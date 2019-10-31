@@ -3,6 +3,7 @@ import { IPersistedInvestor, PersistedInvestor, IStorableInvestor } from '@entit
 import { getRepository } from 'typeorm';
 import bcrypt from 'bcrypt';
 import { singleton } from 'tsyringe';
+import { strict as assert } from 'assert';
 
 /**
  * `SqlInvestorDao` is a specific implementation of `IUserDao` for `IPersistedInvestor`s
@@ -52,7 +53,8 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
         newInvestor.name = user.name;
         newInvestor.pwdHash = bcrypt.hashSync(user.password, bcrypt.genSaltSync());
         newInvestor.admin = false;
-        return getRepository(PersistedInvestor).save(newInvestor);
+        await getRepository(PersistedInvestor).insert(newInvestor);
+        return newInvestor;
     }
 
 
@@ -61,9 +63,6 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
      */
     public async delete(id: string): Promise<void> {
         const result = await getRepository(PersistedInvestor).delete(id);
-        if (result.affected === 0) {
-            throw new Error('Investment not found');
-        }
-        return;
+        assert(result.affected === 1, `Did not delete investor row with ID ${id}`);
     }
 }
