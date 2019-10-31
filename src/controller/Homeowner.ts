@@ -3,9 +3,11 @@ import { IUserDao, IContractDao } from '@daos';
 import { IPersistedHomeowner, IStorableHomeowner, StoredHomeowner, StoredContract } from '@entities';
 import { IContractService } from '@services';
 import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { paramMissingError, addMonth, logger } from '@shared';
+import { paramMissingError, logger } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { injectable, inject } from 'tsyringe';
+import { IDateService } from 'src/services/DateService';
+import { assert } from 'console';
 
 @injectable()
 export default class HomeownerController {
@@ -17,7 +19,8 @@ export default class HomeownerController {
     constructor(
         @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>,
         @inject('ContractDao') private contractDao: IContractDao,
-        @inject('ContractService') private contractService: IContractService) { }
+        @inject('ContractService') private contractService: IContractService,
+        @inject('DateService') private dateService: IDateService) { }
 
 
     /**
@@ -125,8 +128,12 @@ export default class HomeownerController {
      */
     public async makeAllPayments(req: Request, res: Response) {
         const allContracts = await this.contractDao.getContracts();
-        await Promise.all(allContracts.map((contract) => this.contractService.makePayment(contract.homeowner.email)));
-        addMonth();
+        const date = await this.dateService.getDateAsNumber();
+        await Promise.all(allContracts.map((contract) =>
+            this.contractService.makePayment(contract.homeowner.email, date)));
+        await this.dateService.tickTime();
+        const newDate = await this.dateService.getDateAsNumber();
+        assert(date === newDate - 1);
         return res.status(OK).send();
     }
 

@@ -17,6 +17,7 @@ import sinonChai from 'sinon-chai';
 import chai from 'chai';
 import InvestorController from 'src/controller/Investor';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
+import { IDateService } from 'src/services/DateService';
 
 chai.use(sinonChai);
 
@@ -58,7 +59,7 @@ describe('InvestorRouter', () => {
             new MockInvestorDao(),
             new MockInvestmentService(),
             new MockRequestService(),
-            new MockCashDepositDao(), 0);
+            new MockCashDepositDao(), new MockDateService(), 0);
     });
 
     describe(`"GET":${investorPath}`, () => {
@@ -349,7 +350,7 @@ class MockRequestService implements IRequestService {
 class MockCashDepositDao implements ICashDepositDao {
 
 
-    public makeDeposit(amount: number, user: IPersistedInvestor): Promise<void> {
+    public makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
         return Promise.resolve();
     }
 
@@ -359,4 +360,23 @@ class MockCashDepositDao implements ICashDepositDao {
     }
 
 
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockDateService implements IDateService {
+
+
+    public getDateAsNumber(): Promise<number> {
+        return Promise.resolve(1);
+    }
+
+
+    public tickTime(): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+    public calibrateMonth(): Promise<number> {
+        return Promise.resolve(1);
+    }
 }

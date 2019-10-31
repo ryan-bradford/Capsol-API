@@ -1,5 +1,4 @@
 import { getRepository } from 'typeorm';
-import { getDateAsNumber, logger } from '@shared';
 import { IPersistedInvestment, IStorableInvestment, PersistedInvestment, IPersistedInvestor, StorableInvestment } from '@entities';
 import { getDaos } from '@daos';
 import { singleton } from 'tsyringe';
@@ -21,7 +20,7 @@ export interface IInvestmentDao {
      *
      * @throws Error if the investment contained information that did not exist.
      */
-    createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment>;
+    createInvestment(investment: IStorableInvestment, date: number): Promise<IPersistedInvestment>;
     /**
      * Deletes the investment with the given ID.
      *
@@ -34,7 +33,9 @@ export interface IInvestmentDao {
      *
      * @throws Error if the investment was not found or is not owned by `to`.
      */
-    transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number): Promise<number>;
+    transferInvestment(
+        id: string, from: IPersistedInvestor, to: IPersistedInvestor,
+        amount: number, date: number): Promise<number>;
     /**
      * Saves the given investment to the database.
      */
@@ -72,7 +73,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
     /**
      * @inheritdoc
      */
-    public async createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment> {
+    public async createInvestment(investment: IStorableInvestment, date: number): Promise<IPersistedInvestment> {
         const daos = await getDaos();
         const investorDao = new daos.SqlInvestorDao();
         const contractDao = new daos.SqlContractDao();
@@ -83,7 +84,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
         }
         toSave.contract = contract;
         toSave.amount = investment.amount;
-        toSave.purchaseDate = getDateAsNumber();
+        toSave.purchaseDate = date;
         const investor = await investorDao.getOne(investment.ownerId);
         if (!investor) {
             throw new Error('Investor not found');
@@ -110,7 +111,7 @@ export class SqlInvestmentDao implements IInvestmentDao {
      * @inheritdoc
      */
     public async transferInvestment(
-        id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number): Promise<number> {
+        id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number, date: number): Promise<number> {
         const investment = await this.getInvestment(id);
         if (!investment) {
             throw new Error('Not found');
@@ -119,13 +120,13 @@ export class SqlInvestmentDao implements IInvestmentDao {
             throw new Error('Not right owner');
         }
         const contract = investment.contract;
-        investment.sellDate = getDateAsNumber();
-        const amountToTake = investment.amount * amount / investment.value();
+        investment.sellDate = date;
+        const amountToTake = investment.amount * amount / investment.value(date);
         await this.createInvestment(
-            new StorableInvestment(contract.id, amountToTake, to.id));
-        if (investment.value() - amount > 0) {
+            new StorableInvestment(contract.id, amountToTake, to.id), date);
+        if (investment.value(date) - amount > 0) {
             await this.createInvestment(
-                new StorableInvestment(contract.id, investment.amount - amountToTake, from.id));
+                new StorableInvestment(contract.id, investment.amount - amountToTake, from.id), date);
         }
         await this.saveInvestment(investment);
         return amountToTake;

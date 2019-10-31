@@ -1,7 +1,5 @@
 import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHomeowner, StorableRequest } from '@entities';
 import { IUserDao, IContractDao, ICompanyDao } from '@daos';
-import { IRequestService } from '@services';
-import { getDateAsNumber, logger } from '@shared';
 import { injectable, inject } from 'tsyringe';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 
@@ -29,7 +27,7 @@ export interface IContractService {
      * @returns null if the user's contract has been fully paid.
      * @returns a number representing how much the user paid.
      */
-    makePayment(email: string): Promise<number | null>;
+    makePayment(email: string, date: number): Promise<number | null>;
 }
 
 @injectable()
@@ -44,6 +42,9 @@ export class ContractService implements IContractService {
         @inject('TargetRate') private targetRate: number) { }
 
 
+    /**
+     * @inheritdoc
+     */
     public async createContract(amount: number, userId: string, dontSave?: boolean):
         Promise<IPersistedContract> {
         const homeowner = await this.homeownerDao.getOne(userId);
@@ -59,7 +60,10 @@ export class ContractService implements IContractService {
     }
 
 
-    public async makePayment(email: string): Promise<number | null> {
+    /**
+     * @inheritdoc
+     */
+    public async makePayment(email: string, date: number): Promise<number | null> {
         const user = await this.homeownerDao.getOneByEmail(email);
         if (user && user.id) {
             const contracts = await this.contractDao.getContracts(user.id);
@@ -69,7 +73,7 @@ export class ContractService implements IContractService {
             const contract = contracts[0];
             if (!contract.isFulfilled() ||
                 (contract.firstPaymentDate !== null
-                    && getDateAsNumber() - contract.firstPaymentDate >= contract.totalLength)) {
+                    && date - contract.firstPaymentDate >= contract.totalLength)) {
                 return null;
             }
             await Promise.all(contract.investments.map(async (investment) => {
@@ -77,10 +81,10 @@ export class ContractService implements IContractService {
                     const amount = await this.companyDao.takeFee(investment.amount / contract.saleAmount *
                         contract.monthlyPayment);
                     await this.requestDao.createRequest(
-                        new StorableRequest(amount, getDateAsNumber(), investment.owner.id, 'purchase'));
+                        new StorableRequest(amount, date, investment.owner.id, 'purchase'));
                 }
             }));
-            contract.firstPaymentDate = contract.firstPaymentDate || getDateAsNumber();
+            contract.firstPaymentDate = contract.firstPaymentDate || date;
             await this.contractDao.saveContract(contract);
             return contract.monthlyPayment;
         } else {

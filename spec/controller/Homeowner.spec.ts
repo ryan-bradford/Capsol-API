@@ -15,6 +15,7 @@ import sinonChai from 'sinon-chai';
 import chai from 'chai';
 import HomeownerController from 'src/controller/Homeowner';
 import { start } from 'repl';
+import { IDateService } from 'src/services/DateService';
 
 chai.use(sinonChai);
 
@@ -55,7 +56,7 @@ describe('HomeownerRouter', () => {
             homeownerController = new HomeownerController(
                 homeownerDao,
                 contractDao,
-                contractService);
+                contractService, new MockDateService());
             done();
         });
     });
@@ -315,6 +316,26 @@ class MockContractService implements IContractService {
     }
 
 }
+
+// tslint:disable-next-line: max-classes-per-file
+class MockDateService implements IDateService {
+
+
+    public getDateAsNumber(): Promise<number> {
+        return Promise.resolve(1);
+    }
+
+
+    public tickTime(): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+    public calibrateMonth(): Promise<number> {
+        return Promise.resolve(1);
+    }
+}
+
 
 function hashPwd(pwd: string) {
     return bcrypt.hashSync(pwd, pwdSaltRounds);

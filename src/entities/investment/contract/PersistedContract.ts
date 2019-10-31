@@ -1,6 +1,5 @@
 import { Entity, Column, OneToMany, OneToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { IPersistedInvestment, IPersistedHomeowner, PersistedInvestment, PersistedHomeowner } from '@entities';
-import { logger, getDateAsNumber } from '@shared';
 
 /**
  * Represents all the information stored in the database for contracts.
@@ -54,7 +53,7 @@ export interface IPersistedContract {
      *
      * @invariant monthsPassed >= 0
      */
-    monthsPassed(): number;
+    monthsPassed(currentDate: number): number;
     /**
      * The amount this contract decreases in value every month.
      *
@@ -100,8 +99,8 @@ export class PersistedContract implements IPersistedContract {
     }
 
 
-    public monthsPassed(): number {
-        return this.firstPaymentDate ? getDateAsNumber() - this.firstPaymentDate : 0;
+    public monthsPassed(currentDate: number): number {
+        return this.firstPaymentDate ? currentDate - this.firstPaymentDate : 0;
     }
 
 

@@ -1,13 +1,11 @@
 import {
     IPersistedInvestment, IPersistedInvestor, IStorableInvestor, PersistedRequest, StorableRequest,
 } from '@entities';
-import { IRequestService } from '@services';
 import { IUserDao, IInvestmentDao } from '@daos';
 import { getRepository } from 'typeorm';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
-import { getDateAsNumber } from '@shared';
 
 /**
  * All the actions that are needed for business operations on investments.
@@ -18,7 +16,7 @@ export interface IInvestmentService {
      *
      * @throws Error if the user was not found.
      */
-    addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]>;
+    addFunds(userId: string, amount: number, date: number): Promise<IPersistedInvestment[]>;
     // TODO: implement second throws
     /**
      * Sells `amount` of funds from the investor represented by the given `userId`.
@@ -26,7 +24,7 @@ export interface IInvestmentService {
      * @throws Error if the user was not found.
      * @throws Error if the investor does not have enough funds to sell.
      */
-    sellInvestments(userId: string, amount: number): Promise<void>;
+    sellInvestments(userId: string, amount: number, date: number): Promise<void>;
     /**
      * Returns the total amount of cash the given investor has uninvested.
      */
@@ -48,29 +46,38 @@ export class InvestmentService implements IInvestmentService {
         @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
 
 
-    public async addFunds(userId: string, amount: number): Promise<IPersistedInvestment[]> {
+    /**
+     * @inheritdoc
+     */
+    public async addFunds(userId: string, amount: number, date: number): Promise<IPersistedInvestment[]> {
         const user = await this.investorDao.getOne(userId);
         if (!user) {
             throw new Error('Not found');
         }
         amount = (await
-            this.requestDao.createRequest(new StorableRequest(amount, getDateAsNumber(), user.id, 'purchase'))).amount;
-        await this.cashDepositDao.makeDeposit(amount, user);
+            this.requestDao.createRequest(new StorableRequest(amount, date, user.id, 'purchase'))).amount;
+        await this.cashDepositDao.makeDeposit(amount, date, user);
         return [];
     }
 
 
-    public async sellInvestments(userId: string, amount: number): Promise<void> {
+    /**
+     * @inheritdoc
+     */
+    public async sellInvestments(userId: string, amount: number, date: number): Promise<void> {
         const user = await this.investorDao.getOne(userId);
         if (!user) {
             throw new Error('Not found');
         }
         amount = (await
-            this.requestDao.createRequest(new StorableRequest(amount, getDateAsNumber(), user.id, 'sell'))).amount;
+            this.requestDao.createRequest(new StorableRequest(amount, date, user.id, 'sell'))).amount;
         return;
     }
 
 
+    /**
+     * @inheritdoc
+     */
     public async getCashValue(userId: string): Promise<number> {
         const requestValue = await getRepository(PersistedRequest)
             .createQueryBuilder('request')
@@ -81,6 +88,9 @@ export class InvestmentService implements IInvestmentService {
     }
 
 
+    /**
+     * @inheritdoc
+     */
     public async getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]> {
         return this.investmentDao.getInvestments(userId);
     }

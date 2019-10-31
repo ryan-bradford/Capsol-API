@@ -3,6 +3,8 @@ import {
     tickMonth, handleRequests, startApp, appInstance, cookie, sellInvestment, getInvestor, getHomeowner,
 } from './IntegrationHelp';
 import { expect } from 'chai';
+import { container } from 'tsyringe';
+import { IDateService } from 'src/services/DateService';
 
 describe('Integration 1', function test() {
     this.timeout(50000);
@@ -13,6 +15,16 @@ describe('Integration 1', function test() {
 
     before((done) => {
         startApp(0).then(done);
+    });
+
+    describe('Start Date Test', () => {
+        it('should start at a date of 1', (done) => {
+            const dateService: IDateService = container.resolve('DateService');
+            dateService.getDateAsNumber().then((date) => {
+                expect(date).to.be.equal(1);
+                done();
+            });
+        });
     });
 
     describe('Add Homeowner', () => {

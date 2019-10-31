@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { logger, resetDate } from '@shared';
+import { logger } from '@shared';
 import { expect } from 'chai';
 import {
     addInvestor, addInvestment, addContract, addHomeowner,

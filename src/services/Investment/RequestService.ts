@@ -1,6 +1,5 @@
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { IInvestmentDao, IContractDao } from '@daos';
-import { getDateAsNumber, logger } from '@shared';
 import {
     IPersistedRequest, IPersistedInvestor,
     IPersistedHomeowner, IPersistedUser, isInvestor,
@@ -23,7 +22,7 @@ export interface IRequestService {
      *
      * @throws Error if the selling investor does not own enough investments to satisfy the sell request.
      */
-    handleRequests(): Promise<void>;
+    handleRequests(date: number): Promise<void>;
 
 }
 
@@ -38,7 +37,10 @@ export class RequestService implements IRequestService {
         @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
 
 
-    public async handleRequests(): Promise<void> {
+    /**
+     * @inheritdoc
+     */
+    public async handleRequests(date: number): Promise<void> {
         // Matches purchase requests to sell requests based on age
         // When a match is made, looks into sellers portfolio and determines what to transfer
         const requests =
@@ -58,10 +60,10 @@ export class RequestService implements IRequestService {
             if (isRequest(currentSell)) {
                 const transactionAmount = Math.min(currentSell.amount, currentPurchase.amount);
                 await this.takeAssets(transactionAmount,
-                    currentSell.investor, currentPurchase.investor as IPersistedInvestor);
+                    currentSell.investor, currentPurchase.investor as IPersistedInvestor, date);
                 currentPurchase.amount -= transactionAmount;
                 currentSell.amount -= transactionAmount;
-                await this.cashDepositDao.makeDeposit(-transactionAmount, currentSell.investor);
+                await this.cashDepositDao.makeDeposit(-transactionAmount, date, currentSell.investor);
                 await this.requestDao.saveRequest(currentSell);
                 if (currentSell.amount === 0) {
                     await this.requestDao.deleteRequest(currentSell.id);
@@ -70,7 +72,7 @@ export class RequestService implements IRequestService {
             } else {
                 const transactionAmount = Math.min(currentSell.unsoldAmount(), currentPurchase.amount);
                 const investment = await this.takeAssets(transactionAmount,
-                    currentSell.homeowner, currentPurchase.investor);
+                    currentSell.homeowner, currentPurchase.investor, date);
                 if (!investment) {
                     throw new Error('Bad');
                 }
@@ -90,7 +92,7 @@ export class RequestService implements IRequestService {
     }
 
 
-    private async takeAssets(amount: number, from: IPersistedUser, to: IPersistedInvestor):
+    private async takeAssets(amount: number, from: IPersistedUser, to: IPersistedInvestor, date: number):
         (Promise<IPersistedInvestment | void>) {
         if (isInvestor(from)) {
             const investments = await this.investmentDao.getInvestments(from.id);
@@ -100,7 +102,7 @@ export class RequestService implements IRequestService {
                     throw new Error('SEVERE');
                 }
                 amount -= await this.investmentDao.transferInvestment(curInvestment.id,
-                    from as IPersistedInvestor, to, amount);
+                    from as IPersistedInvestor, to, amount, date);
                 amount = Math.max(amount, 0);
             }
         } else if (isHomeowner(from)) {
@@ -115,7 +117,7 @@ export class RequestService implements IRequestService {
             const contract = contracts[0];
             const toCreate = new StorableInvestment(contract.id, amount, to.id);
             const oldValue = contract.unsoldAmount();
-            const newInvestment = await this.investmentDao.createInvestment(toCreate);
+            const newInvestment = await this.investmentDao.createInvestment(toCreate, date);
             contract.investments.push(newInvestment);
             assert(Math.round(oldValue - amount) === Math.round(contract.unsoldAmount()),
                 `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount}`);

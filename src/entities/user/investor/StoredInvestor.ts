@@ -4,7 +4,6 @@ import { IPersistedInvestment } from 'src/entities/investment/investment/Persist
 import { IPersistedCashDeposit } from 'src/entities/investment/cash/PersistedCashDeposit';
 import { StoredInvestment } from 'src/entities/investment/investment/StoredInvestment';
 import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/StoredPortfolioHistory';
-import { getDateAsNumber } from '@shared';
 
 /**
  * The information that should be made public about an investor.
@@ -53,13 +52,14 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
         investments: IPersistedInvestment[],
         cashDeposits: IPersistedCashDeposit[],
         portfolioValue: number,
-        feePercentage: number): IStoredInvestor {
+        feePercentage: number,
+        currentDate: number): IStoredInvestor {
         const storedInvestments = investments.map((investment) =>
             new StoredInvestment(investment.id, investment.amount, investment.contract.totalLength,
                 investment.contract.firstPaymentDate, investment.owner.id,
                 investment.contract.monthlyPayment * investment.amount / investment.contract.saleAmount));
         const portfolioHistory: IStoredPortfolioHistory[] = [];
-        for (let i = getEarliestMonth(investments, cashDeposits); i <= getDateAsNumber(); i++) {
+        for (let i = getEarliestMonth(investments, cashDeposits); i <= currentDate; i++) {
             const cash = getCashValueAtMonth(cashDeposits, i);
             const investmentReturns = getNetReturnsAtMonth(investments, i, feePercentage);
             portfolioHistory.push(new StoredPortfolioHistory(i, cash, investmentReturns + cash));

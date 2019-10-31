@@ -3,6 +3,7 @@ import { logger } from '@shared';
 import { ContractService, InvestmentService, RequestService } from '@services';
 import { getDaos } from '@daos';
 import { container } from 'tsyringe';
+import { DateService } from './services/DateService';
 
 // Start the server
 process.env.USE_TEST_DB = 'false';
@@ -36,6 +37,9 @@ getDaos().then((daos) => {
     });
     container.register('RequestDao', {
         useClass: daos.SqlRequestDao,
+    });
+    container.register('DateService', {
+        useValue: new DateService(container.resolve('InvestmentDao'), container.resolve('RequestDao')),
     });
     container.register('RequestService', {
         useClass: RequestService,

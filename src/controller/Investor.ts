@@ -7,10 +7,11 @@ import {
 
 import { IInvestmentService, IRequestService } from '@services';
 import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { paramMissingError } from '@shared';
+import { paramMissingError, logger } from '@shared';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
+import { IDateService } from 'src/services/DateService';
 
 @injectable()
 export default class InvestorController {
@@ -24,6 +25,7 @@ export default class InvestorController {
         @inject('InvestmentService') private investmentService: IInvestmentService,
         @inject('RequestService') private requestService: IRequestService,
         @inject('CashDepositDao') private cashDepositDao: ICashDepositDao,
+        @inject('DateService') private dateService: IDateService,
         @inject('FeeRate') private feePercentage: number) { }
 
 
@@ -31,6 +33,7 @@ export default class InvestorController {
      * Returns every investor as JSON loaded to the given res.
      */
     public async getAll(req: Request, res: Response) {
+        const currentDate = await this.dateService.getDateAsNumber();
         const users = await
             this.investorDao.getAll()
                 .then((result) => Promise.all(
@@ -39,7 +42,7 @@ export default class InvestorController {
                         const portfolio = await this.investmentService.getCashValue(investor.id);
                         const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
                         return StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
-                            this.feePercentage);
+                            this.feePercentage, currentDate);
                     })));
         return res.status(OK).json({ users });
     }
@@ -64,6 +67,7 @@ export default class InvestorController {
      * Returns the investor whose email is in the params of the request as JSON in the res.
      */
     public async getInvestor(req: Request, res: Response) {
+        const currentDate = await this.dateService.getDateAsNumber();
         const { email } = req.params as ParamsDictionary;
         const investor = await this.investorDao.getOneByEmail(email);
         if (investor) {
@@ -72,7 +76,7 @@ export default class InvestorController {
             const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
             return res.status(OK).json(
                 StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
-                    this.feePercentage));
+                    this.feePercentage, currentDate));
         } else {
             return res.status(NOT_FOUND).end();
         }
@@ -97,6 +101,8 @@ export default class InvestorController {
      * Adds an investment of the given amount for the given investor.
      */
     public async addInvestment(req: Request, res: Response) {
+        const currentDate = await this.dateService.getDateAsNumber();
+        logger.info(String(currentDate));
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
         if (amount <= 0) {
@@ -104,7 +110,7 @@ export default class InvestorController {
         }
         const user = await this.investorDao.getOneByEmail(email);
         if (user && user.id) {
-            await this.investmentService.addFunds(user.id, amount);
+            await this.investmentService.addFunds(user.id, amount, currentDate);
             return res.status(OK).end();
         } else {
             return res.status(NOT_FOUND).end();
@@ -116,11 +122,12 @@ export default class InvestorController {
      * Sells investments of the given amount for the given investor.
      */
     public async sellInvestment(req: Request, res: Response) {
+        const currentDate = await this.dateService.getDateAsNumber();
         const { email } = req.params as ParamsDictionary;
         const { amount } = req.body;
         const user = await this.investorDao.getOneByEmail(email);
         if (user && user.id) {
-            await this.investmentService.sellInvestments(user.id, amount);
+            await this.investmentService.sellInvestments(user.id, amount, currentDate);
             return res.status(OK).end();
         } else {
             return res.status(NOT_FOUND).end();
@@ -132,7 +139,8 @@ export default class InvestorController {
      * Pairs purchase and sell requests and makes the magic happen.
      */
     public async handleInvestments(req: Request, res: Response) {
-        await this.requestService.handleRequests();
+        const currentDate = await this.dateService.getDateAsNumber();
+        await this.requestService.handleRequests(currentDate);
         res.status(200).send();
     }
 }

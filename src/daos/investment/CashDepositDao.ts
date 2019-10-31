@@ -1,5 +1,4 @@
 import { IPersistedInvestor, IPersistedCashDeposit, PersistedCashDeposit } from '@entities';
-import { getDateAsNumber } from '@shared';
 import { getRepository } from 'typeorm';
 import { singleton } from 'tsyringe';
 
@@ -11,7 +10,7 @@ export interface ICashDepositDao {
     /**
      * Creates a deposit of the given amount for the given user.
      */
-    makeDeposit(amount: number, user: IPersistedInvestor): Promise<void>;
+    makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void>;
 
     /**
      * Gets all deposits that the given user has made.
@@ -21,7 +20,7 @@ export interface ICashDepositDao {
 }
 
 /**
- * `SqlCashDepositDao` is a specific implementation of `ICashDepositDao` for interfacing with MySQL using TypeORM.
+ * `SqlCashDepositDao` is a specific implementation of {@link ICashDepositDao} for interfacing with MySQL using TypeORM.
  */
 @singleton()
 export class SqlCashDepositDao implements ICashDepositDao {
@@ -30,10 +29,10 @@ export class SqlCashDepositDao implements ICashDepositDao {
     /**
      * @inheritdoc
      */
-    public async makeDeposit(amount: number, user: IPersistedInvestor): Promise<void> {
+    public async makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
         const newCashDeposit = new PersistedCashDeposit();
         newCashDeposit.amount = amount;
-        newCashDeposit.date = getDateAsNumber();
+        newCashDeposit.date = date;
         newCashDeposit.user = user;
         getRepository(PersistedCashDeposit).save(newCashDeposit);
     }
