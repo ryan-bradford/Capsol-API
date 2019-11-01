@@ -29,9 +29,7 @@ The view is the smallest part of the application. Because the Angular app rests 
 2. Add more tests (getPortfolioValue, makePayment, takeAssets, transferInvestment, saveInvestment)<br>
 3. Improve speed of everything<br>
 4. Change deleted to table field<br>
-5. Add validation to entities in routers<br>
-6. Design better error handling<br>
-7. Create dashboard<br>
-8. Add stuff about locking and transactions<br>
-9. Codacy integration<br>
-10. Make RAML<br>
+5. Create dashboard<br>
+6. Add stuff about locking and transactions<br>
+7. Codacy integration<br>
+8. Make RAML<br>
