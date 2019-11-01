@@ -15,7 +15,8 @@ export default () => {
      * @throws 401 if the user was found but the login was invalid.
      * @throws 404 if the user was not found.
      */
-    router.post('/login', (req, res) => controller.login(req, res));
+    router.post('/login', (req, res, next) =>
+        controller.login(req, res).catch((error) => next(error)));
 
 
     /**

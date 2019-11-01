@@ -12,7 +12,8 @@ export default () => {
     /**
      * Returns the information about every `StoredInvestor` in the system.
      */
-    router.get('', adminMW, (req, res) => controller.getAll(req, res));
+    router.get('', adminMW, (req, res, next) =>
+        controller.getAll(req, res).catch((error) => next(error)));
 
     /**
      * Adds a new investor to the system.
@@ -23,26 +24,30 @@ export default () => {
      *
      * @throws 400 if there exists another user with the same email.
      */
-    router.post('', (req, res) => controller.addInvestor(req, res));
+    router.post('', (req, res, next) =>
+        controller.addInvestor(req, res).catch((error) => next(error)));
 
     /**
      * Matches all added funds and monthly payments with contracts and investments for sale,
      */
-    router.post('/update', adminMW, (req, res) => controller.handleInvestments(req, res));
+    router.post('/update', adminMW, (req, res, next) =>
+        controller.handleInvestments(req, res).catch((error) => next(error)));
 
     /**
      * Returns the `StoredInvestor` that is represented by the given email.
      *
      * @throws 404 if the user was not found.
      */
-    router.get('/:email', adminMW, (req, res) => controller.getInvestor(req, res));
+    router.get('/:email', adminMW, (req, res, next) =>
+        controller.getInvestor(req, res).catch((error) => next(error)));
 
     /**
      * Deletes the investor and all associated information represented by the email.
      *
      * @throws 404 if the user was not found.
      */
-    router.delete('/:email', adminMW, (req, res) => controller.deleteInvestor(req, res));
+    router.delete('/:email', adminMW, (req, res, next) =>
+        controller.deleteInvestor(req, res).catch((error) => next(error)));
 
     /**
      * Adds funds to the account of the investor given by the email.
@@ -51,7 +56,8 @@ export default () => {
      *
      * @throws 404 if the user was not found.
      */
-    router.put('/:email/investment', adminMW, (req, res) => controller.addInvestment(req, res));
+    router.put('/:email/investment', adminMW, (req, res, next) =>
+        controller.addInvestment(req, res).catch((error) => next(error)));
 
     /**
      * Sells funds from the account of the investor given by the email.
@@ -60,7 +66,8 @@ export default () => {
      *
      * @throws 404 if the user was not found.
      */
-    router.put('/:email/sell', adminMW, (req, res) => controller.sellInvestment(req, res));
+    router.put('/:email/sell', adminMW, (req, res, next) =>
+        controller.sellInvestment(req, res).catch((error) => next(error)));
 
     return router;
 };

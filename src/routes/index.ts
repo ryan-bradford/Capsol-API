@@ -33,14 +33,14 @@ export default () => {
 
 function ClientErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {
     if ((error as ClientError).type === ClientError.type) {
-        response.status(400).send(error.message);
+        return response.status(400).send(error.message);
     } else if ((error as NotFoundError).type === NotFoundError.type) {
-        response.status(404).send(error.message);
+        return response.status(404).send(error.message);
     }
     next(error);
 }
 
 function ServerErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {
     logger.error(error.message);
-    response.status(500).send();
+    return response.status(500).send();
 }
