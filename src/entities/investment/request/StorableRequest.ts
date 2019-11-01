@@ -1,3 +1,5 @@
+import { Min, IsUUID } from 'class-validator';
+
 /**
  * Stores all the information needed to create a request.
  */
@@ -23,8 +25,13 @@ export interface IStorableRequest {
 
 export class StorableRequest implements IStorableRequest {
 
+    @Min(0)
     public amount: number;
+
+    @Min(0)
     public dateCreated: number;
+
+    @IsUUID()
     public userId: string;
     public type: 'purchase' | 'sell';
 

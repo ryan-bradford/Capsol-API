@@ -1,3 +1,5 @@
+import { Min, IsUUID } from 'class-validator';
+
 /**
  * Stores all the information needed to create a contract.
  */
@@ -28,9 +30,16 @@ export interface IStorableContract {
 
 export class StorableContract implements IStorableContract {
 
+    @Min(0)
     public saleAmount: number;
+
+    @Min(0)
     public length: number;
+
+    @Min(0)
     public monthlyPayment: number;
+
+    @IsUUID()
     public homeownerId: string;
 
 

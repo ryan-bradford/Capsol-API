@@ -5,16 +5,15 @@ import {
     IPersistedInvestor, IStorableInvestor,
 } from '@entities';
 import { IContractService } from '@services';
-import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { paramMissingError } from '@shared';
+import { OK, CREATED } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { injectable, inject } from 'tsyringe';
 import { IDateService } from 'src/services/DateService';
 import { strict as assert } from 'assert';
 import { ClientError } from 'src/shared/error/ClientError';
 import { NotFoundError } from 'src/shared/error/NotFound';
+import { validateOrReject } from 'class-validator';
 
-// TODO: add input validation.
 @injectable()
 export default class HomeownerController {
 
@@ -70,6 +69,9 @@ export default class HomeownerController {
             throw new ClientError(`User wth email ${user.email} already exists`);
         }
         const toAdd = new StorableHomeowner(user.name, user.email, user.password);
+        await validateOrReject(toAdd).catch((error) => {
+            throw new ClientError(error);
+        });
         await this.homeownerDao.add(toAdd);
         return res.status(CREATED).send(user);
     }
@@ -81,6 +83,9 @@ export default class HomeownerController {
      */
     public async getUser(req: Request, res: Response) {
         const { email } = req.params;
+        if (!email || typeof email !== 'string') {
+            throw new ClientError('Need to provide a string email in the URL params');
+        }
         const user = await this.homeownerDao.getOneByEmail(email);
         if (user) {
             let contract: StoredContract | undefined;
@@ -107,6 +112,9 @@ export default class HomeownerController {
      */
     public async deleteUser(req: Request, res: Response) {
         const { email } = req.params as ParamsDictionary;
+        if (!email || typeof email !== 'string') {
+            throw new ClientError('Need to provide a string email in the URL params');
+        }
         const homeowner = await this.homeownerDao.getOneByEmail(email);
         if (!homeowner) {
             throw new NotFoundError(`User with email ${email} was not found`);
@@ -123,6 +131,12 @@ export default class HomeownerController {
     public async signUpHome(req: Request, res: Response) {
         const { email } = req.params;
         const { amount } = req.body;
+        if (!email || typeof email !== 'string') {
+            throw new ClientError('Need to provide a string email in the URL params');
+        }
+        if (amount === undefined || typeof amount !== 'number' || amount < 0) {
+            throw new ClientError('Need to provide an amount in the body');
+        }
         const user = await this.homeownerDao.getOneByEmail(email);
         if (user) {
             await this.contractService.createContract(amount, user.id);
@@ -153,6 +167,12 @@ export default class HomeownerController {
      */
     public async getOptionDetails(req: Request, res: Response) {
         const { option, email } = req.params;
+        if (!email || typeof email !== 'string') {
+            throw new ClientError('Need to provide a string email in the URL params');
+        }
+        if (email === undefined || typeof email !== 'number') {
+            throw new ClientError('Need to provide an amount in the body');
+        }
         const homeowner = await this.homeownerDao.getOneByEmail(email);
         if (!homeowner) {
             throw new NotFoundError(`User with email ${email} was not found`);

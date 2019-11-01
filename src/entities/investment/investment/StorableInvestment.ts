@@ -1,3 +1,5 @@
+import { IsUUID, Min } from 'class-validator';
+
 /**
  * Stores all the information needed to create an investment.
  */
@@ -18,8 +20,13 @@ export interface IStorableInvestment {
 
 export class StorableInvestment implements IStorableInvestment {
 
+    @IsUUID()
     public contractId: string;
+
+    @Min(0)
     public amount: number;
+
+    @IsUUID()
     public ownerId: string;
 
 

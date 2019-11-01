@@ -39,6 +39,7 @@ const nextUser = {
     email: 'blorg@gmail.com',
     pwdHash: '2',
     purchaseRequests: [],
+    password: 'askndaskdjnasndsa',
 };
 
 

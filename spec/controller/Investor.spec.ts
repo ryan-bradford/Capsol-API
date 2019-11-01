@@ -38,7 +38,7 @@ const startInvestors: { users: IPersistedInvestor[] } = {
     ],
 };
 
-const nextUser: IStoredInvestor = {
+const nextUser = {
     id: 'b',
     name: 'Emma',
     email: 'blorg@gmail.com',
@@ -47,6 +47,7 @@ const nextUser: IStoredInvestor = {
     totalCash: 1,
     portfolioHistory: [],
     interestRate: 0,
+    password: 'asjndkajsnd',
 };
 
 
