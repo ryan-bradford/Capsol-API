@@ -1,6 +1,13 @@
 import { IStoredUser, IStoredContract, StoredUser, IStoredRequest } from '@entities';
 
+/**
+ * The information that should be made public about a homeowner.
+ */
 export interface IStoredHomeowner extends IStoredUser {
+    /**
+     * The contract that this homeowner owns.
+     * Undefined if this homeowner has not signed up yet.
+     */
     contract?: IStoredContract;
 }
 

@@ -25,7 +25,7 @@ describe('Request Dao', () => {
             homeownerDao = new daos.SqlHomeownerDao();
             contractDao = new daos.SqlContractDao();
             investorDao = new daos.SqlInvestorDao();
-            requestDao = new daos.SqlRequestDao();
+            requestDao = new daos.SqlRequestDao(investorDao);
             return daos.clearDatabase();
         }).then(() => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));

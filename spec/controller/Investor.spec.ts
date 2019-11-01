@@ -1,5 +1,5 @@
 
-import { OK, CREATED, NOT_FOUND, BAD_REQUEST } from 'http-status-codes';
+import { OK, CREATED } from 'http-status-codes';
 import { IUserDao } from '@daos';
 import { IInvestmentService, IRequestService } from '@services';
 import sinon from 'sinon';
@@ -10,14 +10,16 @@ import {
     StoredInvestor,
     IStorableInvestor,
     IPersistedCashDeposit,
+    IPersistedHomeowner,
+    IStorableHomeowner,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse } from 'mock-req-res';
 import sinonChai from 'sinon-chai';
 import chai from 'chai';
 import InvestorController from 'src/controller/Investor';
-import { start } from 'repl';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
+import { IDateService } from 'src/services/DateService';
 
 chai.use(sinonChai);
 
@@ -31,11 +33,12 @@ const startInvestors: { users: IPersistedInvestor[] } = {
             pwdHash: '1',
             requests: [],
             cashDeposits: [],
+            investments: [],
         },
     ],
 };
 
-const nextUser: IStoredInvestor = {
+const nextUser = {
     id: 'b',
     name: 'Emma',
     email: 'blorg@gmail.com',
@@ -44,6 +47,7 @@ const nextUser: IStoredInvestor = {
     totalCash: 1,
     portfolioHistory: [],
     interestRate: 0,
+    password: 'asjndkajsnd',
 };
 
 
@@ -56,9 +60,10 @@ describe('InvestorRouter', () => {
     before(() => {
         investorController = new InvestorController(
             new MockInvestorDao(),
+            new MockHomeownerDao(),
             new MockInvestmentService(),
             new MockRequestService(),
-            new MockCashDepositDao(), 0);
+            new MockCashDepositDao(), new MockDateService(), 0);
     });
 
     describe(`"GET":${investorPath}`, () => {
@@ -113,7 +118,7 @@ describe('InvestorRouter', () => {
         it('should fail if missing the user', (done) => {
             callApi({})
                 .catch((error) => {
-                    expect(error.message).to.be.equal('One or more of the required parameters was missing.');
+                    expect(error.message).to.not.be.equal(undefined);
                     done();
                 });
         });
@@ -148,8 +153,8 @@ describe('InvestorRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -185,8 +190,8 @@ describe('InvestorRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -224,8 +229,8 @@ describe('InvestorRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com', 100)
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -349,7 +354,7 @@ class MockRequestService implements IRequestService {
 class MockCashDepositDao implements ICashDepositDao {
 
 
-    public makeDeposit(amount: number, user: IPersistedInvestor): Promise<void> {
+    public makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
         return Promise.resolve();
     }
 
@@ -358,5 +363,59 @@ class MockCashDepositDao implements ICashDepositDao {
         return Promise.resolve([]);
     }
 
+
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockDateService implements IDateService {
+
+
+    public getDateAsNumber(): Promise<number> {
+        return Promise.resolve(1);
+    }
+
+
+    public tickTime(): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+    public calibrateMonth(): Promise<number> {
+        return Promise.resolve(1);
+    }
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
+
+    private examples: IPersistedHomeowner[] = [];
+
+
+    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getAll(): Promise<IPersistedHomeowner[]> {
+        return Promise.resolve(this.examples);
+    }
+
+
+    public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
+        return Promise.resolve(new PersistedInvestor());
+    }
+
+
+    public delete(id: string): Promise<void> {
+        if (id === 'a') {
+            return Promise.resolve();
+        }
+        throw new Error('Not found');
+    }
 
 }

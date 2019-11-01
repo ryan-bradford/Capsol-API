@@ -1,20 +1,29 @@
 import { IRequestDao } from 'src/daos/investment/RequestDao';
-import { IUserDao, IInvestmentDao, IContractDao } from '@daos';
-import { logger, getDateAsNumber } from '@shared';
+import { IInvestmentDao, IContractDao } from '@daos';
 import {
-    IPersistedRequest, IStorableRequest, IPersistedInvestor, IStoredInvestor,
-    IPersistedHomeowner, IStoredHomeowner, IPersistedUser, isInvestor,
-    StorableInvestment, StorableRequest, isHomeowner, IPersistedContract, IPersistedInvestment, PersistedCashDeposit,
+    IPersistedRequest, IPersistedInvestor,
+    IPersistedHomeowner, IPersistedUser, isInvestor,
+    StorableInvestment, isHomeowner, IPersistedContract, IPersistedInvestment,
 } from '@entities';
 import { strict as assert } from 'assert';
 import { injectable, inject } from 'tsyringe';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
+import { ServiceError } from 'src/shared/error/ServiceError';
 
+/**
+ * All the actions that are needed for business operations on requests.
+ */
 export interface IRequestService {
-
-    createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number>;
-    createSellRequest(user: IPersistedInvestor, amount: number): Promise<void>;
-    handleRequests(): Promise<void>;
+    /**
+     * Pairs purchase with sell requests first, and then contracts.
+     * When a pairing is made, if the sell request is a contract, adds a new investment to the contract.
+     * If the sell request is by an investor, transfers investments from the investor to the purchaser.
+     * Saves a record that the investment was once owned by the sell investor.
+     * After that all is done, merges investments within the table to be more simple.
+     *
+     * @throws Error if the selling investor does not own enough investments to satisfy the sell request.
+     */
+    handleRequests(date: number): Promise<void>;
 
 }
 
@@ -29,22 +38,10 @@ export class RequestService implements IRequestService {
         @inject('CashDepositDao') private cashDepositDao: ICashDepositDao) { }
 
 
-    public async createPurchaseRequest(user: IPersistedInvestor, amount: number): Promise<number> {
-        const newRequest = new StorableRequest(amount, getDateAsNumber(), user.id, 'purchase');
-        await this.requestDao.createRequest(newRequest);
-        return amount;
-    }
-
-
-    public async createSellRequest(user: IPersistedInvestor, amount: number): Promise<void> {
-        // Literally only creates a sell request with the user ID and amount
-        const newRequest = new StorableRequest(amount, getDateAsNumber(), user.id, 'sell');
-        await this.requestDao.createRequest(newRequest);
-        return;
-    }
-
-
-    public async handleRequests(): Promise<void> {
+    /**
+     * @inheritdoc
+     */
+    public async handleRequests(date: number): Promise<void> {
         // Matches purchase requests to sell requests based on age
         // When a match is made, looks into sellers portfolio and determines what to transfer
         const requests =
@@ -55,8 +52,8 @@ export class RequestService implements IRequestService {
         allPurchaseRequests = allPurchaseRequests.sort((a, b) => b.dateCreated - a.dateCreated);
         allSellRequests = allSellRequests.sort((a, b) => b.amount - a.amount);
         const allContracts = (await this.contractDao.getContracts())
-            .filter((contract) => !contract.isFulfilled)
-            .sort((a, b) => b.unsoldAmount / b.saleAmount - a.unsoldAmount / a.saleAmount);
+            .filter((contract) => !contract.isFulfilled())
+            .sort((a, b) => b.unsoldAmount() / b.saleAmount - a.unsoldAmount() / a.saleAmount);
         let currentPurchase = allPurchaseRequests.pop();
         let currentSell: (IPersistedRequest | IPersistedContract | undefined) =
             allSellRequests.pop() || allContracts.pop();
@@ -64,26 +61,25 @@ export class RequestService implements IRequestService {
             if (isRequest(currentSell)) {
                 const transactionAmount = Math.min(currentSell.amount, currentPurchase.amount);
                 await this.takeAssets(transactionAmount,
-                    currentSell.investor, currentPurchase.investor as IPersistedInvestor);
+                    currentSell.investor, currentPurchase.investor as IPersistedInvestor, date);
                 currentPurchase.amount -= transactionAmount;
                 currentSell.amount -= transactionAmount;
-                await this.cashDepositDao.makeDeposit(-transactionAmount, currentSell.investor);
+                await this.cashDepositDao.makeDeposit(-transactionAmount, date, currentSell.investor);
                 await this.requestDao.saveRequest(currentSell);
                 if (currentSell.amount === 0) {
                     await this.requestDao.deleteRequest(currentSell.id);
                     currentSell = allSellRequests.pop() || allContracts.pop();
                 }
             } else {
-                const transactionAmount = Math.min(currentSell.unsoldAmount, currentPurchase.amount);
+                const transactionAmount = Math.min(currentSell.unsoldAmount(), currentPurchase.amount);
                 const investment = await this.takeAssets(transactionAmount,
-                    currentSell.homeowner, currentPurchase.investor);
+                    currentSell.homeowner, currentPurchase.investor, date);
                 if (!investment) {
-                    throw new Error('Bad');
+                    throw new ServiceError(`User was a homeowner, but no investment was created.`);
                 }
                 currentPurchase.amount -= transactionAmount;
                 currentSell.investments.push(investment);
-                if (currentSell.isFulfilled) {
-                    await this.requestDao.deleteRequest(currentSell.id);
+                if (currentSell.isFulfilled()) {
                     currentSell = allSellRequests.pop() || allContracts.pop();
                 }
             }
@@ -97,35 +93,33 @@ export class RequestService implements IRequestService {
     }
 
 
-    private async takeAssets(amount: number, from: IPersistedUser, to: IPersistedInvestor):
+    private async takeAssets(amount: number, from: IPersistedUser, to: IPersistedInvestor, date: number):
         (Promise<IPersistedInvestment | void>) {
         if (isInvestor(from)) {
             const investments = await this.investmentDao.getInvestments(from.id);
             while (amount > 0) {
                 const curInvestment = investments.pop();
                 if (!curInvestment) {
-                    throw new Error('SEVERE');
+                    throw new ServiceError(`User with ID ${from.id} did not have enough
+                     investments to process the transaction of size ${amount}`);
                 }
                 amount -= await this.investmentDao.transferInvestment(curInvestment.id,
-                    from as IPersistedInvestor, to, amount);
+                    from as IPersistedInvestor, to, amount, date);
                 amount = Math.max(amount, 0);
             }
         } else if (isHomeowner(from)) {
             from = (from as IPersistedHomeowner);
-            if (!from.id) {
-                throw new Error('bad user');
-            }
             const contracts = await this.contractDao.getContracts(from.id);
             if (contracts.length !== 1) {
-                throw new Error(`Bad ${contracts.length} ${from.id}`);
+                throw new ServiceError(`Homeowner with id ${from.id} does not own a contract.`);
             }
             const contract = contracts[0];
             const toCreate = new StorableInvestment(contract.id, amount, to.id);
-            const oldValue = contract.unsoldAmount;
-            const newInvestment = await this.investmentDao.createInvestment(toCreate);
+            const oldValue = contract.unsoldAmount();
+            const newInvestment = await this.investmentDao.createInvestment(toCreate, date);
             contract.investments.push(newInvestment);
-            assert(Math.round(oldValue - amount) === Math.round(contract.unsoldAmount),
-                `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount}`);
+            assert(Math.round(oldValue - amount) === Math.round(contract.unsoldAmount()),
+                `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount()}`);
             return newInvestment;
         }
     }

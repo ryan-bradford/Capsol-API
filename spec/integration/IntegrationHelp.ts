@@ -3,21 +3,24 @@ import app from '../../src/Server';
 import { Express } from 'express';
 import { getDaos } from '@daos';
 import { InvestmentService, RequestService, ContractService } from '@services';
-import { logger, pwdSaltRounds, jwtCookieProps, resetDate } from '@shared';
+import { logger, pwdSaltRounds, jwtCookieProps } from '@shared';
 import { StorableInvestor, StorableHomeowner, PersistedHomeowner, IStoredHomeowner } from '@entities';
 import faker from 'faker';
 import sinon from 'sinon';
 import bcrypt from 'bcrypt';
 import { SqlHomeownerDao } from 'src/daos/user/HomeownerDao';
 import { container } from 'tsyringe';
+import { DateService } from 'src/services/DateService';
 
 export let appInstance: Express;
 export let cookie: string;
 
 export async function startApp(fee: number) {
 
-    resetDate();
     const daos = await getDaos();
+    container.register('TargetRate', {
+        useValue: 0.04,
+    });
     container.register('FeeRate', {
         useValue: fee,
     });
@@ -51,8 +54,11 @@ export async function startApp(fee: number) {
     container.register('InvestmentService', {
         useClass: InvestmentService,
     });
-    appInstance = app();
     await daos.clearDatabase();
+    container.register('DateService', {
+        useValue: new DateService(container.resolve('InvestmentDao'), container.resolve('RequestDao')),
+    });
+    appInstance = app();
     cookie = await login();
 
 }

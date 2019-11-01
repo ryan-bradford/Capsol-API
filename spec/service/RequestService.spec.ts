@@ -7,9 +7,8 @@ import {
 import { IContractDao, IInvestmentDao, ICompanyDao } from '@daos';
 import { RequestService, IRequestService } from '@services';
 import { expect } from 'chai';
-import { request } from 'http';
 import sinon from 'sinon';
-import { logger, getRandomInt } from '@shared';
+import { getRandomInt } from '@shared';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 
 const investor: IPersistedInvestor = {
@@ -20,6 +19,7 @@ const investor: IPersistedInvestor = {
     admin: true,
     requests: [],
     cashDeposits: [],
+    investments: [],
 };
 
 describe('Request Service', () => {
@@ -40,7 +40,7 @@ describe('Request Service', () => {
     });
 
     it('should not change anything', (done) => {
-        requestService.handleRequests().then((result) => {
+        requestService.handleRequests(1).then((result) => {
             return requestDao.getRequests();
         }).then((requests) => {
             expect(requests.length).to.be.equal(1);
@@ -49,7 +49,8 @@ describe('Request Service', () => {
     });
 
     it('should add a request and cancel out the old one', (done) => {
-        requestService.createSellRequest(investor, 100).then(() => requestService.handleRequests())
+        requestDao.createRequest(new StorableRequest(100, 0, investor.id, 'sell'))
+            .then(() => requestService.handleRequests(1))
             .then((result) => {
                 return requestDao.getRequests();
             }).then((requests) => {
@@ -59,8 +60,8 @@ describe('Request Service', () => {
     });
 
     it('should add a bunch of requests', (done) => {
-        requestService.createPurchaseRequest(investor, 100)
-            .then(() => requestService.handleRequests())
+        requestDao.createRequest(new StorableRequest(100, 0, investor.id, 'purchase'))
+            .then(() => requestService.handleRequests(1))
             .then(() => requestDao.getRequests())
             .then((requests) => {
                 expect(requests.length).to.be.equal(1);
@@ -68,8 +69,8 @@ describe('Request Service', () => {
                 expect(requests[0].type).to.be.equal('purchase');
                 return Promise.resolve();
             })
-            .then(() => requestService.createSellRequest(investor, 200))
-            .then(() => requestService.handleRequests())
+            .then(() => requestDao.createRequest(new StorableRequest(200, 0, investor.id, 'sell')))
+            .then(() => requestService.handleRequests(1))
             .then(() => requestDao.getRequests())
             .then((requests) => {
                 expect(requests.length).to.be.equal(1);
@@ -77,8 +78,8 @@ describe('Request Service', () => {
                 expect(requests[0].type).to.be.equal('sell');
                 return Promise.resolve();
             })
-            .then(() => requestService.createPurchaseRequest(investor, 50))
-            .then(() => requestService.handleRequests())
+            .then(() => requestDao.createRequest(new StorableRequest(50, 0, investor.id, 'purchase')))
+            .then(() => requestService.handleRequests(1))
             .then(() => requestDao.getRequests())
             .then((requests) => {
                 expect(requests.length).to.be.equal(1);
@@ -86,9 +87,9 @@ describe('Request Service', () => {
                 expect(requests[0].type).to.be.equal('sell');
                 return Promise.resolve();
             })
-            .then(() => requestService.createPurchaseRequest(investor, 230))
-            .then(() => requestService.createPurchaseRequest(investor, 50))
-            .then(() => requestService.handleRequests())
+            .then(() => requestDao.createRequest(new StorableRequest(230, 0, investor.id, 'purchase')))
+            .then(() => requestDao.createRequest(new StorableRequest(50, 0, investor.id, 'purchase')))
+            .then(() => requestService.handleRequests(1))
             .then(() => requestDao.getRequests())
             .then((requests) => {
                 expect(requests.length).to.be.equal(2);
@@ -240,7 +241,7 @@ class MockCompanyDao implements ICompanyDao {
 class MockCashDepositDao implements ICashDepositDao {
 
 
-    public makeDeposit(amount: number, user: IPersistedInvestor): Promise<void> {
+    public makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
         return Promise.resolve();
     }
 

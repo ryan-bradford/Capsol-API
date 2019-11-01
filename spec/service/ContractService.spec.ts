@@ -15,12 +15,11 @@ describe('Contract Service', () => {
         getDaos().then((daos) => {
             homeownerDao = new daos.SqlHomeownerDao();
             contractDao = new daos.SqlContractDao();
-            const investmentDao = new daos.SqlInvestmentDao();
-            const requestDao = new daos.SqlRequestDao();
+            const investorDao = new daos.SqlInvestorDao();
+            const requestDao = new daos.SqlRequestDao(investorDao);
             const companyDao = new daos.SqlCompanyDao(0);
             const cashDepositDao = new daos.SqlCashDepositDao();
-            const requestService = new RequestService(requestDao, investmentDao, contractDao, cashDepositDao);
-            contractService = new ContractService(homeownerDao, contractDao, requestService, companyDao);
+            contractService = new ContractService(homeownerDao, contractDao, requestDao, companyDao, 0.04);
             return daos.clearDatabase();
         }).then((result) => {
             return homeownerDao.add(new StorableHomeowner('Austina', 'test@gmail.com', 'skjndf'));

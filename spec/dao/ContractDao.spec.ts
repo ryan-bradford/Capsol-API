@@ -58,6 +58,10 @@ describe('Contract Dao', () => {
         contractDao.getContracts().then((allContracts) => {
             expect(allContracts.length).to.be.equal(1);
             contractDao.getContract(allContracts[0].id).then((singleContract) => {
+                if (!singleContract) {
+                    expect(false).to.be.equal(true);
+                    throw new Error();
+                }
                 expect(singleContract.homeowner.name).to.be.equal('Austina');
                 expect(singleContract.saleAmount).to.be.equal(1000);
                 done();

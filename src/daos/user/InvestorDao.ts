@@ -3,13 +3,18 @@ import { IPersistedInvestor, PersistedInvestor, IStorableInvestor } from '@entit
 import { getRepository } from 'typeorm';
 import bcrypt from 'bcrypt';
 import { singleton } from 'tsyringe';
+import { strict as assert } from 'assert';
 
+/**
+ * `SqlInvestorDao` is a specific implementation of `IUserDao` for `IPersistedInvestor`s
+ *  for interfacing with MySQL using TypeORM.
+ */
 @singleton()
 export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOne(id: string, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
         return getRepository(PersistedInvestor)
@@ -19,7 +24,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedInvestor | null> {
         return getRepository(PersistedInvestor)
@@ -29,7 +34,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
 
 
     /**
-     *
+     * @inheritdoc
      */
     public async getAll(loadRequests?: boolean): Promise<IPersistedInvestor[]> {
         return getRepository(PersistedInvestor).find({
@@ -39,8 +44,7 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
 
 
     /**
-     *
-     * @param user
+     * @inheritdoc
      */
     public async add(user: IStorableInvestor): Promise<IPersistedInvestor> {
         const newInvestor = new PersistedInvestor();
@@ -49,16 +53,16 @@ export class SqlInvestorDao implements IUserDao<IPersistedInvestor, IStorableInv
         newInvestor.name = user.name;
         newInvestor.pwdHash = bcrypt.hashSync(user.password, bcrypt.genSaltSync());
         newInvestor.admin = false;
-        return getRepository(PersistedInvestor).save(newInvestor);
+        await getRepository(PersistedInvestor).insert(newInvestor);
+        return newInvestor;
     }
 
 
     /**
-     *
-     * @param id
+     * @inheritdoc
      */
     public async delete(id: string): Promise<void> {
-        await getRepository(PersistedInvestor).delete(id);
-        return;
+        const result = await getRepository(PersistedInvestor).delete(id);
+        assert(result.affected === 1, `Did not delete investor row with ID ${id}`);
     }
 }

@@ -4,10 +4,8 @@ import HomeownerRoute from './Homeowner';
 import AuthRouter from './Auth';
 import { logger } from '@shared';
 import { AssertionError } from 'assert';
-import { container } from 'tsyringe';
-import InvestorController from 'src/controller/Investor';
-import AuthController from 'src/controller/Auth';
-import HomeownerController from 'src/controller/Homeowner';
+import { ClientError } from 'src/shared/error/ClientError';
+import { NotFoundError } from 'src/shared/error/NotFound';
 
 export default () => {
 
@@ -24,9 +22,6 @@ export default () => {
     });
 
     // Add sub-routes
-    const investorRoute = container.resolve(InvestorController);
-    const homeownerRoute = container.resolve(HomeownerController);
-
     router.use('/investor', InvestorRoute());
     router.use('/homeowner', HomeownerRoute());
     router.use('/auth', AuthRouter());
@@ -37,11 +32,12 @@ export default () => {
 };
 
 function ClientErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {
-    if ((error as AssertionError).actual !== undefined) {
-        next(error);
-    } else {
+    if ((error as ClientError).type === ClientError.type) {
         response.status(400).send(error.message);
+    } else if ((error as NotFoundError).type === NotFoundError.type) {
+        response.status(404).send(error.message);
     }
+    next(error);
 }
 
 function ServerErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {

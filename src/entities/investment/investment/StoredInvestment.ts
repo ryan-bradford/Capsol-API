@@ -1,9 +1,33 @@
+/**
+ * Stores all the information that should be made public about an investment.
+ */
 export interface IStoredInvestment {
+    /**
+     * The UUID of the investment.
+     *
+     * @unique
+     */
     id: string;
+    /**
+     * The real dollar amount that was invested.
+     */
     saleAmount: number;
+    /**
+     * The length of the contract associated with this investment.
+     */
     totalContractLength: number;
+    /**
+     * The date of the first payment on the contract.
+     * Null if it has not paid yet.
+     */
     firstPaymentDate: number | null;
+    /**
+     * The amount this investment pays out per month.
+     */
     monthlyEarnings: number;
+    /**
+     * The ID of the investor who owns this contract.
+     */
     ownerId: string;
 }
 

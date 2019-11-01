@@ -6,9 +6,22 @@ import {
 import { IPersistedRequest, PersistedRequest } from 'src/entities/investment/request/PersistedRequest';
 import { IPersistedCashDeposit, PersistedCashDeposit } from 'src/entities/investment/cash/PersistedCashDeposit';
 
+/**
+ * `IPersistedInvestor` is a `IPersistedUser` that can have investments, requests, and cash deposits.
+ */
 export interface IPersistedInvestor extends IPersistedUser {
+    /**
+     * All the requests that this investor has made.
+     */
     requests: IPersistedRequest[];
+    /**
+     * All the cash this user has deposited into the app.
+     */
     cashDeposits: IPersistedCashDeposit[];
+    /**
+     * All the investments this user owns or has owned.
+     */
+    investments: IPersistedInvestment[];
 }
 
 @ChildEntity('investor')

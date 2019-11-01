@@ -1,16 +1,20 @@
 import { IUserDao } from './UserDao';
 import { getRepository } from 'typeorm';
-import { getRandomInt } from '@shared';
 import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@entities';
 import bcrypt from 'bcrypt';
 import { singleton } from 'tsyringe';
+import { strict as assert } from 'assert';
 
+/**
+ * `SqlHomeownerDao` is a specific implementation of `IUserDao` for `IPersistedHomeowner`s
+ *  for interfacing with MySQL using TypeORM.
+ */
 @singleton()
 export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOne(id: string): Promise<IPersistedHomeowner | null> {
         return getRepository(PersistedHomeowner)
@@ -22,7 +26,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
 
 
     /**
-     * @param email
+     * @inheritdoc
      */
     public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedHomeowner | null> {
         return getRepository(PersistedHomeowner)
@@ -34,7 +38,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
 
 
     /**
-     *
+     * @inheritdoc
      */
     public async getAll(): Promise<IPersistedHomeowner[]> {
         return getRepository(PersistedHomeowner).find({
@@ -44,8 +48,7 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
 
 
     /**
-     *
-     * @param user
+     * @inheritdoc
      */
     public async add(homeowner: IStorableHomeowner): Promise<IPersistedHomeowner> {
         const newHomeowner = new PersistedHomeowner();
@@ -54,16 +57,16 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
         newHomeowner.name = homeowner.name;
         newHomeowner.pwdHash = bcrypt.hashSync(homeowner.password, bcrypt.genSaltSync());
         newHomeowner.admin = false;
-        return getRepository(PersistedHomeowner).save(newHomeowner);
+        await getRepository(PersistedHomeowner).insert(newHomeowner);
+        return newHomeowner;
     }
 
 
     /**
-     *
-     * @param id
+     * @inheritdoc
      */
     public async delete(id: string): Promise<void> {
-        await getRepository(PersistedHomeowner).delete(id);
-        return;
+        const result = await getRepository(PersistedHomeowner).delete(id);
+        assert(result.affected === 1, `Did not delete homeowner row with ID ${id}`);
     }
 }

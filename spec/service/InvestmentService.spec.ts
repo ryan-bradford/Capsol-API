@@ -9,7 +9,6 @@ import {
 } from '@services';
 import { IRequestDao } from 'src/daos/investment/RequestDao';
 import { expect } from 'chai';
-import { addMonth, getDateAsNumber, resetDate } from '@shared';
 
 
 describe('Investment Service', () => {
@@ -32,13 +31,12 @@ describe('Investment Service', () => {
             contractDao = new daos.SqlContractDao();
             investmentDao = new daos.SqlInvestmentDao();
             investorDao = new daos.SqlInvestorDao();
-            requestDao = new daos.SqlRequestDao();
+            requestDao = new daos.SqlRequestDao(investorDao);
             companyDao = new daos.SqlCompanyDao(0);
             const cashDepositDao = new daos.SqlCashDepositDao();
             requestService = new RequestService(requestDao, investmentDao, contractDao, cashDepositDao);
-            contractService = new ContractService(homeownerDao, contractDao, requestService, companyDao);
-            investmentService = new InvestmentService(investorDao, investmentDao, requestService, cashDepositDao);
-            resetDate();
+            contractService = new ContractService(homeownerDao, contractDao, requestDao, companyDao, 0.04);
+            investmentService = new InvestmentService(investorDao, investmentDao, requestDao, cashDepositDao);
             return daos.clearDatabase();
         }).then(() => {
             return investorDao.add(new StorableInvestor('Ryan', 'test@gmail.com', 'skjndf'));
@@ -52,7 +50,7 @@ describe('Investment Service', () => {
     });
 
     it('should create a purchase requests', (done) => {
-        investmentService.addFunds(investor.id, 100).then(() => {
+        investmentService.addFunds(investor.id, 100, 1).then(() => {
             done();
         });
     });
@@ -74,11 +72,11 @@ describe('Investment Service', () => {
 
 
     it('should give the sell request', (done) => {
-        requestService.handleRequests()
+        requestService.handleRequests(1)
             .then(() => contractDao.getContracts())
             .then((result) => {
                 expect(result.length).to.be.equal(1);
-                expect(result[0].unsoldAmount).to.be.equal(400);
+                expect(result[0].unsoldAmount()).to.be.equal(400);
                 done();
             });
     });
@@ -99,13 +97,13 @@ describe('Investment Service', () => {
     });
 
     it('should create a purchase requests', (done) => {
-        investmentService.addFunds(investor.id, 600).then(() => {
+        investmentService.addFunds(investor.id, 600, 1).then(() => {
             done();
         });
     });
 
     it('should return the purchase request', (done) => {
-        requestService.handleRequests()
+        requestService.handleRequests(1)
             .then(() => requestDao.getRequests())
             .then((requests) => {
                 expect(requests.length).to.be.equal(1);
@@ -122,10 +120,9 @@ describe('Investment Service', () => {
         });
     });
 
-    addMonth();
     it('should sell the investment to satisfy purchase requests', (done) => {
-        investmentService.sellInvestments(investor.id, 200)
-            .then(() => requestService.handleRequests())
+        investmentService.sellInvestments(investor.id, 200, 2)
+            .then(() => requestService.handleRequests(2))
             .then(() => done());
     });
 
@@ -154,15 +151,14 @@ describe('Investment Service', () => {
     });
 
     it('should allow a homeowner to make a payment', (done) => {
-        contractService.makePayment(homeowner.email)
-            .then(() => requestService.handleRequests())
+        contractService.makePayment(homeowner.email, 2)
+            .then(() => requestService.handleRequests(2))
             .then(() => done());
-        addMonth();
     });
 
     it('should have a length of one less', (done) => {
         contractDao.getContracts().then((contracts) => {
-            expect(contracts[0].totalLength - getDateAsNumber()).to.be.equal(238);
+            expect(contracts[0].totalLength - 3).to.be.equal(237);
             done();
         });
     });

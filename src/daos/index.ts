@@ -11,7 +11,11 @@ import {
 } from '@entities';
 import { logger } from '@shared';
 import { SqlCashDepositDao } from './investment/CashDepositDao';
+import { AssertionError } from 'assert';
 
+/**
+ * A function that will return all the DAO SQL classes once the database has loaded.
+ */
 async function getDaos() {
     if (getConnectionManager().connections.length === 0) {
         await createConnection();
@@ -23,10 +27,13 @@ async function getDaos() {
     };
 }
 
+/**
+ * Clears every entity from the database.
+ */
 async function clearDatabase() {
     if (process.env.NODE_ENV !== 'test' || process.env.USE_TEST_DB !== 'true') {
         logger.info(String([process.env.NODE_ENV, process.env.USE_TEST_DB]));
-        throw new Error('Please do not do this');
+        throw new AssertionError({ message: 'Please do not do this' });
     }
     await getRepository(PersistedHomeowner).find().then((homeowners) => {
         return Promise.all(homeowners.map((homeowner) => getRepository(PersistedHomeowner).delete(homeowner)));

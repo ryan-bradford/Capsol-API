@@ -1,9 +1,19 @@
-import { Entity, PrimaryColumn, Column, OneToMany, OneToOne, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
-import { IPersistedInvestment, IPersistedHomeowner, PersistedInvestment, PersistedHomeowner } from '@entities';
-import { logger } from '@shared';
-
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+/**
+ * Represents all the information stored in the database for company fees.
+ */
 export interface IPersistedCompanyFee {
+    /**
+     * The UUID of the company fee.
+     *
+     * @unique
+     */
     id: string;
+    /**
+     * The amount that was taken as a fee.
+     *
+     * @invariant amount >= 0
+     */
     amount: number;
 }
 

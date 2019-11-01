@@ -1,13 +1,14 @@
 
-import { OK, CREATED, NOT_FOUND } from 'http-status-codes';
-import { logger, pwdSaltRounds } from '@shared';
+import { OK, CREATED } from 'http-status-codes';
+import { pwdSaltRounds } from '@shared';
 import { IUserDao, getDaos } from '@daos';
-import { IContractService, InvestmentService, RequestService } from '@services';
+import { IContractService } from '@services';
 import bcrypt from 'bcrypt';
 import sinon from 'sinon';
 import {
-    IPersistedHomeowner, IStoredHomeowner,
-    PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor, IStorableHomeowner, StoredHomeowner,
+    IPersistedHomeowner,
+    PersistedHomeowner, IPersistedContract, PersistedContract, PersistedInvestor, IStorableHomeowner,
+    StoredHomeowner, IPersistedInvestor, IStorableInvestor,
 } from '@entities';
 import { expect } from 'chai';
 import { mockRequest, mockResponse, ResponseOutput } from 'mock-req-res';
@@ -15,6 +16,7 @@ import sinonChai from 'sinon-chai';
 import chai from 'chai';
 import HomeownerController from 'src/controller/Homeowner';
 import { start } from 'repl';
+import { IDateService } from 'src/services/DateService';
 
 chai.use(sinonChai);
 
@@ -37,6 +39,7 @@ const nextUser = {
     email: 'blorg@gmail.com',
     pwdHash: '2',
     purchaseRequests: [],
+    password: 'askndaskdjnasndsa',
 };
 
 
@@ -54,8 +57,9 @@ describe('HomeownerRouter', () => {
             const contractService = new MockContractService();
             homeownerController = new HomeownerController(
                 homeownerDao,
+                new MockInvestorDao(),
                 contractDao,
-                contractService);
+                contractService, new MockDateService());
             done();
         });
     });
@@ -143,8 +147,8 @@ describe('HomeownerRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -182,8 +186,8 @@ describe('HomeownerRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com')
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -220,8 +224,8 @@ describe('HomeownerRouter', () => {
 
         it('should give 404 for not found', (done) => {
             callApi('test2@gmail.com', 100)
-                .then((res) => {
-                    expect(res.status).to.be.calledWith(NOT_FOUND);
+                .catch((error) => {
+                    expect(error.type).to.contain('NOT_FOUND');
                     done();
                 });
         });
@@ -315,6 +319,61 @@ class MockContractService implements IContractService {
     }
 
 }
+
+// tslint:disable-next-line: max-classes-per-file
+class MockDateService implements IDateService {
+
+
+    public getDateAsNumber(): Promise<number> {
+        return Promise.resolve(1);
+    }
+
+
+    public tickTime(): Promise<void> {
+        return Promise.resolve();
+    }
+
+
+    public calibrateMonth(): Promise<number> {
+        return Promise.resolve(1);
+    }
+}
+
+// tslint:disable-next-line: max-classes-per-file
+class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
+
+    private examples: IPersistedInvestor[] = [];
+
+
+    public getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedInvestor | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getAll(): Promise<IPersistedInvestor[]> {
+        return Promise.resolve(this.examples);
+    }
+
+
+    public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
+        return Promise.resolve(new PersistedInvestor());
+    }
+
+
+    public delete(id: string): Promise<void> {
+        if (id === 'a') {
+            return Promise.resolve();
+        }
+        throw new Error('Not found');
+    }
+
+}
+
 
 function hashPwd(pwd: string) {
     return bcrypt.hashSync(pwd, pwdSaltRounds);

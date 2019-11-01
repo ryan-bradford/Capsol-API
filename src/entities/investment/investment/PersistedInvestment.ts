@@ -1,14 +1,41 @@
-import { Entity, PrimaryColumn, ManyToOne, Column, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, ManyToOne, Column, JoinColumn, PrimaryGeneratedColumn } from 'typeorm';
 import { IPersistedContract, IPersistedInvestor, PersistedContract, PersistedInvestor } from '@entities';
 
+/**
+ * Represents all the information stored in the database for investments.
+ */
 export interface IPersistedInvestment {
+    /**
+     * The UUID of the investment.
+     *
+     * @unique
+     */
     id: string;
+    /**
+     * The contract associated with this investment.
+     */
     contract: IPersistedContract;
+    /**
+     * The real dollar amount that was invested.
+     */
     amount: number;
+    /**
+     * The investor who owns this contract.
+     */
     owner: IPersistedInvestor;
+    /**
+     * The month as a number this contract was purchased on.
+     */
     purchaseDate: number;
+    /**
+     * The month as a number this contract was sold on.
+     * Null if it was not sold.
+     */
     sellDate: number | null;
-    readonly value: number;
+    /**
+     * The value of this investment if it was sold to another investor.
+     */
+    value(currentMonth: number): number;
 }
 
 @Entity('investment')
@@ -34,8 +61,9 @@ export class PersistedInvestment implements IPersistedInvestment {
     @Column({ nullable: true })
     public sellDate!: number;
 
-    public get value(): number {
+
+    public value(currentMonth: number): number {
         return this.amount / this.contract.saleAmount *
-            (this.contract.saleAmount - this.contract.depreciationValue * this.contract.yearsPassed);
+            (this.contract.saleAmount - this.contract.depreciationValue() * this.contract.monthsPassed(currentMonth));
     }
 }
