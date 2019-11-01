@@ -1,51 +1,37 @@
-[![Build Status](https://travis-ci.org/ryan-bradford/Solar-API.svg?branch=master)](https://travis-ci.org/ryan-bradford/Solar-API)
+# Capsol API
 
-[![codecov](https://codecov.io/gh/ryan-bradford/Solar-API/branch/master/graph/badge.svg)](https://codecov.io/gh/ryan-bradford/Solar-API)
+[![Build Status](https://travis-ci.org/ryan-bradford/Solar-API.svg?branch=master)](https://travis-ci.org/ryan-bradford/Solar-API) [![codecov](https://codecov.io/gh/ryan-bradford/Solar-API/branch/master/graph/badge.svg)](https://codecov.io/gh/ryan-bradford/Solar-API)
 
-TODO:
+## Company
 
-Strange bug with far too much investment transfer<br>
-Add more tests<br>
-    getPortfolioValue
-    makePayment
-    takeAssets
-    transferInvestment
-    saveInvestment
-Make error handling make sense<br>
-Improve speed of everything<br>
-Change deleted to table field<br>
-Add validation to entities in routers<br>
-Design better error handling<br>
-Create dashboard<br>
-Add stuff about locking and transactions<br>
-Codacy integration<br>
-Make RAML<br>
+Our company helps to connect every day investors who want to do good, yet still make money, with homeowners who need help purchasing solar. Investors make investments through our software platform, creating crowdsourced financing now available for registered homeowners. Once the solar panel is installed through this funding, it drops the cost of a person’s electricity bill significantly, allowing the saved money to be returned back to both the investor and the homeowner at a set interest rate. 
 
+## Design
 
-Overall Architecture Design:<br>
-/env -> stores configuration stuff<br>
-/db -> stores the schema and all migration scripts<br>
-/spec -> where all the tests lie<br>
-/src/dao -> stores the classes that interact with the database, whatever that may be.<br>
-/src/services -> stores important business processes that are tangential to database or entity. Here is where business logic will go.<br>
-/src/entities -> all the entities that this app will use. Here is where the validation will go.<br>
-/src/public -> any publicly accessible scripts (CSS, JS, ect);<br>
-/src/controllers -> links the views to the entities/DAOS<br>
-/src/routes -> links the controller to the proper auth + validation methods<br>
-/src/shared -> any helper functions that need to be used globally<br>
-/src/views -> the PUG views for rendering the JSON content<br>
+This API follows a MVC architecture. Additionally, we chose to use TypeScript because of its ease-of-use, but also because of the aid type notation brings to development. On-top of TypeScript we chose to use Express.js to build a HTTP RESTful API architecture. 
 
+### Model
+We are resting on a model heavy design. The model contains three parts:
 
-APIs: 
+1. Database: we use a MySQL database to store all data. We chose MySQL because it is a ACID store and we need this service to be reliable.
+2. DAO Layer: This is a layer of TypeScript code that sits between the database and the business logic. This layer exists soley to interface with the database.
+3. Service Layer: This is a layer on top of the DAO layer that provides all the business logic.
 
-GET /investors                  - get all investors<br> 
-POST /investors                 - create an investor<br>
-GET /investors/{id}             - get a single investor account<br>
-DELETE /investors/{id}          - delete an investor<br>
-PUT /investor/{id}/investment   - adds more money to the investors portfolio<br>
+### Controller
+The controller is fairly simple. It calls all the appropriate service methods for the given endpoint and calls any appropriate view methods for making this data public.
 
-GET /homeowners                 - get all homeowners<br>
-POST /homeowners                - create a homeowner<br>
-GET /homeowners/{id}            - get a single homeowners<br>
-DELETE /homeowners/{id}         - delete a homeowner<br>
-PUT /homeowners/{id}/home       - signs this user up for investments<br>
+### View
+The view is the smallest part of the application. Because the Angular app rests in a separate repository, this view has nothing to do with HTTP. This view takes a entity made for the model and converts it into a model made the the view. This means the view methods rest mostly in the Stored{Entity}.
+
+## TODO:
+
+1. Strange bug with far too much investment transfer<br>
+2. Add more tests (getPortfolioValue, makePayment, takeAssets, transferInvestment, saveInvestment)<br>
+3. Improve speed of everything<br>
+4. Change deleted to table field<br>
+5. Add validation to entities in routers<br>
+6. Design better error handling<br>
+7. Create dashboard<br>
+8. Add stuff about locking and transactions<br>
+9. Codacy integration<br>
+10. Make RAML<br>
