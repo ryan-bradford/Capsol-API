@@ -14,7 +14,7 @@ module.exports = {
     extension: [
         "ts"
     ],
-    spec: "spec/view/StoredInvestor.spec.ts",
+    spec: "spec/**/*.spec.ts",
     require: toReturn,
     watch: "spec/**/*.spec.ts",
 }
