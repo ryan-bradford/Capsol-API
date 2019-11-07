@@ -133,7 +133,7 @@ export async function addContract(homeownerEmail: string, amount: number): Promi
 }
 
 export async function tickMonth(): Promise<void> {
-    await request(appInstance).post(`/homeowner/payments`)
+    await request(appInstance).post(`/admin/payments`)
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
         .catch((error) => {
@@ -145,7 +145,7 @@ export async function tickMonth(): Promise<void> {
 }
 
 export async function handleRequests(): Promise<void> {
-    await request(appInstance).post(`/investor/update`)
+    await request(appInstance).post(`/admin/update`)
         .set('Accept', 'application/json')
         .set('Cookie', cookie)
         .catch((error) => {

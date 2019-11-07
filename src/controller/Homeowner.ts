@@ -148,21 +148,6 @@ export default class HomeownerController {
 
 
     /**
-     * Makes a payment for all homeowners with active contracts.
-     */
-    public async makeAllPayments(req: Request, res: Response) {
-        const allContracts = await this.contractDao.getContracts();
-        const date = await this.dateService.getDateAsNumber();
-        await Promise.all(allContracts.map((contract) =>
-            this.contractService.makePayment(contract.homeowner.email, date)));
-        await this.dateService.tickTime();
-        const newDate = await this.dateService.getDateAsNumber();
-        assert(date === newDate - 1, `Date did not decrease by one`);
-        return res.status(OK).send();
-    }
-
-
-    /**
      * Returns the details about the given option for the given homeowner.
      */
     public async getOptionDetails(req: Request, res: Response) {

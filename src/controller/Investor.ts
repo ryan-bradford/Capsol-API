@@ -159,14 +159,4 @@ export default class InvestorController {
             throw new NotFoundError(`User with email ${email} was not found`);
         }
     }
-
-
-    /**
-     * Pairs purchase and sell requests and makes the magic happen.
-     */
-    public async handleInvestments(req: Request, res: Response) {
-        const currentDate = await this.dateService.getDateAsNumber();
-        await this.requestService.handleRequests(currentDate);
-        res.status(200).send();
-    }
 }

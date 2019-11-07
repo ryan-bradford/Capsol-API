@@ -28,12 +28,6 @@ export default () => {
         controller.addInvestor(req, res).catch((error) => next(error)));
 
     /**
-     * Matches all added funds and monthly payments with contracts and investments for sale,
-     */
-    router.post('/update', adminMW, (req, res, next) =>
-        controller.handleInvestments(req, res).catch((error) => next(error)));
-
-    /**
      * Returns the `StoredInvestor` that is represented by the given email.
      *
      * @throws 404 if the user was not found.

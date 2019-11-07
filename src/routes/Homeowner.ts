@@ -27,12 +27,6 @@ export default () => {
         controller.addUser(req, res).catch((error) => next(error)));
 
     /**
-     * Makes a payment for every homeowner in the system.
-     */
-    router.post('/payments', adminMW, (req, res, next) =>
-        controller.makeAllPayments(req, res).catch((error) => next(error)));
-
-    /**
      * Returns the `StoredHomeowner` that is represented by the given email.
      *
      * @throws 404 if the user was not found.

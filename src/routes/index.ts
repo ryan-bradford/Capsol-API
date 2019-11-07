@@ -2,8 +2,8 @@ import { Router, NextFunction, Response, Request } from 'express';
 import InvestorRoute from './Investor';
 import HomeownerRoute from './Homeowner';
 import AuthRouter from './Auth';
+import AdminRouter from './Admin';
 import { logger } from '@shared';
-import { AssertionError } from 'assert';
 import { ClientError } from 'src/shared/error/ClientError';
 import { NotFoundError } from 'src/shared/error/NotFound';
 
@@ -25,6 +25,7 @@ export default () => {
     router.use('/investor', InvestorRoute());
     router.use('/homeowner', HomeownerRoute());
     router.use('/auth', AuthRouter());
+    router.use('/admin', AdminRouter());
     router.use(ClientErrorMiddleware);
     router.use(ServerErrorMiddleware);
     return router;
