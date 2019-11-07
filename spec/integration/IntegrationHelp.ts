@@ -11,6 +11,7 @@ import bcrypt from 'bcrypt';
 import { SqlHomeownerDao } from 'src/daos/user/HomeownerDao';
 import { container } from 'tsyringe';
 import { DateService } from 'src/services/DateService';
+import { EstimateService } from 'src/services/estimation/EstimateService';
 
 export let appInstance: Express;
 export let cookie: string;
@@ -53,6 +54,9 @@ export async function startApp(fee: number) {
     });
     container.register('InvestmentService', {
         useClass: InvestmentService,
+    });
+    container.register('EstimateService', {
+        useClass: EstimateService,
     });
     await daos.clearDatabase();
     container.register('DateService', {

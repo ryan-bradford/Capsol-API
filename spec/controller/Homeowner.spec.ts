@@ -303,6 +303,11 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeown
 class MockContractService implements IContractService {
 
 
+    public getContractPrice(amount: number, length: number): Promise<number> {
+        return Promise.resolve(100);
+    }
+
+
     public createContract(amount: number, userId: string):
         Promise<IPersistedContract> {
         const toReturn = new PersistedContract();

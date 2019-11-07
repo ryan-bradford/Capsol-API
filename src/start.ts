@@ -4,6 +4,7 @@ import { ContractService, InvestmentService, RequestService } from '@services';
 import { getDaos } from '@daos';
 import { container } from 'tsyringe';
 import { DateService } from './services/DateService';
+import { EstimateService } from './services/estimation/EstimateService';
 
 // Start the server
 process.env.USE_TEST_DB = 'false';
@@ -49,6 +50,9 @@ getDaos().then((daos) => {
     });
     container.register('InvestmentService', {
         useClass: InvestmentService,
+    });
+    container.register('EstimateService', {
+        useClass: EstimateService,
     });
     app()
         .listen(port, () => {

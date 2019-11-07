@@ -182,11 +182,11 @@ export default class HomeownerController {
             }
             default: throw new ClientError('Invalid option');
         }
-        const proposedContract = await this.contractService.createContract(contractSize, homeowner.id, true);
+        const monthlyPayment = await this.contractService.getContractPrice(contractSize, 20);
         return res.json({
             electricity,
             contractSize,
-            monthlyPayment: proposedContract.monthlyPayment,
+            monthlyPayment,
         });
     }
 }

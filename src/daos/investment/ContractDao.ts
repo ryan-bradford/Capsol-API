@@ -30,7 +30,7 @@ export interface IContractDao {
      *
      * @throws Error if the homeowner stored in the contract is not found.
      */
-    createContract(contract: IStorableContract, dontSave?: boolean): Promise<IPersistedContract>;
+    createContract(contract: IStorableContract): Promise<IPersistedContract>;
     /**
      * Saves the firstPaymentDate in the given contract to the database.
      */
@@ -84,7 +84,7 @@ export class SqlContractDao implements IContractDao {
     /**
      * @inheritdoc
      */
-    public async createContract(contract: IStorableContract, dontSave?: boolean): Promise<IPersistedContract> {
+    public async createContract(contract: IStorableContract): Promise<IPersistedContract> {
         const daos = await getDaos();
         const homeownerDao = new daos.SqlHomeownerDao();
         const newContract = new PersistedContract();
@@ -97,10 +97,8 @@ export class SqlContractDao implements IContractDao {
         newContract.totalLength = contract.length;
         newContract.monthlyPayment = contract.monthlyPayment;
         newContract.saleAmount = contract.saleAmount;
-        if (dontSave !== true) {
-            await getRepository(PersistedContract).insert(newContract);
-            homeowner.contract = newContract;
-        }
+        await getRepository(PersistedContract).insert(newContract);
+        homeowner.contract = newContract;
         return newContract;
     }
 

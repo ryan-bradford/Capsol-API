@@ -16,7 +16,7 @@ export interface IContractService {
      *
      * @throws Error if the user was not found.
      */
-    createContract(amount: number, userId: string, dontSave?: boolean):
+    createContract(amount: number, userId: string):
         Promise<IPersistedContract>;
     /**
      * Makes a payment for the homeowner with the given `email`.
@@ -29,6 +29,11 @@ export interface IContractService {
      * @returns a number representing how much the user paid.
      */
     makePayment(email: string, date: number): Promise<number | null>;
+
+    /**
+     * Gives the monthly payment that would result from a contract at the given size and length.
+     */
+    getContractPrice(amount: number, length: number): Promise<number>;
 }
 
 @injectable()
@@ -46,17 +51,16 @@ export class ContractService implements IContractService {
     /**
      * @inheritdoc
      */
-    public async createContract(amount: number, userId: string, dontSave?: boolean):
+    public async createContract(amount: number, userId: string):
         Promise<IPersistedContract> {
         const homeowner = await this.homeownerDao.getOne(userId);
         if (!homeowner) {
             throw new ServiceError(`Homeowner with ID ${userId} was not found.`);
         }
-        const interestRate = this.targetRate;
         const lengthInYears = 20;
-        const yearlyPayment = amount * (1 / 20 + interestRate);
-        const newContract = new StorableContract(amount, lengthInYears * 12, yearlyPayment / 12, homeowner.id);
-        const toReturn = await this.contractDao.createContract(newContract, dontSave);
+        const monthlyPayment = await this.getContractPrice(amount, lengthInYears);
+        const newContract = new StorableContract(amount, lengthInYears * 12, monthlyPayment, homeowner.id);
+        const toReturn = await this.contractDao.createContract(newContract);
         return toReturn;
     }
 
@@ -91,5 +95,16 @@ export class ContractService implements IContractService {
         } else {
             throw new ServiceError(`User with email ${email} was not found.`);
         }
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async getContractPrice(amount: number, length: number):
+        Promise<number> {
+        const interestRate = this.targetRate;
+        const yearlyPayment = amount * (1 / 20 + interestRate);
+        return yearlyPayment / 12;
     }
 }
