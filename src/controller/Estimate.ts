@@ -19,8 +19,9 @@ export default class EstimateController {
      * Returns a solar estimation for the given homeowner information.
      */
     public async getHomeownerEstimate(req: Request, res: Response) {
-        const { amount, address } = req.body;
-        if (amount === undefined || typeof amount !== 'number') {
+        const address = req.query.address;
+        const amount = Number(req.query.amount);
+        if (amount === undefined || typeof amount !== 'number' || isNaN(amount)) {
             throw new ClientError('Must give a number amount in the JSON body');
         }
         if (address === undefined || typeof address !== 'string') {
@@ -34,7 +35,7 @@ export default class EstimateController {
         const electricityPrice = await this.estimateService.getElectricityPrice(address);
         const savings = electricityPrice * electricityReduction;
         const monthlyPayment = await this.contractService.getContractPrice(totalContractCost, 20);
-        const toReturn = new StoredHomeownerEstimate(totalContractCost, monthlyPayment, savings, greenSavings);
+        const toReturn = new StoredHomeownerEstimate(totalContractCost, monthlyPayment, savings, greenSavings, 20);
 
         return res.status(OK).send(toReturn);
     }
