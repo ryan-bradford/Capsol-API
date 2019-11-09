@@ -1,6 +1,7 @@
 export class StoredHomeownerEstimate {
 
     public contractSize: number;
+    public panelAmount: number;
     public monthlyPayment: number;
     public billReduction: number;
     public yearlyCarbonSavings: number;
@@ -8,10 +9,11 @@ export class StoredHomeownerEstimate {
 
 
     constructor(
-        contractSize: number, monthlyPayment: number,
+        contractSize: number, monthlyPayment: number, panelAmount: number,
         billReduction: number, yearlyCarbonSavings: number,
         length: number) {
         this.contractSize = contractSize;
+        this.panelAmount = panelAmount;
         this.monthlyPayment = monthlyPayment;
         this.billReduction = billReduction;
         this.yearlyCarbonSavings = yearlyCarbonSavings;

@@ -13,7 +13,7 @@ const port = Number(process.env.PORT || 3000);
 
 getDaos().then((daos) => {
     container.register('TargetRate', {
-        useValue: 0.04,
+        useValue: 0.02,
     });
     container.register('FeeRate', {
         useValue: 0.01,

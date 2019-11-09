@@ -105,6 +105,6 @@ export class ContractService implements IContractService {
         Promise<number> {
         const interestRate = this.targetRate;
         const yearlyPayment = amount * (1 / 20 + interestRate);
-        return yearlyPayment / 12;
+        return Math.round(100 * yearlyPayment / 12) / 100;
     }
 }
