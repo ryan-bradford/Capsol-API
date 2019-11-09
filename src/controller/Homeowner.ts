@@ -155,8 +155,8 @@ export default class HomeownerController {
         if (!email || typeof email !== 'string') {
             throw new ClientError('Need to provide a string email in the URL params');
         }
-        if (email === undefined || typeof email !== 'number') {
-            throw new ClientError('Need to provide an amount in the body');
+        if (option === undefined || typeof option !== 'string') {
+            throw new ClientError('Need to provide an option in the params');
         }
         const homeowner = await this.homeownerDao.getOneByEmail(email);
         if (!homeowner) {

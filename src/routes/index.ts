@@ -37,6 +37,7 @@ export default () => {
 };
 
 function ClientErrorMiddleware(error: Error, request: Request, response: Response, next: NextFunction) {
+    logger.info(error.message);
     if ((error as ClientError).type === ClientError.type) {
         return response.status(400).send(error.message);
     } else if ((error as NotFoundError).type === NotFoundError.type) {

@@ -9,10 +9,16 @@ export default () => {
     const controller = container.resolve(StatController);
 
     /**
-     * Makes a payment for every homeowner in the system.
+     * Gives the stats that are important to a homeowner
      */
     router.get('/homeowner', (req, res, next) =>
         controller.getHomeownerStats(req, res).catch((error) => next(error)));
+
+    /**
+     * Gives the stats that are important to an investor
+     */
+    router.get('/investor', (req, res, next) =>
+        controller.getInvestorStat(req, res).catch((error) => next(error)));
 
     return router;
 
