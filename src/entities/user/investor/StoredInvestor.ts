@@ -65,25 +65,26 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
             portfolioHistory.push(new StoredPortfolioHistory(i, cash, investmentReturns + cash));
         }
         return new StoredInvestor(investor, portfolioValue, storedInvestments, portfolioHistory,
-            getEffectiveInterest(portfolioHistory));
+            StoredInvestor.getEffectiveInterest(portfolioHistory));
     }
 
-}
 
-function getEffectiveInterest(history: IStoredPortfolioHistory[]): number {
-    let interest: number | null = null;
-    for (let i = 1; i < history.length; i++) {
-        const periodInterest = 12 * (history[i].totalValue / history[i - 1].totalValue - 1);
-        if (interest !== null) {
-            interest = (periodInterest + interest * (i - 1)) / i;
-        } else {
-            interest = periodInterest;
+    public static getEffectiveInterest(history: IStoredPortfolioHistory[]): number {
+        let interest: number | null = null;
+        for (let i = 1; i < history.length; i++) {
+            const periodInterest = 12 * (history[i].totalValue / history[i - 1].totalValue - 1);
+            if (interest !== null) {
+                interest = (periodInterest + interest * (i - 1)) / i;
+            } else {
+                interest = periodInterest;
+            }
         }
+        if (interest === null) {
+            return 0;
+        }
+        return interest;
     }
-    if (interest === null) {
-        return 0;
-    }
-    return interest;
+
 }
 
 function getEarliestMonth(investments: IPersistedInvestment[], cashDeposits: IPersistedCashDeposit[]): number {
