@@ -6,6 +6,7 @@ import { ClientError } from 'src/shared/error/ClientError';
 import { IContractService } from '@services';
 import { StoredHomeownerEstimate } from 'src/entities/estimate/StoredHomeownerEstimate';
 import { logger } from '@shared';
+import { StoredInvestorEstimate } from 'src/entities/estimate/StoredInvestorEstimate';
 
 @injectable()
 export default class EstimateController {
@@ -13,7 +14,8 @@ export default class EstimateController {
 
     constructor(
         @inject('EstimateService') private estimateService: IEstimateService,
-        @inject('ContractService') private contractService: IContractService) { }
+        @inject('ContractService') private contractService: IContractService,
+        @inject('TargetRate') private targetRate: number) { }
 
 
     /**
@@ -42,6 +44,40 @@ export default class EstimateController {
         const toReturn = new StoredHomeownerEstimate(totalContractCost, monthlyPayment,
             panelSize.panelSizeKw, savings, greenSavings, 20);
 
+        return res.status(OK).send(toReturn);
+    }
+
+
+    /**
+     * Returns an investment estimate for an investor given some base amount.
+     */
+    public async getInvestorEstimate(req: Request, res: Response) {
+        const baseValue = Number(req.query.amount);
+        if (baseValue === undefined || typeof baseValue !== 'number' || isNaN(baseValue)) {
+            throw new ClientError('Must give a number amount in the JSON body');
+        }
+        const panelPrice = await this.estimateService.getPanelPricing(1, 'Boston MA');
+        const maxYears = 20;
+        let currentValue = baseValue;
+        let currentImpact = 0;
+        let fiveYearValue: number = 0;
+        let fiveYearCarbonSavings: number = 0;
+        let twentyYearValue: number = 0;
+        let twentyYearCarbonSavings: number = 0;
+        for (let year = 1; year <= maxYears; year++) {
+            if (year === 5) {
+                fiveYearCarbonSavings = Math.round(currentImpact * 100) / 100;
+                fiveYearValue = Math.round(currentValue * 100) / 100;
+            } else if (year === 20) {
+                twentyYearCarbonSavings = Math.round(currentImpact * 100) / 100;
+                twentyYearValue = Math.round(currentValue * 100) / 100;
+            }
+            currentImpact = await this.estimateService.getElectricityReduction(currentValue / panelPrice, 100000, 'Boston, MA') * 12;
+            currentValue = currentValue + currentValue * this.targetRate;
+        }
+
+        const toReturn = new StoredInvestorEstimate(baseValue, twentyYearValue,
+            fiveYearValue, twentyYearCarbonSavings, fiveYearCarbonSavings);
         return res.status(OK).send(toReturn);
     }
 
