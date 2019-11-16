@@ -7,6 +7,7 @@ import { logger } from '@shared';
 import { IContractDao } from '@daos';
 import { IStoredPortfolioHistory, IPersistedContract, StoredPortfolioHistory, StoredInvestor } from '@entities';
 import { IDateService } from 'src/services/DateService';
+import { IStatService } from 'src/services/stat/StatService';
 
 @injectable()
 export default class StatController {
@@ -15,14 +16,20 @@ export default class StatController {
     constructor(
         @inject('TargetRate') private targetRate: number,
         @inject('ContractDao') private contractDao: IContractDao,
-        @inject('DateService') private dateService: IDateService) { }
+        @inject('DateService') private dateService: IDateService,
+        @inject('StatService') private statService: IStatService) { }
 
 
     /**
      * Returns the stats that are important to homeowners trying to decide.
      */
     public async getHomeownerStats(req: Request, res: Response) {
-        return res.status(OK).send(new StoredHomeownerStat(100, 1000, 10000));
+        const [contracts, savings, greenSavings] = await Promise.all([
+            this.statService.getSolarContracts(),
+            this.statService.getTotalSavings(),
+            this.statService.getGreenImpact(),
+        ]);
+        return res.status(OK).send(new StoredHomeownerStat(greenSavings, contracts, savings));
     }
 
 
@@ -30,7 +37,11 @@ export default class StatController {
      * Returns the stats that are important to investors trying to decide.
      */
     public async getInvestorStat(req: Request, res: Response) {
-        return res.status(OK).send(new StoredInvestorStat(100, 250000, this.targetRate));
+        const [carbonImpact, moneyManaged] = await Promise.all([
+            this.statService.getGreenImpact(),
+            this.statService.getMoneyManaged(),
+        ]);
+        return res.status(OK).send(new StoredInvestorStat(carbonImpact, moneyManaged, this.targetRate));
     }
 
 
