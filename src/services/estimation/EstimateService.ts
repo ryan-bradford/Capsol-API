@@ -15,12 +15,12 @@ export interface IEstimateService {
     /**
      * Returns the amount of electricity these panels will reduce consumption by in kWh per month.
      *
-     * @param electricityUsage the amount of electricity this homeowner uses per given month in kWh.
-     * @param panelSize the size of the installation in ft^2.
+     * @param electricityBill the amount of electricity this homeowner uses per given month in dollars.
+     * @param panelSize the size of the installation in Kw.
      *
      * @throws Error if the address was invalid.
      */
-    getElectricityReduction(panelSize: number, electricityUsage: number, address: string): Promise<number>;
+    getElectricityReduction(panelSize: number, electricityBill: number, address: string): Promise<number>;
     /**
      * Returns how much carbon these panels will save per month in tons.
      *
@@ -67,10 +67,10 @@ export class EstimateService implements IEstimateService {
      * @inheritdoc
      */
     public async getElectricityReduction(
-        panelSize: number, electricityUsage: number, address: string): Promise<number> {
+        panelSize: number, electricityBill: number, address: string): Promise<number> {
         // 8 hours of sunlight a day
         // 30 days in a month
-        return Math.round(100 * panelSize * 30 * await this.getPanelEfficiency(address)) / 100;
+        return panelSize * 30 * await this.getPanelEfficiency(address);
     }
 
 
@@ -80,7 +80,7 @@ export class EstimateService implements IEstimateService {
     public async getGreenSavings(electricityReduction: number): Promise<number> {
         // 1 kWh = 1 pound of carbon
         // 2000 pounds = 1 ton
-        return Math.round(10 * electricityReduction / 2000) / 10;
+        return electricityReduction / 2000;
     }
 
 
@@ -100,7 +100,7 @@ export class EstimateService implements IEstimateService {
         const usagePerDay = electricityUsagePerMonth / 30;
         const toProduce = usagePerDay * 0.9;
         const panelEfficiency = await this.getPanelEfficiency(address);
-        return new StoredSolarInformation(Math.round(toProduce / panelEfficiency));
+        return new StoredSolarInformation(toProduce / panelEfficiency);
     }
 
 

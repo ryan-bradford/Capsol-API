@@ -2,6 +2,7 @@ import { injectable, inject } from 'tsyringe';
 import { IContractDao, IInvestmentDao } from '@daos';
 import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 import { IDateService } from '../DateService';
+import { IEstimateService } from '../estimation/EstimateService';
 
 export interface IStatService {
 
@@ -36,7 +37,8 @@ export class StatService implements IStatService {
     constructor(
         @inject('ContractDao') private contractDao: IContractDao,
         @inject('InvestmentDao') private investmentDao: IInvestmentDao,
-        @inject('DateService') private dateService: IDateService) {
+        @inject('DateService') private dateService: IDateService,
+        @inject('EstimateService') private estimateService: IEstimateService) {
 
     }
 
@@ -47,23 +49,41 @@ export class StatService implements IStatService {
         allInvestments = allInvestments.filter((investment) => investment.sellDate === null);
         let total = 0;
         allInvestments.forEach((investment) => total += investment.value(date));
-        return Math.round(total / 100) * 100;
+        return total;
     }
 
 
     public async getGreenImpact(): Promise<number> {
-        return 1000;
+        const panelPrice = await this.estimateService.getPanelPricing(1, 'Boston, MA');
+        const greenSavingsPerKw = await this.estimateService.getGreenSavings
+            (await this.estimateService.getElectricityReduction(1, 1000000, 'Boston, MA'));
+        const date = await this.dateService.getDateAsNumber();
+        let allContracts = await this.contractDao.getContracts();
+        allContracts = allContracts.filter((contract) => contract.firstPaymentDate !== null);
+        let total = 0;
+        allContracts.forEach((contract) => total += (date - (contract.firstPaymentDate as number)) *
+            (greenSavingsPerKw * contract.saleAmount / panelPrice));
+        return total;
     }
 
 
     public async getSolarContracts(): Promise<number> {
         let allContracts = await this.contractDao.getContracts();
         allContracts = allContracts.filter((contract) => contract.firstPaymentDate !== null);
-        return Math.round(allContracts.length / 10) * 10;
+        return allContracts.length;
     }
 
 
     public async getTotalSavings(): Promise<number> {
-        return 1000;
+        const panelPrice = await this.estimateService.getPanelPricing(1, 'Boston, MA');
+        const savingsPerKw = await this.estimateService.getElectricityPrice('Boston, MA') *
+            await this.estimateService.getElectricityReduction(1, 1000000, 'Boston, MA');
+        const date = await this.dateService.getDateAsNumber();
+        let allContracts = await this.contractDao.getContracts();
+        allContracts = allContracts.filter((contract) => contract.firstPaymentDate !== null);
+        let total = 0;
+        allContracts.forEach((contract) => total += (date - (contract.firstPaymentDate as number)) *
+            (savingsPerKw * contract.saleAmount / panelPrice));
+        return total;
     }
 }

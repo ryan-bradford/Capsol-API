@@ -6,8 +6,8 @@ export class StoredInvestorStat {
 
 
     constructor(carbonReduction: number, totalPortfolio: number, targetRate: number) {
-        this.carbonReduction = carbonReduction;
-        this.totalPortfolio = totalPortfolio;
+        this.carbonReduction = Math.round(carbonReduction / 10) * 10;
+        this.totalPortfolio = Math.round(totalPortfolio / 100) * 100;
         this.targetRate = targetRate;
     }
 

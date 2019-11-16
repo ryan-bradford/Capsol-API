@@ -1,3 +1,5 @@
+import { logger } from '@shared';
+
 export class StoredHomeownerEstimate {
 
     public contractSize: number;
@@ -12,11 +14,12 @@ export class StoredHomeownerEstimate {
         contractSize: number, monthlyPayment: number, panelAmount: number,
         billReduction: number, yearlyCarbonSavings: number,
         length: number) {
-        this.contractSize = contractSize;
+        this.contractSize = Math.round(contractSize * 100) / 100;
         this.panelAmount = panelAmount;
-        this.monthlyPayment = monthlyPayment;
-        this.billReduction = billReduction;
-        this.yearlyCarbonSavings = yearlyCarbonSavings;
+        this.monthlyPayment = Math.round(monthlyPayment * 100) / 100;
+        logger.info(String(billReduction));
+        this.billReduction = Math.round(billReduction * 100) / 100;
+        this.yearlyCarbonSavings = Math.round(yearlyCarbonSavings * 100) / 100;
         this.length = length;
     }
 

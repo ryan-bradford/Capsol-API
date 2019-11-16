@@ -36,8 +36,7 @@ export default class EstimateController {
         const electricityReduction = await
             this.estimateService.getElectricityReduction(panelSize.panelSizeKw, amount, address);
         logger.info(String(electricityReduction));
-        const greenSavings = Math.round(10 * 12 *
-            await this.estimateService.getGreenSavings(electricityReduction)) / 10;
+        const greenSavings = 12 * await this.estimateService.getGreenSavings(electricityReduction);
         const electricityPrice = await this.estimateService.getElectricityPrice(address);
         const savings = electricityPrice * electricityReduction;
         const monthlyPayment = await this.contractService.getContractPrice(totalContractCost, 20);

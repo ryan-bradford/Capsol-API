@@ -6,9 +6,9 @@ export class StoredHomeownerStat {
 
 
     constructor(carbonReduction: number, totalPanels: number, totalSavings: number) {
-        this.carbonReduction = carbonReduction;
-        this.totalPanels = totalPanels;
-        this.totalSavings = totalSavings;
+        this.carbonReduction = Math.round(carbonReduction / 10) * 10;
+        this.totalPanels = Math.round(totalPanels / 10) * 10;
+        this.totalSavings = Math.round(totalSavings / 100) * 100;
     }
 
 }
