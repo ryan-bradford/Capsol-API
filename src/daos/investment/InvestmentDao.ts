@@ -3,7 +3,7 @@ import { IPersistedInvestment, IStorableInvestment, PersistedInvestment, IPersis
 import { getDaos } from '@daos';
 import { singleton } from 'tsyringe';
 import { strict as assert } from 'assert';
-import { DaoError } from 'src/shared/error/DaoError';
+import { DaoError } from '../../shared/error/DaoError';
 
 /**
  * `IInvestmentDao` is a database interface for dealing with investments.

@@ -1,9 +1,9 @@
 import { IStoredUser, IStoredInvestment, StoredUser, IStoredPortfolioHistory } from '@entities';
 import { IPersistedInvestor } from './PersistedInvestor';
-import { IPersistedInvestment } from 'src/entities/investment/investment/PersistedInvestment';
-import { IPersistedCashDeposit } from 'src/entities/investment/cash/PersistedCashDeposit';
-import { StoredInvestment } from 'src/entities/investment/investment/StoredInvestment';
-import { StoredPortfolioHistory } from 'src/entities/investment/portfolio/StoredPortfolioHistory';
+import { IPersistedInvestment } from '@entities';
+import { IPersistedCashDeposit } from '@entities';
+import { StoredInvestment } from '@entities';
+import { StoredPortfolioHistory } from '@entities';
 
 /**
  * The information that should be made public about an investor.

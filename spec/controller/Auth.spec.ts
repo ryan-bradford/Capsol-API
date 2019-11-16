@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { Response } from 'express';
 
 import { BAD_REQUEST, OK, UNAUTHORIZED } from 'http-status-codes';

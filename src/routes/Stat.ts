@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { adminMW } from '@shared';
 import { container } from 'tsyringe';
-import StatController from 'src/controller/Stat';
+import { StatController } from '@controller';
 
 
 export default () => {

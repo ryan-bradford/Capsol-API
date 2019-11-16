@@ -1,13 +1,12 @@
 import { Request, Response } from 'express';
 import { OK } from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
-import { StoredHomeownerStat } from 'src/entities/stat/StoredHomeownerStat';
-import { StoredInvestorStat } from 'src/entities/stat/StoredInvestorStat';
-import { logger } from '@shared';
+import { StoredHomeownerStat } from '@entities';
+import { StoredInvestorStat } from '@entities';
 import { IContractDao } from '@daos';
 import { IStoredPortfolioHistory, IPersistedContract, StoredPortfolioHistory, StoredInvestor } from '@entities';
-import { IDateService } from 'src/services/DateService';
-import { IStatService } from 'src/services/stat/StatService';
+import { IDateService } from '../services/DateService';
+import { IStatService } from '../services/stat/StatService';
 
 @injectable()
 export default class StatController {

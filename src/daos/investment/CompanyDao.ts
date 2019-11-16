@@ -1,4 +1,4 @@
-import { PersistedCompanyFee } from 'src/entities/investment/company/PersistedCompanyFee';
+import { PersistedCompanyFee } from '@entities';
 import { getRepository } from 'typeorm';
 import { singleton, injectable, inject } from 'tsyringe';
 

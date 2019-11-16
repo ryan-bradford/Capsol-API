@@ -1,5 +1,3 @@
-import { logger } from '@shared';
-
 export class StoredHomeownerEstimate {
 
     public contractSize: number;
@@ -17,7 +15,6 @@ export class StoredHomeownerEstimate {
         this.contractSize = Math.round(contractSize * 100) / 100;
         this.panelAmount = panelAmount;
         this.monthlyPayment = Math.round(monthlyPayment * 100) / 100;
-        logger.info(String(billReduction));
         this.billReduction = Math.round(billReduction * 100) / 100;
         this.yearlyCarbonSavings = Math.round(yearlyCarbonSavings * 100) / 100;
         this.length = length;

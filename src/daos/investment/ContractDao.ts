@@ -3,7 +3,7 @@ import { IPersistedContract, PersistedContract, IStorableContract, IPersistedInv
 import { getDaos } from '@daos';
 import { singleton } from 'tsyringe';
 import { strict as assert } from 'assert';
-import { DaoError } from 'src/shared/error/DaoError';
+import { DaoError } from '../../shared/error/DaoError';
 
 /**
  * `IContractDao` is a database interface for dealing with contracts.

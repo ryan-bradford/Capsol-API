@@ -1,7 +1,7 @@
 import { IUserDao } from './UserDao';
 import { IPersistedInvestor, PersistedInvestor, IStorableInvestor } from '@entities';
 import { getRepository } from 'typeorm';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { singleton } from 'tsyringe';
 import { strict as assert } from 'assert';
 

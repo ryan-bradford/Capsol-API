@@ -1,7 +1,7 @@
 import { IUserDao } from './UserDao';
 import { getRepository } from 'typeorm';
 import { IPersistedHomeowner, PersistedHomeowner, IStorableHomeowner } from '@entities';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { singleton } from 'tsyringe';
 import { strict as assert } from 'assert';
 

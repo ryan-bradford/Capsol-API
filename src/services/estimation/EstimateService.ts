@@ -1,5 +1,5 @@
 import { injectable } from 'tsyringe';
-import { StoredSolarInformation, IStoredSolarInformation } from 'src/entities/estimate/StoredSolarInformation';
+import { StoredSolarInformation, IStoredSolarInformation } from '@entities';
 import { logger } from '@shared';
 
 export interface IEstimateService {

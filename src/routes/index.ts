@@ -6,8 +6,8 @@ import AdminRouter from './Admin';
 import StatRouter from './Stat';
 import EstimateRouter from './Estimate';
 import { logger } from '@shared';
-import { ClientError } from 'src/shared/error/ClientError';
-import { NotFoundError } from 'src/shared/error/NotFound';
+import { ClientError } from '../shared/error/ClientError';
+import { NotFoundError } from '../shared/error/NotFound';
 
 export default () => {
 

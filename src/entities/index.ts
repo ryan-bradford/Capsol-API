@@ -20,3 +20,9 @@ export * from './investment/cash/PersistedCashDeposit';
 export * from './investment/cash/StoredCashDeposit';
 export * from './investment/company/PersistedCompanyFee';
 export * from './investment/portfolio/StoredPortfolioHistory';
+export * from './stat/StoredHomeownerStat';
+export * from './stat/StoredInvestorStat';
+export * from './estimate/StoredHomeownerEstimate';
+export * from './estimate/StoredInvestorEstimate';
+export * from './estimate/StoredSolarInformation';
+

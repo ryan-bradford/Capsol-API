@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { adminMW } from '@shared';
-import HomeownerController from 'src/controller/Homeowner';
+import { HomeownerController } from '@controller';
 import { container } from 'tsyringe';
 
 

@@ -8,10 +8,10 @@ import { IContractService } from '@services';
 import { OK, CREATED } from 'http-status-codes';
 import { ParamsDictionary } from 'express-serve-static-core';
 import { injectable, inject } from 'tsyringe';
-import { IDateService } from 'src/services/DateService';
+import { IDateService } from '../services/DateService';
 import { strict as assert } from 'assert';
-import { ClientError } from 'src/shared/error/ClientError';
-import { NotFoundError } from 'src/shared/error/NotFound';
+import { ClientError } from '../shared/error/ClientError';
+import { NotFoundError } from '../shared/error/NotFound';
 import { validateOrReject } from 'class-validator';
 
 @injectable()

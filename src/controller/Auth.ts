@@ -1,6 +1,6 @@
-import { IUserDao } from 'src/daos/user/UserDao';
+import { IUserDao } from '../daos/user/UserDao';
 import { Request, Response } from 'express';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { IPersistedInvestor, IPersistedHomeowner, IStorableInvestor, IStorableHomeowner } from '@entities';
 import { BAD_REQUEST, UNAUTHORIZED, OK } from 'http-status-codes';
 import {

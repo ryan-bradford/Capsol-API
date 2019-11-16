@@ -1,6 +1,5 @@
 import { injectable, inject } from 'tsyringe';
 import { IContractDao, IInvestmentDao } from '@daos';
-import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
 import { IDateService } from '../DateService';
 import { IEstimateService } from '../estimation/EstimateService';
 

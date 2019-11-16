@@ -1,12 +1,12 @@
 import { Request, Response } from 'express';
 import { OK } from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
-import { IEstimateService } from 'src/services/estimation/EstimateService';
-import { ClientError } from 'src/shared/error/ClientError';
+import { IEstimateService } from '../services/estimation/EstimateService';
+import { ClientError } from '../shared/error/ClientError';
 import { IContractService } from '@services';
-import { StoredHomeownerEstimate } from 'src/entities/estimate/StoredHomeownerEstimate';
+import { StoredHomeownerEstimate } from '@entities';
 import { logger } from '@shared';
-import { StoredInvestorEstimate } from 'src/entities/estimate/StoredInvestorEstimate';
+import { StoredInvestorEstimate } from '@entities';
 
 @injectable()
 export default class EstimateController {

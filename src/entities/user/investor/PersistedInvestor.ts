@@ -3,8 +3,8 @@ import {
     IPersistedUser, IPersistedInvestment,
     PersistedUser, PersistedInvestment,
 } from '@entities';
-import { IPersistedRequest, PersistedRequest } from 'src/entities/investment/request/PersistedRequest';
-import { IPersistedCashDeposit, PersistedCashDeposit } from 'src/entities/investment/cash/PersistedCashDeposit';
+import { IPersistedRequest, PersistedRequest } from '@entities';
+import { IPersistedCashDeposit, PersistedCashDeposit } from '@entities';
 
 /**
  * `IPersistedInvestor` is a `IPersistedUser` that can have investments, requests, and cash deposits.

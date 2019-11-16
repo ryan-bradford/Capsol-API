@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { adminMW } from '@shared';
 import { container } from 'tsyringe';
-import AdminController from 'src/controller/Admin';
+import { AdminController } from '@controller';
 
 
 export default () => {

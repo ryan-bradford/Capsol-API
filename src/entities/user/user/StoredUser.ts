@@ -1,4 +1,3 @@
-import { IStoredRequest } from 'src/entities/investment/request/StoredRequest';
 import { IPersistedUser } from './PersistedUser';
 import { strict as assert, AssertionError } from 'assert';
 

@@ -4,9 +4,9 @@ import {
 import { IUserDao, IInvestmentDao } from '@daos';
 import { getRepository } from 'typeorm';
 import { injectable, inject } from 'tsyringe';
-import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
-import { IRequestDao } from 'src/daos/investment/RequestDao';
-import { ServiceError } from 'src/shared/error/ServiceError';
+import { ICashDepositDao } from '../../daos/investment/CashDepositDao';
+import { IRequestDao } from '../../daos/investment/RequestDao';
+import { ServiceError } from '../../shared/error/ServiceError';
 
 /**
  * All the actions that are needed for business operations on investments.

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { adminMW } from '@shared';
 import { container } from 'tsyringe';
-import EstimateController from 'src/controller/Estimate';
+import { EstimateController } from '@controller';
 
 
 export default () => {

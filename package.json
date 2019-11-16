@@ -15,10 +15,12 @@
     "@entities": "dist/entities",
     "@shared": "dist/shared",
     "@services": "dist/services",
-    "@server": "dist/Server"
+    "@server": "dist/Server",
+    "@controller": "dist/controller"
   },
   "dependencies": {
-    "bcrypt": "^3.0.6",
+    "@types/bcryptjs": "^2.4.2",
+    "bcryptjs": "^2.4.3",
     "class-validator": "^0.11.0",
     "cookie-parser": "^1.4.4",
     "cross-env": "^6.0.3",

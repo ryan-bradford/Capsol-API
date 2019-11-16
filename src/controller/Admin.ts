@@ -1,18 +1,10 @@
 import { Request, Response } from 'express';
-import { IUserDao, IContractDao } from '@daos';
-import {
-    IPersistedHomeowner, IStorableHomeowner, StoredHomeowner, StoredContract, StorableHomeowner,
-    IPersistedInvestor, IStorableInvestor,
-} from '@entities';
+import { IContractDao } from '@daos';
 import { IContractService, IRequestService } from '@services';
-import { OK, CREATED } from 'http-status-codes';
-import { ParamsDictionary } from 'express-serve-static-core';
+import { OK } from 'http-status-codes';
 import { injectable, inject } from 'tsyringe';
-import { IDateService } from 'src/services/DateService';
+import { IDateService } from '../services/DateService';
 import { strict as assert } from 'assert';
-import { ClientError } from 'src/shared/error/ClientError';
-import { NotFoundError } from 'src/shared/error/NotFound';
-import { validateOrReject } from 'class-validator';
 
 @injectable()
 export default class AdminController {

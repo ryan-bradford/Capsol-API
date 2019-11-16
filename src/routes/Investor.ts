@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { adminMW } from '@shared';
-import InvestorController from 'src/controller/Investor';
+import { InvestorController } from '@controller';
 import { container } from 'tsyringe';
 
 

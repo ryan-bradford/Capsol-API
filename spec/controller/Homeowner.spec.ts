@@ -3,7 +3,7 @@ import { OK, CREATED } from 'http-status-codes';
 import { pwdSaltRounds } from '@shared';
 import { IUserDao, getDaos } from '@daos';
 import { IContractService } from '@services';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import sinon from 'sinon';
 import {
     IPersistedHomeowner,

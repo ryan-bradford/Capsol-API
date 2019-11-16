@@ -2,7 +2,7 @@ import { inject, singleton, injectable } from 'tsyringe';
 
 import { IInvestmentDao } from '@daos';
 
-import { IRequestDao } from 'src/daos/investment/RequestDao';
+import { IRequestDao } from '../daos/investment/RequestDao';
 import { logger } from '@shared';
 
 /**

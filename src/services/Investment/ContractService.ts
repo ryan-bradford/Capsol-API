@@ -1,8 +1,8 @@
 import { IPersistedHomeowner, IPersistedContract, StorableContract, IStorableHomeowner, StorableRequest } from '@entities';
 import { IUserDao, IContractDao, ICompanyDao } from '@daos';
 import { injectable, inject } from 'tsyringe';
-import { IRequestDao } from 'src/daos/investment/RequestDao';
-import { ServiceError } from 'src/shared/error/ServiceError';
+import { IRequestDao } from '../../daos/investment/RequestDao';
+import { ServiceError } from '../../shared/error/ServiceError';
 
 /**
  * The actions that are required by the business related to contracts.

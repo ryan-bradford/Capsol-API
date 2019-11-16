@@ -7,7 +7,7 @@ import { logger, pwdSaltRounds, jwtCookieProps } from '@shared';
 import { StorableInvestor, StorableHomeowner, PersistedHomeowner, IStoredHomeowner } from '@entities';
 import faker from 'faker';
 import sinon from 'sinon';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { SqlHomeownerDao } from 'src/daos/user/HomeownerDao';
 import { container } from 'tsyringe';
 import { DateService } from 'src/services/DateService';

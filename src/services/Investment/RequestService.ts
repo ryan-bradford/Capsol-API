@@ -1,4 +1,4 @@
-import { IRequestDao } from 'src/daos/investment/RequestDao';
+import { IRequestDao } from '../../daos/investment/RequestDao';
 import { IInvestmentDao, IContractDao } from '@daos';
 import {
     IPersistedRequest, IPersistedInvestor,
@@ -7,8 +7,8 @@ import {
 } from '@entities';
 import { strict as assert } from 'assert';
 import { injectable, inject } from 'tsyringe';
-import { ICashDepositDao } from 'src/daos/investment/CashDepositDao';
-import { ServiceError } from 'src/shared/error/ServiceError';
+import { ICashDepositDao } from '../../daos/investment/CashDepositDao';
+import { ServiceError } from '../../shared/error/ServiceError';
 
 /**
  * All the actions that are needed for business operations on requests.

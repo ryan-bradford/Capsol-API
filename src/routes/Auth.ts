@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import AuthController from 'src/controller/Auth';
+import { AuthController } from '@controller';
 import { container } from 'tsyringe';
 
 export default () => {
