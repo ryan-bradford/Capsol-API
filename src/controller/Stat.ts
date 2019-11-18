@@ -50,6 +50,12 @@ export default class StatController {
     // TODO: move logic to service
     public async getHistoricalPerformance(req: Request, res: Response) {
         let contracts = await this.contractDao.getContracts();
+        if (contracts.length === 0) {
+            return res.status(200).send({
+                portfolioHistory: [],
+                interestRate: 0,
+            });
+        }
         contracts = contracts.filter((contract) => contract.firstPaymentDate !== null);
         const history: IStoredPortfolioHistory[] = [];
         const currentMonth = await this.dateService.getDateAsNumber();
