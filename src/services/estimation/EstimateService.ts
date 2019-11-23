@@ -77,7 +77,7 @@ export class EstimateService implements IEstimateService {
         let fiveYearCarbonSavings: number = 0;
         let twentyYearValue: number = 0;
         let twentyYearCarbonSavings: number = 0;
-        for (let year = 1; year <= maxYears; year++) {
+        for (let year = 0; year <= maxYears; year++) {
             if (year === 5) {
                 fiveYearCarbonSavings = Math.round(currentImpact * 100) / 100;
                 fiveYearValue = Math.round(currentValue * 100) / 100;
@@ -85,7 +85,8 @@ export class EstimateService implements IEstimateService {
                 twentyYearCarbonSavings = Math.round(currentImpact * 100) / 100;
                 twentyYearValue = Math.round(currentValue * 100) / 100;
             }
-            currentImpact = await this.estimateDao.getElectricityReduction(currentValue / panelPrice, 100000, 'Boston, MA') * 12;
+            currentImpact = currentImpact +
+                await this.estimateDao.getElectricityReduction(currentValue / panelPrice, 100000, 'Boston, MA') * 12;
             currentValue = currentValue + currentValue * this.targetRate;
         }
 

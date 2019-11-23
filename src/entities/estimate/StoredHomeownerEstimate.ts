@@ -22,7 +22,7 @@ export class StoredHomeownerEstimate implements IStoredHomeownerEstimate {
         billReduction: number, yearlyCarbonSavings: number,
         length: number) {
         this.contractSize = Math.round(contractSize * 100) / 100;
-        this.panelAmount = panelAmount;
+        this.panelAmount = Math.round(panelAmount * 100) / 100;
         this.billReduction = Math.round(billReduction * 100) / 100;
         this.yearlyCarbonSavings = Math.round(yearlyCarbonSavings * 100) / 100;
         this.length = length;
