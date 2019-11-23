@@ -47,6 +47,9 @@ export async function startApp(fee: number) {
     container.register('RequestDao', {
         useClass: daos.SqlRequestDao,
     });
+    container.register('EstimateDao', {
+        useClass: daos.EstimateDao,
+    });
     container.register('RequestService', {
         useClass: RequestService,
     });

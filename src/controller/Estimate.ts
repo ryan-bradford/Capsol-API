@@ -7,6 +7,7 @@ import { IContractService } from '@services';
 import { StoredHomeownerEstimate } from '@entities';
 import { logger } from '@shared';
 import { StoredInvestorEstimate } from '@entities';
+import { add } from 'winston';
 
 @injectable()
 export default class EstimateController {
@@ -14,8 +15,7 @@ export default class EstimateController {
 
     constructor(
         @inject('EstimateService') private estimateService: IEstimateService,
-        @inject('ContractService') private contractService: IContractService,
-        @inject('TargetRate') private targetRate: number) { }
+        @inject('ContractService') private contractService: IContractService) { }
 
 
     /**
@@ -31,19 +31,10 @@ export default class EstimateController {
             throw new ClientError('Must give a number amount in the JSON body');
         }
 
-        const panelSize = await this.estimateService.getPanelSize(amount, address);
-        const totalContractCost = await this.estimateService.getPanelPricing(panelSize.panelSizeKw, address);
-        const electricityReduction = await
-            this.estimateService.getElectricityReduction(panelSize.panelSizeKw, amount, address);
-        logger.info(String(electricityReduction));
-        const greenSavings = 12 * await this.estimateService.getGreenSavings(electricityReduction);
-        const electricityPrice = await this.estimateService.getElectricityPrice(address);
-        const savings = electricityPrice * electricityReduction;
-        const monthlyPayment = await this.contractService.getContractPrice(totalContractCost, 20);
-        const toReturn = new StoredHomeownerEstimate(totalContractCost, monthlyPayment,
-            panelSize.panelSizeKw, savings, greenSavings, 20);
-
-        return res.status(OK).send(toReturn);
+        const homeownerEstimate = await this.estimateService.getHomeownerEstimate(amount, address);
+        const monthlyPayment = await this.contractService.getContractPrice(homeownerEstimate.contractSize, 20);
+        homeownerEstimate.monthlyPayment = monthlyPayment;
+        return res.status(OK).json(homeownerEstimate);
     }
 
 
@@ -55,29 +46,8 @@ export default class EstimateController {
         if (baseValue === undefined || typeof baseValue !== 'number' || isNaN(baseValue)) {
             throw new ClientError('Must give a number amount in the JSON body');
         }
-        const panelPrice = await this.estimateService.getPanelPricing(1, 'Boston MA');
-        const maxYears = 20;
-        let currentValue = baseValue;
-        let currentImpact = 0;
-        let fiveYearValue: number = 0;
-        let fiveYearCarbonSavings: number = 0;
-        let twentyYearValue: number = 0;
-        let twentyYearCarbonSavings: number = 0;
-        for (let year = 1; year <= maxYears; year++) {
-            if (year === 5) {
-                fiveYearCarbonSavings = Math.round(currentImpact * 100) / 100;
-                fiveYearValue = Math.round(currentValue * 100) / 100;
-            } else if (year === 20) {
-                twentyYearCarbonSavings = Math.round(currentImpact * 100) / 100;
-                twentyYearValue = Math.round(currentValue * 100) / 100;
-            }
-            currentImpact = await this.estimateService.getElectricityReduction(currentValue / panelPrice, 100000, 'Boston, MA') * 12;
-            currentValue = currentValue + currentValue * this.targetRate;
-        }
-
-        const toReturn = new StoredInvestorEstimate(baseValue, twentyYearValue,
-            fiveYearValue, twentyYearCarbonSavings, fiveYearCarbonSavings);
-        return res.status(OK).send(toReturn);
+        const estimate = await this.estimateService.getInvestorEstimate(baseValue);
+        return res.status(OK).json(estimate);
     }
 
 }

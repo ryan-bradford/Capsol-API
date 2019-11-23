@@ -40,6 +40,9 @@ getDaos().then((daos) => {
     container.register('RequestDao', {
         useClass: daos.SqlRequestDao,
     });
+    container.register('EstimateDao', {
+        useClass: daos.EstimateDao,
+    });
     container.register('DateService', {
         useValue: new DateService(container.resolve('InvestmentDao'), container.resolve('RequestDao')),
     });

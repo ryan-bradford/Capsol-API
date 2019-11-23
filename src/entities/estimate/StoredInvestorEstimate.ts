@@ -1,3 +1,11 @@
+export interface IStoredInvestorEstimate {
+    baseAmount: number;
+    twentyYearValue: number;
+    fiveYearValue: number;
+    twentyYearCarbonImpact: number;
+    fiveYearCarbonImpact: number;
+}
+
 
 export class StoredInvestorEstimate {
     public baseAmount: number;

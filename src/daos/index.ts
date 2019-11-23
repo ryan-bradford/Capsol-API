@@ -12,6 +12,7 @@ import {
 import { logger } from '@shared';
 import { SqlCashDepositDao } from './investment/CashDepositDao';
 import { AssertionError } from 'assert';
+import { IEstimateDao, EstimateDao } from './estimate/EstimateDao';
 
 /**
  * A function that will return all the DAO SQL classes once the database has loaded.
@@ -24,6 +25,7 @@ async function getDaos() {
         SqlHomeownerDao, SqlInvestorDao,
         SqlInvestmentDao, SqlContractDao, clearDatabase,
         SqlRequestDao, SqlCompanyDao, SqlCashDepositDao,
+        EstimateDao,
     };
 }
 
@@ -51,5 +53,5 @@ async function clearDatabase() {
 }
 
 export {
-    IUserDao, IInvestmentDao, IContractDao, ICompanyDao, getDaos,
+    IUserDao, IInvestmentDao, IContractDao, ICompanyDao, IEstimateDao, getDaos,
 };

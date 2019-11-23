@@ -1,52 +1,30 @@
-import { injectable } from 'tsyringe';
-import { StoredSolarInformation, IStoredSolarInformation } from '@entities';
-import { logger } from '@shared';
+import { injectable, inject } from 'tsyringe';
+import {
+    StoredSolarInformation, IStoredHomeownerEstimate,
+    StoredHomeownerEstimate, IStoredInvestorEstimate, StoredInvestorEstimate,
+} from '@entities';
+import { IEstimateDao } from 'src/daos/estimate/EstimateDao';
 
+/**
+ * `IEstimateService` is a service responsible for giving estimates to users.
+ */
 export interface IEstimateService {
 
     /**
-     * Returns the optimal panel size on the given persons roof.
+     * Returns the estimate for the homeowner installing panels.
      *
      * @param electricityUsage the amount of electricity this home uses a month in kWh.
+     * @param address the address the homeowner lives at.
      *
      * @throws Error if the address was invalid.
      */
-    getPanelSize(electricityUsage: number, address: string): Promise<IStoredSolarInformation>;
+    getHomeownerEstimate(electricityUsage: number, address: string): Promise<IStoredHomeownerEstimate>;
+
     /**
-     * Returns the amount of electricity these panels will reduce consumption by in kWh per month.
-     *
-     * @param electricityBill the amount of electricity this homeowner uses per given month in dollars.
-     * @param panelSize the size of the installation in Kw.
-     *
-     * @throws Error if the address was invalid.
+     * Returns the estimate if an investor invested the given initial amount.
      */
-    getElectricityReduction(panelSize: number, electricityBill: number, address: string): Promise<number>;
-    /**
-     * Returns how much carbon these panels will save per month in tons.
-     *
-     * @param electricityUsage the amount of electricity these panels will reduce per given month in kWh.
-     */
-    getGreenSavings(electricityReduction: number): Promise<number>;
-    /**
-     * Returns how much the panels would cost to install.
-     *
-     * @param panelSize the size of the installation in kW.
-     */
-    getPanelPricing(panelSize: number, address: string): Promise<number>;
-    /**
-     * Gives the price at the given address in $/kWh.
-     *
-     * @throws Error if the address was invalid.
-     */
-    getElectricityPrice(address: string): Promise<number>;
-    /**
-     * Gives the amount of kWh of electricity this home uses a month.
-     *
-     * @param electricityBill the monthly bill of this home in $.
-     *
-     * @throws Error if the address was invalid.
-     */
-    getElectricityUsage(address: string, electricityBill: number): Promise<number>;
+    getInvestorEstimate(initialAmount: number): Promise<IStoredInvestorEstimate>;
+
 
 }
 
@@ -54,70 +32,65 @@ export interface IEstimateService {
 export class EstimateService implements IEstimateService {
 
 
-    /**
-     * @inheritdoc
-     */
-    public async getPanelPricing(panelSize: number, address: string): Promise<number> {
-        // 1 kW costs 2750
-        return panelSize * 2750;
-    }
+    constructor(
+        @inject('EstimateDao') private estimateDao: IEstimateDao,
+        @inject('TargetRate') private targetRate: number) { }
 
 
     /**
      * @inheritdoc
      */
-    public async getElectricityReduction(
-        panelSize: number, electricityBill: number, address: string): Promise<number> {
-        // 8 hours of sunlight a day
-        // 30 days in a month
-        return panelSize * 30 * await this.getPanelEfficiency(address);
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getGreenSavings(electricityReduction: number): Promise<number> {
-        // 1 kWh = 1 pound of carbon
-        // 2000 pounds = 1 ton
-        return electricityReduction / 2000;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getElectricityPrice(address: string): Promise<number> {
-        return .225;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getPanelSize(electricityBill: number, address: string): Promise<StoredSolarInformation> {
+    public async getHomeownerEstimate(electricityBill: number, address: string): Promise<IStoredHomeownerEstimate> {
         const electricityUsagePerMonth = await this.getElectricityUsage(address, electricityBill);
         const usagePerDay = electricityUsagePerMonth / 30;
         const toProduce = usagePerDay * 0.9;
-        const panelEfficiency = await this.getPanelEfficiency(address);
-        return new StoredSolarInformation(toProduce / panelEfficiency);
+        const panelEfficiency = await this.estimateDao.getPanelEfficiency(address);
+        const panelSize = new StoredSolarInformation(toProduce / panelEfficiency);
+        const totalContractCost = await this.estimateDao.getPanelPricing(panelSize.panelSizeKw, address);
+        const electricityReduction = await
+            this.estimateDao.getElectricityReduction(panelSize.panelSizeKw, electricityBill, address);
+        const greenSavings = 12 * await this.estimateDao.getGreenSavings(electricityReduction);
+        const electricityPrice = await this.estimateDao.getElectricityPrice(address);
+        const savings = electricityPrice * electricityReduction;
+        return new StoredHomeownerEstimate(totalContractCost, panelSize.panelSizeKw, savings, greenSavings, 20);
     }
 
 
     /**
      * @inheritdoc
      */
-    public async getElectricityUsage(address: string, electricityBill: number): Promise<number> {
-        const price = await this.getElectricityPrice(address);
+    private async getElectricityUsage(address: string, electricityBill: number): Promise<number> {
+        const price = await this.estimateDao.getElectricityPrice(address);
         return electricityBill / price;
     }
 
 
     /**
-     * Returns how much kWh of energy 1 kW of solar would produce per day at the given address.
+     * @inheritdoc
      */
-    private async getPanelEfficiency(address: string) {
-        return 3;
+    public async getInvestorEstimate(initialAmount: number): Promise<IStoredInvestorEstimate> {
+        const panelPrice = await this.estimateDao.getPanelPricing(1, 'Boston MA');
+        const maxYears = 20;
+        let currentValue = initialAmount;
+        let currentImpact = 0;
+        let fiveYearValue: number = 0;
+        let fiveYearCarbonSavings: number = 0;
+        let twentyYearValue: number = 0;
+        let twentyYearCarbonSavings: number = 0;
+        for (let year = 1; year <= maxYears; year++) {
+            if (year === 5) {
+                fiveYearCarbonSavings = Math.round(currentImpact * 100) / 100;
+                fiveYearValue = Math.round(currentValue * 100) / 100;
+            } else if (year === 20) {
+                twentyYearCarbonSavings = Math.round(currentImpact * 100) / 100;
+                twentyYearValue = Math.round(currentValue * 100) / 100;
+            }
+            currentImpact = await this.estimateDao.getElectricityReduction(currentValue / panelPrice, 100000, 'Boston, MA') * 12;
+            currentValue = currentValue + currentValue * this.targetRate;
+        }
+
+        return new StoredInvestorEstimate(initialAmount, twentyYearValue,
+            fiveYearValue, twentyYearCarbonSavings, fiveYearCarbonSavings);
     }
 
 }

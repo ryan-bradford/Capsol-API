@@ -40,7 +40,8 @@ The view is the smallest part of the application. Because the Angular app rests 
     i. Other InvestmentService methods<br>
 5. Improve speed of everything<br>
 6. Change deleted to table field<br>
-7. Create dashboard<br>
-8. Add stuff about locking and transactions<br>
-9. Codacy integration<br>
-10. Make RAML<br>
+7. Add stuff about locking and transactions<br>
+8. Codacy integration<br>
+9. Add contract approval
+10. Add investor approval
+11. Make RAML<br>
