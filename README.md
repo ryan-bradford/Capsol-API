@@ -1,6 +1,7 @@
 # Capsol API
 
 [![Build Status](https://travis-ci.org/ryan-bradford/Capsol-API.svg?branch=master)](https://travis-ci.org/ryan-bradford/Capsol-API) [![codecov](https://codecov.io/gh/ryan-bradford/Capsol-API/branch/master/graph/badge.svg)](https://codecov.io/gh/ryan-bradford/Capsol-API)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/be1ab15c67b94ec9abd56e39f9fbacae)](https://www.codacy.com/manual/ryan-bradford/Capsol-API?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ryan-bradford/Capsol-API&amp;utm_campaign=Badge_Grade)
 
 ## Company
 
@@ -27,10 +28,8 @@ The view is the smallest part of the application. Because the Angular app rests 
 
 1. Strange bug with far too much investment transfer<br>
 2. Make contract length an injected value.
-3. Comment new Estimate + Stat stuff.
 4. Add more tests (makePayment, takeAssets, transferInvestment, saveInvestment, deleteInvestment)<br>
-    a. Test Estimation Controller + Service<br>
-    b. Test Statistic Controller + Service<br>
+    b. Test Statistic Service<br>
     c. Test CompanyDao<br>
     d. Test CashDepositDao<br>
     e. Test DateService<br>
