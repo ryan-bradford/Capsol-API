@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminMW } from '@shared';
+import { adminMW, userMW } from '@shared';
 import { InvestorController } from '@controller';
 import { container } from 'tsyringe';
 
@@ -32,7 +32,7 @@ export default () => {
      *
      * @throws 404 if the user was not found.
      */
-    router.get('/:email', adminMW, (req, res, next) =>
+    router.get('/:email', userMW, (req, res, next) =>
         controller.getInvestor(req, res).catch((error) => next(error)));
 
     /**
@@ -40,7 +40,7 @@ export default () => {
      *
      * @throws 404 if the user was not found.
      */
-    router.delete('/:email', adminMW, (req, res, next) =>
+    router.delete('/:email', userMW, (req, res, next) =>
         controller.deleteInvestor(req, res).catch((error) => next(error)));
 
     /**
@@ -50,7 +50,7 @@ export default () => {
      *
      * @throws 404 if the user was not found.
      */
-    router.put('/:email/investment', adminMW, (req, res, next) =>
+    router.put('/:email/investment', userMW, (req, res, next) =>
         controller.addInvestment(req, res).catch((error) => next(error)));
 
     /**
@@ -60,7 +60,7 @@ export default () => {
      *
      * @throws 404 if the user was not found.
      */
-    router.put('/:email/sell', adminMW, (req, res, next) =>
+    router.put('/:email/sell', userMW, (req, res, next) =>
         controller.sellInvestment(req, res).catch((error) => next(error)));
 
     return router;

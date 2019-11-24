@@ -36,9 +36,31 @@ export const adminMW = async (req: Request, res: Response, next: NextFunction) =
         // Make sure user role is an admin
         const clientData = await jwtService.decodeJwt(jwt);
         if (clientData.role === 1) {
-            next();
+            return next();
         } else {
             throw Error('User not an admin.');
+        }
+    } catch (err) {
+        return res.status(UNAUTHORIZED).json({
+            error: err.message,
+        });
+    }
+};
+
+// Middleware to verify if user is the requested user.
+export const userMW = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        // Get json-web-token
+        const jwt = req.signedCookies[jwtCookieProps.key];
+        if (!jwt) {
+            throw Error('JWT not present in signed cookie.');
+        }
+        // Make sure user role is an admin
+        const clientData = await jwtService.decodeJwt(jwt);
+        if (clientData.role === 1 || clientData.email === req.params.email) {
+            return next();
+        } else {
+            throw Error('User is not the requested user or an admin');
         }
     } catch (err) {
         return res.status(UNAUTHORIZED).json({

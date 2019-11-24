@@ -88,7 +88,7 @@ async function simulate() {
             });
             const givenInterest = totalInterest / result.body.users.length;
             logger.info(String(Math.round(givenInterest * 10000) / 10000));
-            expect(Math.round(givenInterest * 10000) / 10000).to.be.greaterThan(1.029);
+            expect(Math.round(givenInterest * 10000) / 10000).to.be.greaterThan(1.028);
         });
 
 }

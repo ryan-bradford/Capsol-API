@@ -40,7 +40,6 @@ The view is the smallest part of the application. Because the Angular app rests 
 5. Improve speed of everything<br>
 6. Change deleted to table field<br>
 7. Add stuff about locking and transactions<br>
-8. Codacy integration<br>
 9. Add contract approval
 10. Add investor approval
 11. Make RAML<br>
