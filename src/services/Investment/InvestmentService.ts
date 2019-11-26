@@ -18,14 +18,6 @@ export interface IInvestmentService {
      * @throws Error if the user was not found.
      */
     addFunds(userId: string, amount: number, date: number): Promise<IPersistedInvestment[]>;
-    // TODO: implement second throws
-    /**
-     * Sells `amount` of funds from the investor represented by the given `userId`.
-     *
-     * @throws Error if the user was not found.
-     * @throws Error if the investor does not have enough funds to sell.
-     */
-    sellInvestments(userId: string, amount: number, date: number): Promise<void>;
     /**
      * Returns the total amount of cash the given investor has uninvested.
      */
@@ -34,6 +26,14 @@ export interface IInvestmentService {
      * Returns every investment owned by the given investor.
      */
     getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]>;
+    // TODO: implement second throws
+    /**
+     * Sells `amount` of funds from the investor represented by the given `userId`.
+     *
+     * @throws Error if the user was not found.
+     * @throws Error if the investor does not have enough funds to sell.
+     */
+    sellInvestments(userId: string, amount: number, date: number): Promise<void>;
 }
 
 @injectable()
@@ -65,20 +65,6 @@ export class InvestmentService implements IInvestmentService {
     /**
      * @inheritdoc
      */
-    public async sellInvestments(userId: string, amount: number, date: number): Promise<void> {
-        const user = await this.investorDao.getOne(userId);
-        if (!user) {
-            throw new ServiceError(`User with ID ${userId} was not found.`);
-        }
-        amount = (await
-            this.requestDao.createRequest(new StorableRequest(amount, date, user.id, 'sell'))).amount;
-        return;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
     public async getCashValue(userId: string): Promise<number> {
         const requestValue = await getRepository(PersistedRequest)
             .createQueryBuilder('request')
@@ -94,6 +80,20 @@ export class InvestmentService implements IInvestmentService {
      */
     public async getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]> {
         return this.investmentDao.getInvestments(userId);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async sellInvestments(userId: string, amount: number, date: number): Promise<void> {
+        const user = await this.investorDao.getOne(userId);
+        if (!user) {
+            throw new ServiceError(`User with ID ${userId} was not found.`);
+        }
+        amount = (await
+            this.requestDao.createRequest(new StorableRequest(amount, date, user.id, 'sell'))).amount;
+        return;
     }
 
 }

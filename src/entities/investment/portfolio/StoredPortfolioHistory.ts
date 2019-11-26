@@ -3,13 +3,13 @@
  */
 export interface IStoredPortfolioHistory {
     /**
-     * The month this history item relates to.
-     */
-    month: number;
-    /**
      * The amount of cash the user had deposited at this time.
      */
     cashDeposit: number;
+    /**
+     * The month this history item relates to.
+     */
+    month: number;
     /**
      * The total value of the investments at this time.
      */
@@ -17,9 +17,9 @@ export interface IStoredPortfolioHistory {
 }
 
 export class StoredPortfolioHistory implements IStoredPortfolioHistory {
+    public cashDeposit: number;
 
     public month: number;
-    public cashDeposit: number;
     public totalValue: number;
 
 

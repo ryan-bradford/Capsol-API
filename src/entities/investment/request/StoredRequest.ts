@@ -3,37 +3,37 @@
  */
 export interface IStoredRequest {
     /**
+     * The amount that the request asks for.
+     */
+    amount: number;
+    /**
+     * The month this request was made on.
+     */
+    dateCreated: number;
+    /**
      * The UUID of the request.
      *
      * @unique
      */
     id: string;
     /**
-     * The amount that the request asks for.
+     * Whether this is a purchase or sell request.
      */
-    amount: number;
+    type: 'purchase' | 'sell';
     /**
      * The ID of the investor who made this request.
      */
     userId: string;
-    /**
-     * The month this request was made on.
-     */
-    dateCreated: number;
-    /**
-     * Whether this is a purchase or sell request.
-     */
-    type: 'purchase' | 'sell';
 
 }
 
 export class StoredRequest implements IStoredRequest {
-
-    public id: string;
     public amount: number;
     public dateCreated: number;
-    public userId: string;
+
+    public id: string;
     public type: 'purchase' | 'sell';
+    public userId: string;
 
 
     constructor(id: string, amount: number, dateCreated: number, userId: string, type: 'purchase' | 'sell') {

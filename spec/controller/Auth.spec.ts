@@ -107,6 +107,26 @@ describe('AuthRouter', () => {
 class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
 
+    public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
+        throw new Error('Not impl');
+    }
+
+
+    public delete(id: string): Promise<void> {
+        throw new Error('Not impl');
+    }
+
+
+    public getAll(): Promise<IPersistedInvestor[]> {
+        throw new Error('Not impl');
+    }
+
+
+    public getOne(email: string): Promise<IPersistedInvestor | null> {
+        return Promise.resolve(null);
+    }
+
+
     public getOneByEmail(emailOrId: string): Promise<IPersistedInvestor | null> {
         if (emailOrId === '3@gmail.com') {
             throw new Error('Database query failed.');
@@ -121,45 +141,10 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor>
         }
     }
 
-
-    public getOne(email: string): Promise<IPersistedInvestor | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getAll(): Promise<IPersistedInvestor[]> {
-        throw new Error('Not impl');
-    }
-
-
-    public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
-        throw new Error('Not impl');
-    }
-
-
-    public delete(id: string): Promise<void> {
-        throw new Error('Not impl');
-    }
-
 }
 
 // tslint:disable-next-line: max-classes-per-file
 class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
-
-
-    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getAll(): Promise<IPersistedHomeowner[]> {
-        throw new Error('Not impl');
-    }
 
 
     public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
@@ -169,6 +154,21 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeown
 
     public delete(id: string): Promise<void> {
         throw new Error('Not impl');
+    }
+
+
+    public getAll(): Promise<IPersistedHomeowner[]> {
+        throw new Error('Not impl');
+    }
+
+
+    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
     }
 
 }

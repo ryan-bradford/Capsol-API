@@ -30,30 +30,6 @@ export default class HomeownerController {
 
 
     /**
-     * Returns all the homeowners as JSON in the given response.
-     */
-    public async getUsers(req: Request, res: Response) {
-        const users = await this.homeownerDao.getAll();
-        const stored = await Promise.all(users.map(async (user) => {
-            let contract: StoredContract | undefined;
-            if (user.contract) {
-                const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
-                let investmentValue = 0;
-                user.contract.investments = contractInvestments;
-                const positionInQueue = user.contract.unsoldAmount() !== 0 ?
-                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount()) : null;
-                contractInvestments.forEach((investment) => investmentValue += investment.amount);
-                contract = new StoredContract(user.contract.id, user.contract.saleAmount,
-                    user.contract.totalLength, user.contract.monthlyPayment, user.contract.firstPaymentDate,
-                    investmentValue / user.contract.saleAmount, positionInQueue, user.id);
-            }
-            return new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, contract);
-        }));
-        return res.status(OK).json({ users: stored });
-    }
-
-
-    /**
      * Adds the homeowner given in the body of the req and returns the new user as JSON in the res.
      */
     public async addUser(req: Request, res: Response) {
@@ -78,36 +54,6 @@ export default class HomeownerController {
 
 
     /**
-     * Gets the specific user who's email is passed as a param in the req.
-     * Returns the result as JSON in the res.
-     */
-    public async getUser(req: Request, res: Response) {
-        const { email } = req.params;
-        if (!email || typeof email !== 'string') {
-            throw new ClientError('Need to provide a string email in the URL params');
-        }
-        const user = await this.homeownerDao.getOneByEmail(email);
-        if (user) {
-            let contract: StoredContract | undefined;
-            if (user.contract) {
-                const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
-                user.contract.investments = contractInvestments;
-                const positionInQueue = user.contract.unsoldAmount() !== 0 ?
-                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount()) : null;
-                let investmentValue = 0;
-                contractInvestments.forEach((investment) => investmentValue += investment.amount);
-                contract = new StoredContract(user.contract.id, user.contract.saleAmount,
-                    user.contract.totalLength, user.contract.monthlyPayment, user.contract.firstPaymentDate,
-                    investmentValue / user.contract.saleAmount, positionInQueue, user.id);
-            }
-            return res.status(OK).json(new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, contract));
-        } else {
-            throw new NotFoundError(`User with email ${email} was not found`);
-        }
-    }
-
-
-    /**
      * Deletes the user whose email is given in the params of the req.
      */
     public async deleteUser(req: Request, res: Response) {
@@ -121,29 +67,6 @@ export default class HomeownerController {
         }
         await this.homeownerDao.delete(homeowner.id);
         return res.status(OK).end();
-    }
-
-
-    /**
-     * Signs up the user whose email is given in the params of the req for an
-     * investment of the amount given in the body.
-     */
-    public async signUpHome(req: Request, res: Response) {
-        const { email } = req.params;
-        const { amount } = req.body;
-        if (!email || typeof email !== 'string') {
-            throw new ClientError('Need to provide a string email in the URL params');
-        }
-        if (amount === undefined || typeof amount !== 'number' || amount < 0) {
-            throw new ClientError('Need to provide an amount in the body');
-        }
-        const user = await this.homeownerDao.getOneByEmail(email);
-        if (user) {
-            await this.contractService.createContract(amount, user.id);
-            return res.status(OK).end();
-        } else {
-            throw new NotFoundError(`User with email ${email} was not found`);
-        }
     }
 
 
@@ -188,5 +111,82 @@ export default class HomeownerController {
             contractSize,
             monthlyPayment,
         });
+    }
+
+
+    /**
+     * Gets the specific user who's email is passed as a param in the req.
+     * Returns the result as JSON in the res.
+     */
+    public async getUser(req: Request, res: Response) {
+        const { email } = req.params;
+        if (!email || typeof email !== 'string') {
+            throw new ClientError('Need to provide a string email in the URL params');
+        }
+        const user = await this.homeownerDao.getOneByEmail(email);
+        if (user) {
+            let contract: StoredContract | undefined;
+            if (user.contract) {
+                const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
+                user.contract.investments = contractInvestments;
+                const positionInQueue = user.contract.unsoldAmount() !== 0 ?
+                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount()) : null;
+                let investmentValue = 0;
+                contractInvestments.forEach((investment) => investmentValue += investment.amount);
+                contract = new StoredContract(user.contract.id, user.contract.saleAmount,
+                    user.contract.totalLength, user.contract.monthlyPayment, user.contract.firstPaymentDate,
+                    investmentValue / user.contract.saleAmount, positionInQueue, user.id);
+            }
+            return res.status(OK).json(new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, contract));
+        } else {
+            throw new NotFoundError(`User with email ${email} was not found`);
+        }
+    }
+
+
+    /**
+     * Returns all the homeowners as JSON in the given response.
+     */
+    public async getUsers(req: Request, res: Response) {
+        const users = await this.homeownerDao.getAll();
+        const stored = await Promise.all(users.map(async (user) => {
+            let contract: StoredContract | undefined;
+            if (user.contract) {
+                const contractInvestments = await this.contractDao.getInvestmentsForContract(user.contract.id);
+                let investmentValue = 0;
+                user.contract.investments = contractInvestments;
+                const positionInQueue = user.contract.unsoldAmount() !== 0 ?
+                    await this.contractDao.getContractPositionInQueue(user.contract.unsoldAmount()) : null;
+                contractInvestments.forEach((investment) => investmentValue += investment.amount);
+                contract = new StoredContract(user.contract.id, user.contract.saleAmount,
+                    user.contract.totalLength, user.contract.monthlyPayment, user.contract.firstPaymentDate,
+                    investmentValue / user.contract.saleAmount, positionInQueue, user.id);
+            }
+            return new StoredHomeowner(user.id, user.name, user.email, user.pwdHash, contract);
+        }));
+        return res.status(OK).json({ users: stored });
+    }
+
+
+    /**
+     * Signs up the user whose email is given in the params of the req for an
+     * investment of the amount given in the body.
+     */
+    public async signUpHome(req: Request, res: Response) {
+        const { email } = req.params;
+        const { amount } = req.body;
+        if (!email || typeof email !== 'string') {
+            throw new ClientError('Need to provide a string email in the URL params');
+        }
+        if (amount === undefined || typeof amount !== 'number' || amount < 0) {
+            throw new ClientError('Need to provide an amount in the body');
+        }
+        const user = await this.homeownerDao.getOneByEmail(email);
+        if (user) {
+            await this.contractService.createContract(amount, user.id);
+            return res.status(OK).end();
+        } else {
+            throw new NotFoundError(`User with email ${email} was not found`);
+        }
     }
 }

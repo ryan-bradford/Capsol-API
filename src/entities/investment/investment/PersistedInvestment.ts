@@ -6,19 +6,19 @@ import { IPersistedContract, IPersistedInvestor, PersistedContract, PersistedInv
  */
 export interface IPersistedInvestment {
     /**
-     * The UUID of the investment.
-     *
-     * @unique
+     * The real dollar amount that was invested.
      */
-    id: string;
+    amount: number;
     /**
      * The contract associated with this investment.
      */
     contract: IPersistedContract;
     /**
-     * The real dollar amount that was invested.
+     * The UUID of the investment.
+     *
+     * @unique
      */
-    amount: number;
+    id: string;
     /**
      * The investor who owns this contract.
      */
@@ -41,15 +41,15 @@ export interface IPersistedInvestment {
 @Entity('investment')
 export class PersistedInvestment implements IPersistedInvestment {
 
-    @PrimaryGeneratedColumn('uuid')
-    public id!: string;
+    @Column()
+    public amount!: number;
 
     @ManyToOne((type) => PersistedContract, (contract) => contract.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()
     public contract!: IPersistedContract;
 
-    @Column()
-    public amount!: number;
+    @PrimaryGeneratedColumn('uuid')
+    public id!: string;
 
     @ManyToOne((type) => PersistedInvestor, (investor) => investor.investments, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()

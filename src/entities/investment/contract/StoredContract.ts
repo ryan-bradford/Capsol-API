@@ -3,17 +3,20 @@
  */
 export interface IStoredContract {
     /**
+     * The date the first payment was made on the contract.
+     * Null if no payment has been made.
+     */
+    firstPaymentDate: number | null;
+    /**
+     * The ID of the homeowner who owns this contract.
+     */
+    homeownerId: string;
+    /**
      * The UUID of the contract.
      *
      * @unique
      */
     id: string;
-    /**
-     * The amount that the contract was sold for.
-     *
-     * @invariant saleAmount >= 0
-     */
-    saleAmount: number;
     /**
      * The length of this contract in months.
      *
@@ -27,11 +30,6 @@ export interface IStoredContract {
      */
     monthlyPayment: number;
     /**
-     * The date the first payment was made on the contract.
-     * Null if no payment has been made.
-     */
-    firstPaymentDate: number | null;
-    /**
      * The percent of the sale amount that has been fulfilled by investors.
      */
     percentFulfilled: number;
@@ -40,21 +38,23 @@ export interface IStoredContract {
      */
     positionInQueue: number | null;
     /**
-     * The ID of the homeowner who owns this contract.
+     * The amount that the contract was sold for.
+     *
+     * @invariant saleAmount >= 0
      */
-    homeownerId: string;
+    saleAmount: number;
 }
 
 export class StoredContract implements IStoredContract {
+    public firstPaymentDate: number | null;
+    public homeownerId: string;
 
     public id: string;
-    public saleAmount: number;
     public length: number;
     public monthlyPayment: number;
-    public homeownerId: string;
-    public firstPaymentDate: number | null;
     public percentFulfilled: number;
     public positionInQueue: number | null;
+    public saleAmount: number;
 
 
     constructor(

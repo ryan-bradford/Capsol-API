@@ -9,10 +9,6 @@ export interface IStorableRequest {
      */
     amount: number;
     /**
-     * The ID of the investor who made this request.
-     */
-    userId: string;
-    /**
      * The month this request was made on.
      */
     dateCreated: number;
@@ -20,6 +16,10 @@ export interface IStorableRequest {
      * Whether this is a purchase or sell request.
      */
     type: 'purchase' | 'sell';
+    /**
+     * The ID of the investor who made this request.
+     */
+    userId: string;
 
 }
 
@@ -30,10 +30,10 @@ export class StorableRequest implements IStorableRequest {
 
     @Min(0)
     public dateCreated: number;
+    public type: 'purchase' | 'sell';
 
     @IsUUID()
     public userId: string;
-    public type: 'purchase' | 'sell';
 
 
     constructor(amount: number, dateCreated: number, userId: string, type: 'purchase' | 'sell') {

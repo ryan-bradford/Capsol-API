@@ -254,11 +254,29 @@ describe('HomeownerRouter', () => {
 // tslint:disable-next-line: max-classes-per-file
 class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
-    private examples: IPersistedHomeowner[] = Object.values(Object.assign({}, startHomeowners.users));
-
 
     constructor() {
         this.examples[0].id = 'a';
+    }
+
+    private examples: IPersistedHomeowner[] = Object.values(Object.assign({}, startHomeowners.users));
+
+
+    public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
+        return Promise.resolve(new PersistedHomeowner());
+    }
+
+
+    public delete(id: string): Promise<void> {
+        if (id === 'a') {
+            return Promise.resolve();
+        }
+        throw new Error('Not found');
+    }
+
+
+    public getAll(): Promise<IPersistedHomeowner[]> {
+        return Promise.resolve(this.examples);
     }
 
 
@@ -279,33 +297,10 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeown
         }
     }
 
-
-    public getAll(): Promise<IPersistedHomeowner[]> {
-        return Promise.resolve(this.examples);
-    }
-
-
-    public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
-        return Promise.resolve(new PersistedHomeowner());
-    }
-
-
-    public delete(id: string): Promise<void> {
-        if (id === 'a') {
-            return Promise.resolve();
-        }
-        throw new Error('Not found');
-    }
-
 }
 
 // tslint:disable-next-line: max-classes-per-file
 class MockContractService implements IContractService {
-
-
-    public getContractPrice(amount: number, length: number): Promise<number> {
-        return Promise.resolve(100);
-    }
 
 
     public createContract(amount: number, userId: string):
@@ -319,6 +314,11 @@ class MockContractService implements IContractService {
     }
 
 
+    public getContractPrice(amount: number, length: number): Promise<number> {
+        return Promise.resolve(100);
+    }
+
+
     public makePayment(email: string): Promise<number> {
         throw new Error('Not impl');
     }
@@ -329,6 +329,11 @@ class MockContractService implements IContractService {
 class MockDateService implements IDateService {
 
 
+    public calibrateMonth(): Promise<number> {
+        return Promise.resolve(1);
+    }
+
+
     public getDateAsNumber(): Promise<number> {
         return Promise.resolve(1);
     }
@@ -337,32 +342,12 @@ class MockDateService implements IDateService {
     public tickTime(): Promise<void> {
         return Promise.resolve();
     }
-
-
-    public calibrateMonth(): Promise<number> {
-        return Promise.resolve(1);
-    }
 }
 
 // tslint:disable-next-line: max-classes-per-file
 class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
     private examples: IPersistedInvestor[] = [];
-
-
-    public getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getOneByEmail(emailOrId: string | number): Promise<IPersistedInvestor | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getAll(): Promise<IPersistedInvestor[]> {
-        return Promise.resolve(this.examples);
-    }
 
 
     public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
@@ -375,6 +360,21 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor>
             return Promise.resolve();
         }
         throw new Error('Not found');
+    }
+
+
+    public getAll(): Promise<IPersistedInvestor[]> {
+        return Promise.resolve(this.examples);
+    }
+
+
+    public getOne(emailOrId: string | number): Promise<IPersistedInvestor | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedInvestor | null> {
+        return Promise.resolve(null);
     }
 
 }

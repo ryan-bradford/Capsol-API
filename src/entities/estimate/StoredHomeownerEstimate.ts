@@ -1,20 +1,20 @@
 export interface IStoredHomeownerEstimate {
-    contractSize: number;
-    panelAmount: number;
-    monthlyPayment: number | undefined;
     billReduction: number;
-    yearlyCarbonSavings: number;
+    contractSize: number;
     length: number;
+    monthlyPayment: number | undefined;
+    panelAmount: number;
+    yearlyCarbonSavings: number;
 }
 
 export class StoredHomeownerEstimate implements IStoredHomeownerEstimate {
+    public billReduction: number;
 
     public contractSize: number;
-    public panelAmount: number;
-    public monthlyPayment: number | undefined;
-    public billReduction: number;
-    public yearlyCarbonSavings: number;
     public length: number;
+    public monthlyPayment: number | undefined;
+    public panelAmount: number;
+    public yearlyCarbonSavings: number;
 
 
     constructor(

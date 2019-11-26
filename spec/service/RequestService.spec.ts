@@ -108,16 +108,6 @@ describe('Request Service', () => {
 class MockInvestmentDao implements IInvestmentDao {
 
 
-    public getInvestment(id: string): Promise<IPersistedInvestment | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getInvestments(userId?: string | undefined): Promise<IPersistedInvestment[]> {
-        return Promise.resolve([]);
-    }
-
-
     public createInvestment(investment: IStorableInvestment): Promise<IPersistedInvestment> {
         return Promise.resolve(new PersistedInvestment());
     }
@@ -128,13 +118,23 @@ class MockInvestmentDao implements IInvestmentDao {
     }
 
 
-    public transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor): Promise<number> {
-        return Promise.resolve(0);
+    public getInvestment(id: string): Promise<IPersistedInvestment | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getInvestments(userId?: string | undefined): Promise<IPersistedInvestment[]> {
+        return Promise.resolve([]);
     }
 
 
     public saveInvestment(investment: IPersistedInvestment): Promise<void> {
         return Promise.resolve();
+    }
+
+
+    public transferInvestment(id: string, from: IPersistedInvestor, to: IPersistedInvestor): Promise<number> {
+        return Promise.resolve(0);
     }
 
 
@@ -144,22 +144,6 @@ class MockInvestmentDao implements IInvestmentDao {
 class MockContractDao implements IContractDao {
 
     private contracts: IPersistedContract[] = [];
-
-
-    public getContracts(userId?: string | undefined): Promise<IPersistedContract[]> {
-        return Promise.resolve(
-            Object.assign([], this.contracts.filter((contract) => !userId || contract.homeowner.id === userId)));
-    }
-
-
-    public getInvestmentsForContract(contractId?: string | undefined): Promise<IPersistedInvestment[]> {
-        return Promise.resolve([]);
-    }
-
-
-    public getContract(id: string): Promise<IPersistedContract> {
-        return Promise.resolve(this.contracts.filter((contract) => contract.id === id)[0]);
-    }
 
 
     public createContract(contract: IStorableContract): Promise<IPersistedContract> {
@@ -173,14 +157,30 @@ class MockContractDao implements IContractDao {
     }
 
 
-    public saveContract(toSave: IPersistedContract): Promise<void> {
-        this.contracts.map((mapContract) => mapContract.id === toSave.id ? toSave : mapContract);
-        return Promise.resolve();
+    public getContract(id: string): Promise<IPersistedContract> {
+        return Promise.resolve(this.contracts.filter((contract) => contract.id === id)[0]);
     }
 
 
     public getContractPositionInQueue(unsoldAmount: number): Promise<number> {
         return Promise.resolve(1);
+    }
+
+
+    public getContracts(userId?: string | undefined): Promise<IPersistedContract[]> {
+        return Promise.resolve(
+            Object.assign([], this.contracts.filter((contract) => !userId || contract.homeowner.id === userId)));
+    }
+
+
+    public getInvestmentsForContract(contractId?: string | undefined): Promise<IPersistedInvestment[]> {
+        return Promise.resolve([]);
+    }
+
+
+    public saveContract(toSave: IPersistedContract): Promise<void> {
+        this.contracts.map((mapContract) => mapContract.id === toSave.id ? toSave : mapContract);
+        return Promise.resolve();
     }
 }
 
@@ -198,11 +198,6 @@ class MockRequestDao implements IRequestDao {
     ];
 
 
-    public getRequests(): Promise<IPersistedRequest[]> {
-        return Promise.resolve(this.requests);
-    }
-
-
     public createRequest(toCreate: IStorableRequest): Promise<IPersistedRequest> {
         const newRequest = new PersistedRequest();
         newRequest.amount = toCreate.amount;
@@ -218,6 +213,11 @@ class MockRequestDao implements IRequestDao {
     public deleteRequest(toDeleteId: string): Promise<void> {
         this.requests = this.requests.filter((filterReq) => filterReq.id !== toDeleteId);
         return Promise.resolve();
+    }
+
+
+    public getRequests(): Promise<IPersistedRequest[]> {
+        return Promise.resolve(this.requests);
     }
 
 
@@ -241,13 +241,13 @@ class MockCompanyDao implements ICompanyDao {
 class MockCashDepositDao implements ICashDepositDao {
 
 
-    public makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
-        return Promise.resolve();
+    public getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]> {
+        return Promise.resolve([]);
     }
 
 
-    public getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]> {
-        return Promise.resolve([]);
+    public makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
+        return Promise.resolve();
     }
 
 

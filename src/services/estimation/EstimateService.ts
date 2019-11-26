@@ -59,15 +59,6 @@ export class EstimateService implements IEstimateService {
     /**
      * @inheritdoc
      */
-    private async getElectricityUsage(address: string, electricityBill: number): Promise<number> {
-        const price = await this.estimateDao.getElectricityPrice(address);
-        return electricityBill / price;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
     public async getInvestorEstimate(initialAmount: number): Promise<IStoredInvestorEstimate> {
         const panelPrice = await this.estimateDao.getPanelPricing(1, 'Boston MA');
         const maxYears = 20;
@@ -92,6 +83,15 @@ export class EstimateService implements IEstimateService {
 
         return new StoredInvestorEstimate(initialAmount, twentyYearValue,
             fiveYearValue, twentyYearCarbonSavings, fiveYearCarbonSavings);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    private async getElectricityUsage(address: string, electricityBill: number): Promise<number> {
+        const price = await this.estimateDao.getElectricityPrice(address);
+        return electricityBill / price;
     }
 
 }

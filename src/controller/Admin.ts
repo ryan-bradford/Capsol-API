@@ -21,6 +21,16 @@ export default class AdminController {
 
 
     /**
+     * Pairs purchase and sell requests and makes the magic happen.
+     */
+    public async handleInvestments(req: Request, res: Response) {
+        const currentDate = await this.dateService.getDateAsNumber();
+        await this.requestService.handleRequests(currentDate);
+        res.status(200).send();
+    }
+
+
+    /**
      * Makes a payment for all homeowners with active contracts.
      */
     public async makeAllPayments(req: Request, res: Response) {
@@ -32,15 +42,5 @@ export default class AdminController {
         const newDate = await this.dateService.getDateAsNumber();
         assert(date === newDate - 1, `Date did not decrease by one`);
         return res.status(OK).send();
-    }
-
-
-    /**
-     * Pairs purchase and sell requests and makes the magic happen.
-     */
-    public async handleInvestments(req: Request, res: Response) {
-        const currentDate = await this.dateService.getDateAsNumber();
-        await this.requestService.handleRequests(currentDate);
-        res.status(200).send();
     }
 }

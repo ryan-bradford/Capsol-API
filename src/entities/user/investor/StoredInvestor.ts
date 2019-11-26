@@ -10,9 +10,9 @@ import { StoredPortfolioHistory } from '@entities';
  */
 export interface IStoredInvestor extends IStoredUser {
     /**
-     * The total cash this investor has uninvested.
+     * The interest rate this investor has effectively achieved.
      */
-    totalCash: number;
+    interestRate: number;
     /**
      * All the investments this investor currently owns.
      */
@@ -22,29 +22,12 @@ export interface IStoredInvestor extends IStoredUser {
      */
     portfolioHistory: IStoredPortfolioHistory[];
     /**
-     * The interest rate this investor has effectively achieved.
+     * The total cash this investor has uninvested.
      */
-    interestRate: number;
+    totalCash: number;
 }
 
 export class StoredInvestor extends StoredUser implements IStoredInvestor {
-
-    public totalCash: number;
-    public investments: IStoredInvestment[];
-    public portfolioHistory: IStoredPortfolioHistory[];
-    public interestRate: number;
-
-
-    constructor(
-        id: string | IPersistedInvestor, totalCash: number, investments: IStoredInvestment[],
-        portfolioHistory: IStoredPortfolioHistory[], interestRate: number,
-        name?: string, email?: string, pwdHash?: string) {
-        super(id, name, email, pwdHash);
-        this.totalCash = totalCash;
-        this.investments = investments;
-        this.portfolioHistory = portfolioHistory;
-        this.interestRate = interestRate;
-    }
 
 
     public static fromData(
@@ -83,6 +66,23 @@ export class StoredInvestor extends StoredUser implements IStoredInvestor {
             return 0;
         }
         return interest;
+    }
+    public interestRate: number;
+    public investments: IStoredInvestment[];
+    public portfolioHistory: IStoredPortfolioHistory[];
+
+    public totalCash: number;
+
+
+    constructor(
+        id: string | IPersistedInvestor, totalCash: number, investments: IStoredInvestment[],
+        portfolioHistory: IStoredPortfolioHistory[], interestRate: number,
+        name?: string, email?: string, pwdHash?: string) {
+        super(id, name, email, pwdHash);
+        this.totalCash = totalCash;
+        this.investments = investments;
+        this.portfolioHistory = portfolioHistory;
+        this.interestRate = interestRate;
     }
 
 }

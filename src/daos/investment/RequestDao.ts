@@ -12,11 +12,6 @@ import { strict as assert } from 'assert';
  * `IRequestDao` is a database interface for dealing with requests.
  */
 export interface IRequestDao {
-
-    /**
-     * Returns all requests in the database.
-     */
-    getRequests(): Promise<IPersistedRequest[]>;
     /**
      * Creates a request with the given information.
      */
@@ -27,6 +22,11 @@ export interface IRequestDao {
      * @throws Error if the request didn't exist.
      */
     deleteRequest(toDeleteId: string): Promise<void>;
+
+    /**
+     * Returns all requests in the database.
+     */
+    getRequests(): Promise<IPersistedRequest[]>;
     /**
      * Saves the given request.
      *
@@ -44,16 +44,6 @@ export class SqlRequestDao implements IRequestDao {
 
 
     constructor(@inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>) { }
-
-
-    /**
-     * @inheritdoc
-     */
-    public getRequests(): Promise<IPersistedRequest[]> {
-        return getRepository(PersistedRequest).find({
-            relations: ['investor'],
-        });
-    }
 
 
     /**
@@ -78,6 +68,16 @@ export class SqlRequestDao implements IRequestDao {
         const result = await getRepository(PersistedRequest).delete(toDeleteId);
         assert(result.affected === 1, `Did not delete request row with ID ${toDeleteId}`);
         return;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public getRequests(): Promise<IPersistedRequest[]> {
+        return getRepository(PersistedRequest).find({
+            relations: ['investor'],
+        });
     }
 
 

@@ -3,12 +3,6 @@
  */
 export interface IStoredCashDeposit {
     /**
-     * The UUID of this cash deposit.
-     *
-     * @unique
-     */
-    id: string;
-    /**
      * The amount that was deposited.
      *
      * @invariant amount >= 0
@@ -19,16 +13,22 @@ export interface IStoredCashDeposit {
      */
     date: number;
     /**
+     * The UUID of this cash deposit.
+     *
+     * @unique
+     */
+    id: string;
+    /**
      * The UUID of the user who made this deposit.
      */
     userId: string;
 }
 
 export class StoredCashDeposit implements IStoredCashDeposit {
-
-    public id: string;
     public amount: number;
     public date: number;
+
+    public id: string;
     public userId: string;
 
 

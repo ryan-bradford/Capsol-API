@@ -9,6 +9,11 @@ import { logger } from '@shared';
  * Contains the methods needed for keeping date consistent in the app.
  */
 export interface IDateService {
+
+    /**
+     * Calibrates the current month based on the existing database objects.
+     */
+    calibrateMonth(): Promise<number>;
     /**
      * Returns the month represented as a number.
      */
@@ -18,18 +23,11 @@ export interface IDateService {
      * Adds one to the month.
      */
     tickTime(): Promise<void>;
-
-    /**
-     * Calibrates the current month based on the existing database objects.
-     */
-    calibrateMonth(): Promise<number>;
 }
 
 @singleton()
 @injectable()
 export class DateService implements IDateService {
-
-    private date: Promise<number>;
 
 
     constructor(
@@ -38,21 +36,7 @@ export class DateService implements IDateService {
         this.date = this.calibrateMonth();
     }
 
-
-    /**
-     * @inheritdoc
-     */
-    public getDateAsNumber(): Promise<number> {
-        return this.date;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async tickTime(): Promise<void> {
-        this.date = this.date.then((current) => current + 1);
-    }
+    private date: Promise<number>;
 
 
     /**
@@ -74,6 +58,22 @@ export class DateService implements IDateService {
         });
         logger.info(`Start Month: ${month}`);
         return month;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public getDateAsNumber(): Promise<number> {
+        return this.date;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async tickTime(): Promise<void> {
+        this.date = this.date.then((current) => current + 1);
     }
 
 

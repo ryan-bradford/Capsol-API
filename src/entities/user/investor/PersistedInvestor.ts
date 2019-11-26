@@ -11,10 +11,6 @@ import { IPersistedCashDeposit, PersistedCashDeposit } from '@entities';
  */
 export interface IPersistedInvestor extends IPersistedUser {
     /**
-     * All the requests that this investor has made.
-     */
-    requests: IPersistedRequest[];
-    /**
      * All the cash this user has deposited into the app.
      */
     cashDeposits: IPersistedCashDeposit[];
@@ -22,19 +18,23 @@ export interface IPersistedInvestor extends IPersistedUser {
      * All the investments this user owns or has owned.
      */
     investments: IPersistedInvestment[];
+    /**
+     * All the requests that this investor has made.
+     */
+    requests: IPersistedRequest[];
 }
 
 @ChildEntity('investor')
 export class PersistedInvestor extends PersistedUser implements IPersistedInvestor {
+
+    @OneToMany((type) => PersistedCashDeposit, (investment) => investment.user, { onDelete: 'CASCADE' })
+    public cashDeposits!: IPersistedCashDeposit[];
 
     @OneToMany((type) => PersistedInvestment, (investment) => investment.owner, { onDelete: 'CASCADE' })
     public investments!: IPersistedInvestment[];
 
     @OneToMany((type) => PersistedRequest, (request) => request.investor, { onDelete: 'CASCADE' })
     public requests!: IPersistedRequest[];
-
-    @OneToMany((type) => PersistedCashDeposit, (investment) => investment.user, { onDelete: 'CASCADE' })
-    public cashDeposits!: IPersistedCashDeposit[];
 
 }
 

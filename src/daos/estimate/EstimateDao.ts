@@ -5,6 +5,12 @@ import { StoredSolarInformation, IStoredSolarInformation } from '@entities';
  * `IEstimateDao` is a service responsible for giving estimates to users.
  */
 export interface IEstimateDao {
+    /**
+     * Gives the price at the given address in $/kWh.
+     *
+     * @throws Error if the address was invalid.
+     */
+    getElectricityPrice(address: string): Promise<number>;
 
     /**
      * Returns the amount of electricity these panels will reduce consumption by in kWh per month.
@@ -22,23 +28,17 @@ export interface IEstimateDao {
      */
     getGreenSavings(electricityReduction: number): Promise<number>;
     /**
-     * Returns how much the panels would cost to install.
-     *
-     * @param panelSize the size of the installation in kW.
-     */
-    getPanelPricing(panelSize: number, address: string): Promise<number>;
-    /**
-     * Gives the price at the given address in $/kWh.
-     *
-     * @throws Error if the address was invalid.
-     */
-    getElectricityPrice(address: string): Promise<number>;
-    /**
      * Returns how many kWh 1 kw of panels would produce per day.
      *
      * @throws Error if the address was invalid.
      */
     getPanelEfficiency(address: string): Promise<number>;
+    /**
+     * Returns how much the panels would cost to install.
+     *
+     * @param panelSize the size of the installation in kW.
+     */
+    getPanelPricing(panelSize: number, address: string): Promise<number>;
 }
 
 @injectable()
@@ -48,9 +48,8 @@ export class EstimateDao implements IEstimateDao {
     /**
      * @inheritdoc
      */
-    public async getPanelPricing(panelSize: number, address: string): Promise<number> {
-        // 1 kW costs 2750
-        return panelSize * 2750;
+    public async getElectricityPrice(address: string): Promise<number> {
+        return .225;
     }
 
 
@@ -76,18 +75,19 @@ export class EstimateDao implements IEstimateDao {
 
 
     /**
-     * @inheritdoc
-     */
-    public async getElectricityPrice(address: string): Promise<number> {
-        return .225;
-    }
-
-
-    /**
      * Returns how much kWh of energy 1 kW of solar would produce per day at the given address.
      */
     public async getPanelEfficiency(address: string): Promise<number> {
         return 3;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async getPanelPricing(panelSize: number, address: string): Promise<number> {
+        // 1 kW costs 2750
+        return panelSize * 2750;
     }
 
 }

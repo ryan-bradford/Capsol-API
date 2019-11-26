@@ -100,13 +100,20 @@ describe('StatController', () => {
 });
 
 class MockStatService implements IStatService {
+
+
+    public async getGreenImpact(): Promise<number> {
+        return 10;
+    }
+
+
     public async getMoneyManaged(): Promise<number> {
         return 1000;
     }
 
 
-    public async getGreenImpact(): Promise<number> {
-        return 10;
+    public async getPortfolioHistory(): Promise<IStoredPortfolioHistory[]> {
+        return [];
     }
 
 
@@ -117,10 +124,5 @@ class MockStatService implements IStatService {
 
     public async getTotalSavings(): Promise<number> {
         return 1000;
-    }
-
-
-    public async getPortfolioHistory(): Promise<IStoredPortfolioHistory[]> {
-        return [];
     }
 }

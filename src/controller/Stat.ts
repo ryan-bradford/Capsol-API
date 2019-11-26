@@ -17,6 +17,22 @@ export default class StatController {
 
 
     /**
+     * Returns the historical performance of the investor portfolio.
+     */
+    public async getHistoricalPerformance(req: Request, res: Response) {
+        const history = await this.statService.getPortfolioHistory();
+        let interestRate = 0;
+        if (history.length !== 0) {
+            interestRate = Math.round(100 * StoredInvestor.getEffectiveInterest(history)) / 100;
+        }
+        return res.status(200).json({
+            portfolioHistory: history,
+            interestRate,
+        });
+    }
+
+
+    /**
      * Returns the stats that are important to homeowners trying to decide.
      */
     public async getHomeownerStats(req: Request, res: Response) {
@@ -38,21 +54,5 @@ export default class StatController {
             this.statService.getMoneyManaged(),
         ]);
         return res.status(OK).json(new StoredInvestorStat(carbonImpact, moneyManaged, this.targetRate));
-    }
-
-
-    /**
-     * Returns the historical performance of the investor portfolio.
-     */
-    public async getHistoricalPerformance(req: Request, res: Response) {
-        const history = await this.statService.getPortfolioHistory();
-        let interestRate = 0;
-        if (history.length !== 0) {
-            interestRate = Math.round(100 * StoredInvestor.getEffectiveInterest(history)) / 100;
-        }
-        return res.status(200).json({
-            portfolioHistory: history,
-            interestRate,
-        });
     }
 }

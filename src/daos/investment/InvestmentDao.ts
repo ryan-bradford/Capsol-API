@@ -10,14 +10,6 @@ import { DaoError } from '../../shared/error/DaoError';
  */
 export interface IInvestmentDao {
     /**
-     * Returns the investment associated with the given ID, or null if the investment was not found.
-     */
-    getInvestment(id: string): Promise<IPersistedInvestment | null>;
-    /**
-     * Returns all investments. If the given userId is not undefined, removed all investments not owned by the user.
-     */
-    getInvestments(userId?: string): Promise<IPersistedInvestment[]>;
-    /**
      * Creates an investment with the information stored in the given investment.
      *
      * @throws Error if the investment contained information that did not exist.
@@ -29,6 +21,18 @@ export interface IInvestmentDao {
      * @throws Error if the investment did not exist.
      */
     deleteInvestment(id: string): Promise<void>;
+    /**
+     * Returns the investment associated with the given ID, or null if the investment was not found.
+     */
+    getInvestment(id: string): Promise<IPersistedInvestment | null>;
+    /**
+     * Returns all investments. If the given userId is not undefined, removed all investments not owned by the user.
+     */
+    getInvestments(userId?: string): Promise<IPersistedInvestment[]>;
+    /**
+     * Saves the given investment to the database.
+     */
+    saveInvestment(investment: IPersistedInvestment): Promise<void>;
     // TODO: move to service.
     /**
      * Transfers the given amount of investment with the given id from the given from user to the given to user.
@@ -38,10 +42,6 @@ export interface IInvestmentDao {
     transferInvestment(
         id: string, from: IPersistedInvestor, to: IPersistedInvestor,
         amount: number, date: number): Promise<number>;
-    /**
-     * Saves the given investment to the database.
-     */
-    saveInvestment(investment: IPersistedInvestment): Promise<void>;
 }
 
 /**
@@ -49,27 +49,6 @@ export interface IInvestmentDao {
  */
 @singleton()
 export class SqlInvestmentDao implements IInvestmentDao {
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getInvestments(userId?: string): Promise<IPersistedInvestment[]> {
-        return getRepository(PersistedInvestment).find({
-            relations: ['contract', 'owner'],
-        }).then((investments) =>
-            investments.filter((investment) => !userId || investment.owner.id === userId));
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getInvestment(id: string): Promise<IPersistedInvestment | null> {
-        return getRepository(PersistedInvestment).findOne(id, {
-            relations: ['contract', 'owner'],
-        }).then((investment) => investment ? investment : null);
-    }
 
 
     /**
@@ -109,6 +88,38 @@ export class SqlInvestmentDao implements IInvestmentDao {
     /**
      * @inheritdoc
      */
+    public async getInvestment(id: string): Promise<IPersistedInvestment | null> {
+        return getRepository(PersistedInvestment).findOne(id, {
+            relations: ['contract', 'owner'],
+        }).then((investment) => investment ? investment : null);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async getInvestments(userId?: string): Promise<IPersistedInvestment[]> {
+        return getRepository(PersistedInvestment).find({
+            relations: ['contract', 'owner'],
+        }).then((investments) =>
+            investments.filter((investment) => !userId || investment.owner.id === userId));
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async saveInvestment(investment: IPersistedInvestment): Promise<void> {
+        const result = await getRepository(PersistedInvestment)
+            .update(investment.id, investment as PersistedInvestment);
+        assert(result.raw.affectedRows === 1, `Did not update contract with ID ${investment.id}`);
+        return;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
     public async transferInvestment(
         id: string, from: IPersistedInvestor, to: IPersistedInvestor, amount: number, date: number): Promise<number> {
         const investment = await this.getInvestment(id);
@@ -130,16 +141,5 @@ export class SqlInvestmentDao implements IInvestmentDao {
         }
         await this.saveInvestment(investment);
         return amountToTake;
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async saveInvestment(investment: IPersistedInvestment): Promise<void> {
-        const result = await getRepository(PersistedInvestment)
-            .update(investment.id, investment as PersistedInvestment);
-        assert(result.raw.affectedRows === 1, `Did not update contract with ID ${investment.id}`);
-        return;
     }
 }

@@ -111,12 +111,12 @@ class MockContractService implements IContractService {
     }
 
 
-    public async makePayment(email: string, date: number): Promise<number | null> {
-        throw new Error('Method not implemented.');
+    public async getContractPrice(amount: number, length: number): Promise<number> {
+        return 100;
     }
 
 
-    public async getContractPrice(amount: number, length: number): Promise<number> {
-        return 100;
+    public async makePayment(email: string, date: number): Promise<number | null> {
+        throw new Error('Method not implemented.');
     }
 }

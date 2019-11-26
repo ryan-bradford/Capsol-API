@@ -6,6 +6,12 @@ import { strict as assert, AssertionError } from 'assert';
  */
 export interface IStoredUser {
     /**
+     * The email of this user.
+     *
+     * @unique
+     */
+    email: string;
+    /**
      * The ID of this user.
      *
      * @unique
@@ -16,22 +22,16 @@ export interface IStoredUser {
      */
     name: string;
     /**
-     * The email of this user.
-     *
-     * @unique
-     */
-    email: string;
-    /**
      * The hashed password of this user.
      */
     pwdHash: string;
 }
 
 export abstract class StoredUser implements IStoredUser {
+    public email: string;
 
     public id: string;
     public name: string;
-    public email: string;
     public pwdHash: string;
 
 

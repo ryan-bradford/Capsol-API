@@ -18,6 +18,11 @@ export interface IContractService {
      */
     createContract(amount: number, userId: string):
         Promise<IPersistedContract>;
+
+    /**
+     * Gives the monthly payment that would result from a contract at the given size and length.
+     */
+    getContractPrice(amount: number, length: number): Promise<number>;
     /**
      * Makes a payment for the homeowner with the given `email`.
      * Distributes this payment to all the investors who own investments for this contract.
@@ -29,11 +34,6 @@ export interface IContractService {
      * @returns a number representing how much the user paid.
      */
     makePayment(email: string, date: number): Promise<number | null>;
-
-    /**
-     * Gives the monthly payment that would result from a contract at the given size and length.
-     */
-    getContractPrice(amount: number, length: number): Promise<number>;
 }
 
 @injectable()
@@ -68,6 +68,17 @@ export class ContractService implements IContractService {
     /**
      * @inheritdoc
      */
+    public async getContractPrice(amount: number, length: number):
+        Promise<number> {
+        const interestRate = this.targetRate;
+        const yearlyPayment = amount * (1 / 20 + interestRate);
+        return Math.round(100 * yearlyPayment / 12) / 100;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
     public async makePayment(email: string, date: number): Promise<number | null> {
         const user = await this.homeownerDao.getOneByEmail(email);
         if (user && user.id) {
@@ -95,16 +106,5 @@ export class ContractService implements IContractService {
         } else {
             throw new ServiceError(`User with email ${email} was not found.`);
         }
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getContractPrice(amount: number, length: number):
-        Promise<number> {
-        const interestRate = this.targetRate;
-        const yearlyPayment = amount * (1 / 20 + interestRate);
-        return Math.round(100 * yearlyPayment / 12) / 100;
     }
 }

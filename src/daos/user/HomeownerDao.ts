@@ -16,40 +16,6 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
     /**
      * @inheritdoc
      */
-    public async getOne(id: string): Promise<IPersistedHomeowner | null> {
-        return getRepository(PersistedHomeowner)
-            .findOne(id, {
-                relations: ['contract', 'contract.investments'],
-            })
-            .then((result) => result ? result : null);
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedHomeowner | null> {
-        return getRepository(PersistedHomeowner)
-            .findOne({ email }, {
-                relations: ['contract', 'contract.investments'],
-            })
-            .then((result) => result ? result : null);
-    }
-
-
-    /**
-     * @inheritdoc
-     */
-    public async getAll(): Promise<IPersistedHomeowner[]> {
-        return getRepository(PersistedHomeowner).find({
-            relations: ['contract', 'contract.investments'],
-        });
-    }
-
-
-    /**
-     * @inheritdoc
-     */
     public async add(homeowner: IStorableHomeowner): Promise<IPersistedHomeowner> {
         const newHomeowner = new PersistedHomeowner();
         newHomeowner.contract = undefined;
@@ -68,5 +34,39 @@ export class SqlHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableH
     public async delete(id: string): Promise<void> {
         const result = await getRepository(PersistedHomeowner).delete(id);
         assert(result.affected === 1, `Did not delete homeowner row with ID ${id}`);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async getAll(): Promise<IPersistedHomeowner[]> {
+        return getRepository(PersistedHomeowner).find({
+            relations: ['contract', 'contract.investments'],
+        });
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async getOne(id: string): Promise<IPersistedHomeowner | null> {
+        return getRepository(PersistedHomeowner)
+            .findOne(id, {
+                relations: ['contract', 'contract.investments'],
+            })
+            .then((result) => result ? result : null);
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    public async getOneByEmail(email: string, loadRequests?: boolean): Promise<IPersistedHomeowner | null> {
+        return getRepository(PersistedHomeowner)
+            .findOne({ email }, {
+                relations: ['contract', 'contract.investments'],
+            })
+            .then((result) => result ? result : null);
     }
 }

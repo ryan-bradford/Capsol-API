@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "build": "node ./util/build.js",
-    "lint": "tslint --project \"tsconfig.json\"",
+    "lint": "tslint --project \"tsconfig.json\" --fix",
     "start": "cross-env ENV_FILE=production node -r ./env -r module-alias/register ./dist/start.js",
     "start-dev": "nodemon --config \"./util/nodemon.json\"",
     "test": "nyc --require ts-node/register mocha --exit --bail",

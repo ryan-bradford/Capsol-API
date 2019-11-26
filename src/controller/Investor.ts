@@ -33,21 +33,25 @@ export default class InvestorController {
 
 
     /**
-     * Returns every investor as JSON loaded to the given res.
+     * Adds an investment of the given amount for the given investor.
      */
-    public async getAll(req: Request, res: Response) {
+    public async addInvestment(req: Request, res: Response) {
         const currentDate = await this.dateService.getDateAsNumber();
-        const users = await
-            this.investorDao.getAll()
-                .then((result) => Promise.all(
-                    result.map(async (investor) => {
-                        const investments = await this.investmentService.getInvestmentsFor(investor.id);
-                        const portfolio = await this.investmentService.getCashValue(investor.id);
-                        const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
-                        return StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
-                            this.feePercentage, currentDate);
-                    })));
-        return res.status(OK).json({ users });
+        const { email } = req.params as ParamsDictionary;
+        if (!email || typeof email !== 'string') {
+            throw new ClientError('Need to provide a string email in the URL params');
+        }
+        const { amount } = req.body;
+        if (amount === undefined || typeof amount !== 'number' || amount < 0) {
+            throw new ClientError('Need to provide an amount in the body');
+        }
+        const user = await this.investorDao.getOneByEmail(email);
+        if (user) {
+            await this.investmentService.addFunds(user.id, amount, currentDate);
+            return res.status(OK).end();
+        } else {
+            throw new NotFoundError(`User with email ${email} was not found`);
+        }
     }
 
 
@@ -76,29 +80,6 @@ export default class InvestorController {
 
 
     /**
-     * Returns the investor whose email is in the params of the request as JSON in the res.
-     */
-    public async getInvestor(req: Request, res: Response) {
-        const currentDate = await this.dateService.getDateAsNumber();
-        const { email } = req.params as ParamsDictionary;
-        if (!email || typeof email !== 'string') {
-            throw new ClientError('Need to provide a string email in the URL params');
-        }
-        const investor = await this.investorDao.getOneByEmail(email);
-        if (investor) {
-            const investments = await this.investmentService.getInvestmentsFor(investor.id);
-            const portfolio = await this.investmentService.getCashValue(investor.id);
-            const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
-            return res.status(OK).json(
-                StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
-                    this.feePercentage, currentDate));
-        } else {
-            throw new NotFoundError(`User with email ${email} was not found`);
-        }
-    }
-
-
-    /**
      * Deletes the account and all associated information for the given investor.
      */
     public async deleteInvestor(req: Request, res: Response) {
@@ -116,22 +97,41 @@ export default class InvestorController {
 
 
     /**
-     * Adds an investment of the given amount for the given investor.
+     * Returns every investor as JSON loaded to the given res.
      */
-    public async addInvestment(req: Request, res: Response) {
+    public async getAll(req: Request, res: Response) {
+        const currentDate = await this.dateService.getDateAsNumber();
+        const users = await
+            this.investorDao.getAll()
+                .then((result) => Promise.all(
+                    result.map(async (investor) => {
+                        const investments = await this.investmentService.getInvestmentsFor(investor.id);
+                        const portfolio = await this.investmentService.getCashValue(investor.id);
+                        const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
+                        return StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
+                            this.feePercentage, currentDate);
+                    })));
+        return res.status(OK).json({ users });
+    }
+
+
+    /**
+     * Returns the investor whose email is in the params of the request as JSON in the res.
+     */
+    public async getInvestor(req: Request, res: Response) {
         const currentDate = await this.dateService.getDateAsNumber();
         const { email } = req.params as ParamsDictionary;
         if (!email || typeof email !== 'string') {
             throw new ClientError('Need to provide a string email in the URL params');
         }
-        const { amount } = req.body;
-        if (amount === undefined || typeof amount !== 'number' || amount < 0) {
-            throw new ClientError('Need to provide an amount in the body');
-        }
-        const user = await this.investorDao.getOneByEmail(email);
-        if (user) {
-            await this.investmentService.addFunds(user.id, amount, currentDate);
-            return res.status(OK).end();
+        const investor = await this.investorDao.getOneByEmail(email);
+        if (investor) {
+            const investments = await this.investmentService.getInvestmentsFor(investor.id);
+            const portfolio = await this.investmentService.getCashValue(investor.id);
+            const cashDeposits = await this.cashDepositDao.getDepositsFor(investor);
+            return res.status(OK).json(
+                StoredInvestor.fromData(investor, investments, cashDeposits, portfolio,
+                    this.feePercentage, currentDate));
         } else {
             throw new NotFoundError(`User with email ${email} was not found`);
         }

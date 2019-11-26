@@ -14,8 +14,6 @@ import { injectable, inject } from 'tsyringe';
 @injectable()
 export default class AuthController {
 
-    private jwtService = new JwtService();
-
 
     /**
      * Creates a `AuthController` using the given investorDao and homeownerDao.
@@ -24,6 +22,8 @@ export default class AuthController {
         @inject('InvestorDao') private investorDao: IUserDao<IPersistedInvestor, IStorableInvestor>,
         @inject('HomeownerDao') private homeownerDao: IUserDao<IPersistedHomeowner, IStorableHomeowner>) {
     }
+
+    private jwtService = new JwtService();
 
 
     /**

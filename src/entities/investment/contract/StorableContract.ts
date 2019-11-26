@@ -5,11 +5,9 @@ import { Min, IsUUID } from 'class-validator';
  */
 export interface IStorableContract {
     /**
-     * The amount this contract was sold for.
-     *
-     * @invariant saleAmount > 0
+     * The ID of the homeowner who will own this contract.
      */
-    saleAmount: number;
+    homeownerId: string;
     /**
      * The length this contract will be for in months.
      *
@@ -23,15 +21,17 @@ export interface IStorableContract {
      */
     monthlyPayment: number;
     /**
-     * The ID of the homeowner who will own this contract.
+     * The amount this contract was sold for.
+     *
+     * @invariant saleAmount > 0
      */
-    homeownerId: string;
+    saleAmount: number;
 }
 
 export class StorableContract implements IStorableContract {
 
-    @Min(0)
-    public saleAmount: number;
+    @IsUUID()
+    public homeownerId: string;
 
     @Min(0)
     public length: number;
@@ -39,8 +39,8 @@ export class StorableContract implements IStorableContract {
     @Min(0)
     public monthlyPayment: number;
 
-    @IsUUID()
-    public homeownerId: string;
+    @Min(0)
+    public saleAmount: number;
 
 
     constructor(saleAmount: number, length: number, monthlyPayment: number, homeownerId: string) {

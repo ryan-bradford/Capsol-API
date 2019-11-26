@@ -6,12 +6,6 @@ import { PersistedInvestor, IPersistedInvestor } from '@entities';
  */
 export interface IPersistedCashDeposit {
     /**
-     * The UUID of the cash deposit.
-     *
-     * @unique
-     */
-    id: string;
-    /**
      * The amount that was deposited.
      *
      * @invariant amount >= 0
@@ -22,6 +16,12 @@ export interface IPersistedCashDeposit {
      */
     date: number;
     /**
+     * The UUID of the cash deposit.
+     *
+     * @unique
+     */
+    id: string;
+    /**
      * The user who made this deposit.
      */
     user: IPersistedInvestor;
@@ -30,14 +30,14 @@ export interface IPersistedCashDeposit {
 @Entity('cash_deposit')
 export class PersistedCashDeposit implements IPersistedCashDeposit {
 
-    @PrimaryGeneratedColumn('uuid')
-    public id!: string;
-
     @Column()
     public amount!: number;
 
     @Column()
     public date!: number;
+
+    @PrimaryGeneratedColumn('uuid')
+    public id!: string;
 
     @ManyToOne((type) => PersistedInvestor, (investor) => investor.cashDeposits, { onDelete: 'CASCADE', eager: true })
     @JoinColumn()

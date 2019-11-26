@@ -5,6 +5,16 @@ import { Column, Entity, TableInheritance, PrimaryGeneratedColumn } from 'typeor
  */
 export interface IPersistedUser {
     /**
+     * Whether or not this user is an admin.
+     */
+    readonly admin: boolean;
+    /**
+     * The email of this user.
+     *
+     * @unique
+     */
+    email: string;
+    /**
      * The ID of this user.
      *
      * @unique
@@ -15,24 +25,20 @@ export interface IPersistedUser {
      */
     name: string;
     /**
-     * The email of this user.
-     *
-     * @unique
-     */
-    email: string;
-    /**
      * The hashed password of this user.
      */
     pwdHash: string;
-    /**
-     * Whether or not this user is an admin.
-     */
-    readonly admin: boolean;
 }
 
 @Entity('user')
 @TableInheritance({ column: { type: 'varchar', name: 'type' } })
 export abstract class PersistedUser implements IPersistedUser {
+
+    @Column()
+    public admin!: boolean;
+
+    @Column()
+    public email!: string;
 
     @PrimaryGeneratedColumn('uuid')
     public id!: string;
@@ -41,12 +47,6 @@ export abstract class PersistedUser implements IPersistedUser {
     public name!: string;
 
     @Column()
-    public email!: string;
-
-    @Column()
     public pwdHash!: string;
-
-    @Column()
-    public admin!: boolean;
 
 }

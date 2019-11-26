@@ -5,13 +5,13 @@ import { IsUUID, Min } from 'class-validator';
  */
 export interface IStorableInvestment {
     /**
-     * The ID of the contract associated with this investment.
-     */
-    contractId: string;
-    /**
      * The real dollar amount that will be invested.
      */
     amount: number;
+    /**
+     * The ID of the contract associated with this investment.
+     */
+    contractId: string;
     /**
      * The ID of the investor who owns this contract.
      */
@@ -20,11 +20,11 @@ export interface IStorableInvestment {
 
 export class StorableInvestment implements IStorableInvestment {
 
-    @IsUUID()
-    public contractId: string;
-
     @Min(0)
     public amount: number;
+
+    @IsUUID()
+    public contractId: string;
 
     @IsUUID()
     public ownerId: string;

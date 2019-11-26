@@ -5,15 +5,15 @@ import { IsEmail, Length } from 'class-validator';
  */
 export interface IStorableUser {
     /**
-     * The full name of this user.
-     */
-    name: string;
-    /**
      * The email of this user.
      *
      * @unique
      */
     email: string;
+    /**
+     * The full name of this user.
+     */
+    name: string;
     /**
      * The password of this user as plain text.
      */
@@ -22,10 +22,10 @@ export interface IStorableUser {
 
 export abstract class StorableUser implements IStorableUser {
 
-    public name: string;
-
     @IsEmail()
     public email: string;
+
+    public name: string;
 
     @Length(8)
     public password: string;

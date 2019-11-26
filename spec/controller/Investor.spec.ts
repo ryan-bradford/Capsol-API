@@ -259,11 +259,29 @@ describe('InvestorRouter', () => {
 // tslint:disable-next-line: max-classes-per-file
 class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor> {
 
-    private examples: IPersistedInvestor[] = Object.values(Object.assign({}, startInvestors.users));
-
 
     constructor() {
         this.examples[0].id = 'a';
+    }
+
+    private examples: IPersistedInvestor[] = Object.values(Object.assign({}, startInvestors.users));
+
+
+    public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
+        return Promise.resolve(new PersistedInvestor());
+    }
+
+
+    public delete(id: string): Promise<void> {
+        if (id === 'a') {
+            return Promise.resolve();
+        }
+        throw new Error('Not found');
+    }
+
+
+    public getAll(): Promise<IPersistedInvestor[]> {
+        return Promise.resolve(this.examples);
     }
 
 
@@ -284,24 +302,6 @@ class MockInvestorDao implements IUserDao<IPersistedInvestor, IStorableInvestor>
         }
     }
 
-
-    public getAll(): Promise<IPersistedInvestor[]> {
-        return Promise.resolve(this.examples);
-    }
-
-
-    public add(user: IStorableInvestor): Promise<IPersistedInvestor> {
-        return Promise.resolve(new PersistedInvestor());
-    }
-
-
-    public delete(id: string): Promise<void> {
-        if (id === 'a') {
-            return Promise.resolve();
-        }
-        throw new Error('Not found');
-    }
-
 }
 
 // tslint:disable-next-line: max-classes-per-file
@@ -313,11 +313,6 @@ class MockInvestmentService implements IInvestmentService {
     }
 
 
-    public sellInvestments(userId: string, amount: number): Promise<void> {
-        return Promise.resolve();
-    }
-
-
     public getCashValue(userId: string): Promise<number> {
         return Promise.resolve(1);
     }
@@ -325,6 +320,11 @@ class MockInvestmentService implements IInvestmentService {
 
     public getInvestmentsFor(userId: string): Promise<IPersistedInvestment[]> {
         return Promise.resolve([]);
+    }
+
+
+    public sellInvestments(userId: string, amount: number): Promise<void> {
+        return Promise.resolve();
     }
 
 
@@ -354,13 +354,13 @@ class MockRequestService implements IRequestService {
 class MockCashDepositDao implements ICashDepositDao {
 
 
-    public makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
-        return Promise.resolve();
+    public getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]> {
+        return Promise.resolve([]);
     }
 
 
-    public getDepositsFor(user: IPersistedInvestor): Promise<IPersistedCashDeposit[]> {
-        return Promise.resolve([]);
+    public makeDeposit(amount: number, date: number, user: IPersistedInvestor): Promise<void> {
+        return Promise.resolve();
     }
 
 
@@ -368,6 +368,11 @@ class MockCashDepositDao implements ICashDepositDao {
 
 // tslint:disable-next-line: max-classes-per-file
 class MockDateService implements IDateService {
+
+
+    public calibrateMonth(): Promise<number> {
+        return Promise.resolve(1);
+    }
 
 
     public getDateAsNumber(): Promise<number> {
@@ -378,32 +383,12 @@ class MockDateService implements IDateService {
     public tickTime(): Promise<void> {
         return Promise.resolve();
     }
-
-
-    public calibrateMonth(): Promise<number> {
-        return Promise.resolve(1);
-    }
 }
 
 // tslint:disable-next-line: max-classes-per-file
 class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeowner> {
 
     private examples: IPersistedHomeowner[] = [];
-
-
-    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
-        return Promise.resolve(null);
-    }
-
-
-    public getAll(): Promise<IPersistedHomeowner[]> {
-        return Promise.resolve(this.examples);
-    }
 
 
     public add(user: IStorableHomeowner): Promise<IPersistedHomeowner> {
@@ -416,6 +401,21 @@ class MockHomeownerDao implements IUserDao<IPersistedHomeowner, IStorableHomeown
             return Promise.resolve();
         }
         throw new Error('Not found');
+    }
+
+
+    public getAll(): Promise<IPersistedHomeowner[]> {
+        return Promise.resolve(this.examples);
+    }
+
+
+    public getOne(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
+    }
+
+
+    public getOneByEmail(emailOrId: string | number): Promise<IPersistedHomeowner | null> {
+        return Promise.resolve(null);
     }
 
 }

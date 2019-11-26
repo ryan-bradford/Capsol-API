@@ -93,6 +93,24 @@ export class RequestService implements IRequestService {
     }
 
 
+    private async mergeInvestments(): Promise<void> {
+        const investments = await this.investmentDao.getInvestments();
+        const investorContractToInvestment: Map<string, IPersistedInvestment> = new Map();
+        for (const investment of investments) {
+            const key: string = `${investment.contract.id}, ${investment.owner.id}, ${investment.sellDate}, ${investment.purchaseDate}`;
+            const current = investorContractToInvestment.get(key);
+            if (!current) {
+                investorContractToInvestment.set(key, investment);
+            } else {
+                current.amount += investment.amount;
+                await this.investmentDao.deleteInvestment(investment.id);
+                await this.investmentDao.saveInvestment(current);
+            }
+        }
+        return;
+    }
+
+
     private async takeAssets(amount: number, from: IPersistedUser, to: IPersistedInvestor, date: number):
         (Promise<IPersistedInvestment | void>) {
         if (isInvestor(from)) {
@@ -122,24 +140,6 @@ export class RequestService implements IRequestService {
                 `Value didnt decrease by the right amount, ${oldValue}, ${amount}, ${contract.unsoldAmount()}`);
             return newInvestment;
         }
-    }
-
-
-    private async mergeInvestments(): Promise<void> {
-        const investments = await this.investmentDao.getInvestments();
-        const investorContractToInvestment: Map<string, IPersistedInvestment> = new Map();
-        for (const investment of investments) {
-            const key: string = `${investment.contract.id}, ${investment.owner.id}, ${investment.sellDate}, ${investment.purchaseDate}`;
-            const current = investorContractToInvestment.get(key);
-            if (!current) {
-                investorContractToInvestment.set(key, investment);
-            } else {
-                current.amount += investment.amount;
-                await this.investmentDao.deleteInvestment(investment.id);
-                await this.investmentDao.saveInvestment(current);
-            }
-        }
-        return;
     }
 }
 

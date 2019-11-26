@@ -31,6 +31,11 @@ describe('Estimate Service', () => {
 class MockEstimateDao implements IEstimateDao {
 
 
+    public async getElectricityPrice(address: string): Promise<number> {
+        return .2;
+    }
+
+
     public async getElectricityReduction(panelSize: number, electricityBill: number, address: string): Promise<number> {
         return 10;
     }
@@ -41,17 +46,12 @@ class MockEstimateDao implements IEstimateDao {
     }
 
 
-    public async getPanelPricing(panelSize: number, address: string): Promise<number> {
-        return 1000;
-    }
-
-
-    public async getElectricityPrice(address: string): Promise<number> {
-        return .2;
-    }
-
-
     public async getPanelEfficiency(address: string): Promise<number> {
         return 1;
+    }
+
+
+    public async getPanelPricing(panelSize: number, address: string): Promise<number> {
+        return 1000;
     }
 }

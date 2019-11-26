@@ -1,8 +1,8 @@
 export class StoredInvestorStat {
 
     public carbonReduction: number;
-    public totalPortfolio: number;
     public targetRate: number;
+    public totalPortfolio: number;
 
 
     constructor(carbonReduction: number, totalPortfolio: number, targetRate: number) {

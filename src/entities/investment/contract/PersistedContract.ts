@@ -6,28 +6,20 @@ import { IPersistedInvestment, IPersistedHomeowner, PersistedInvestment, Persist
  */
 export interface IPersistedContract {
     /**
-     * The UUID of the contract.
-     *
-     * @unique
-     */
-    id: string;
-    /**
-     * The amount that the contract was sold for.
-     *
-     * @invariant saleAmount >= 0
-     */
-    saleAmount: number;
-    /**
      * The date the first payment was made on the contract.
      * Null if no payment has been made.
      */
     firstPaymentDate: number | null;
     /**
-     * The amount the homeowner has to pay every month.
-     *
-     * @invariant monthlyPayment > 0
+     * The homeowner that owns this contract.
      */
-    monthlyPayment: number;
+    homeowner: IPersistedHomeowner;
+    /**
+     * The UUID of the contract.
+     *
+     * @unique
+     */
+    id: string;
     /**
      * The investments that are associated with the contract.
      *
@@ -35,15 +27,29 @@ export interface IPersistedContract {
      */
     investments: IPersistedInvestment[];
     /**
-     * The homeowner that owns this contract.
+     * The amount the homeowner has to pay every month.
+     *
+     * @invariant monthlyPayment > 0
      */
-    homeowner: IPersistedHomeowner;
+    monthlyPayment: number;
+    /**
+     * The amount that the contract was sold for.
+     *
+     * @invariant saleAmount >= 0
+     */
+    saleAmount: number;
     /**
      * The length of this contract in months.
      *
      * @invariant totalLength > 0
      */
     totalLength: number;
+    /**
+     * The amount this contract decreases in value every month.
+     *
+     * @invariant depreciationValue > 0
+     */
+    depreciationValue(): number;
     /**
      * Whether or not this contract is fully fulfilled with investments.
      */
@@ -55,12 +61,6 @@ export interface IPersistedContract {
      */
     monthsPassed(currentDate: number): number;
     /**
-     * The amount this contract decreases in value every month.
-     *
-     * @invariant depreciationValue > 0
-     */
-    depreciationValue(): number;
-    /**
      * The amount of this contract that remains unsold to investors.
      *
      * @invariant unsoldAmount >= 0
@@ -71,8 +71,21 @@ export interface IPersistedContract {
 @Entity('contract')
 export class PersistedContract implements IPersistedContract {
 
+    @Column({ nullable: true })
+    public firstPaymentDate!: number;
+
+    @OneToOne((type) => PersistedHomeowner, (homeowner) => homeowner.contract, { onDelete: 'CASCADE' })
+    @JoinColumn()
+    public homeowner!: IPersistedHomeowner;
+
     @PrimaryGeneratedColumn('uuid')
     public id!: string;
+
+    @OneToMany((type) => PersistedInvestment, (investment) => investment.contract, { onDelete: 'CASCADE' })
+    public investments!: IPersistedInvestment[];
+
+    @Column()
+    public monthlyPayment!: number;
 
     @Column()
     public saleAmount!: number;
@@ -80,18 +93,10 @@ export class PersistedContract implements IPersistedContract {
     @Column()
     public totalLength!: number;
 
-    @Column({ nullable: true })
-    public firstPaymentDate!: number;
 
-    @Column()
-    public monthlyPayment!: number;
-
-    @OneToMany((type) => PersistedInvestment, (investment) => investment.contract, { onDelete: 'CASCADE' })
-    public investments!: IPersistedInvestment[];
-
-    @OneToOne((type) => PersistedHomeowner, (homeowner) => homeowner.contract, { onDelete: 'CASCADE' })
-    @JoinColumn()
-    public homeowner!: IPersistedHomeowner;
+    public depreciationValue(): number {
+        return this.saleAmount / this.totalLength;
+    }
 
 
     public isFulfilled(): boolean {
@@ -101,11 +106,6 @@ export class PersistedContract implements IPersistedContract {
 
     public monthsPassed(currentDate: number): number {
         return this.firstPaymentDate ? currentDate - this.firstPaymentDate : 0;
-    }
-
-
-    public depreciationValue(): number {
-        return this.saleAmount / this.totalLength;
     }
 
 
