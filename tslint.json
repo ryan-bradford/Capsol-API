@@ -1,6 +1,18 @@
 {
   "extends": "tslint:recommended",
   "rules": {
+    "await-promise": true,
+    "no-duplicate-super": true,
+    "no-invalid-template-strings": true,
+    "no-import-side-effect": true,
+    "no-null-undefined-union": true,
+    "no-string-throw": true,
+    "no-switch-case-fall-through": true,
+    "static-this": true,
+    "triple-equals": true,
+    "cyclomatic-complexity": true,
+    "deprecation": true,
+    "class-name": true,
     "member-ordering": [
       true,
       {

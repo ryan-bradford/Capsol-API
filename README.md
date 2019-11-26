@@ -43,3 +43,4 @@ The view is the smallest part of the application. Because the Angular app rests 
 9. Add contract approval
 10. Add investor approval
 11. Make RAML<br>
+12. Remove all magic numbers
