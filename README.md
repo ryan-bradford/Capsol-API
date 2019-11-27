@@ -24,23 +24,23 @@ The controller is fairly simple. It calls all the appropriate service methods fo
 ### View
 The view is the smallest part of the application. Because the Angular app rests in a separate repository, this view has nothing to do with HTTP. This view takes a entity made for the model and converts it into a model made the the view. This means the view methods rest mostly in the Stored{Entity}.
 
-## TODO:
+## TODO
 
- 1. Strange bug with far too much investment transfer<br>
- 2. Make contract length an injected value.<br>
- 3. Add more tests (makePayment, takeAssets, transferInvestment, saveInvestment, deleteInvestment)<br>
-    b. Test Statistic Service<br>
-    c. Test CompanyDao<br>
-    d. Test CashDepositDao<br>
-    e. Test DateService<br>
-    f. Other Untested Dao methods<br>
-    g. RequestService.takeAssets AND RequestService.mergeInvestments<br>
-    h. ContractService.makePayment and ContractService.getContractPrice<br>
-    i. Other InvestmentService methods<br>
- 4. Improve speed of everything<br>
- 5. Change deleted to table field<br>
- 6. Add stuff about locking and transactions<br>
- 7. Add contract approval<br>
- 8. Add investor approval<br>
- 9. Make RAML<br><br>
- 10. Remove all magic numbers<br>
+1. Strange bug with far too much investment transfer.
+2. Make contract length an injected value.
+3. Add more tests (makePayment, takeAssets)
+   b. Test Statistic Service<br>
+   c. Test CompanyDao<br>
+   d. Test CashDepositDao<br>
+   e. Test DateService<br>
+   f. Other Untested Dao methods<br>
+   g. RequestService.takeAssets AND RequestService.mergeInvestments<br>
+   h. ContractService.makePayment and ContractService.getContractPrice<br>
+   i. Other InvestmentService methods<br>
+4. Improve speed of everything
+5. Change deleted to table field
+6. Add stuff about locking and transactions
+7. Add contract approval
+8. Add investor approval
+9. Make RAML
+10. Remove all magic numbers
