@@ -26,9 +26,9 @@ The view is the smallest part of the application. Because the Angular app rests 
 
 ## TODO:
 
-1. Strange bug with far too much investment transfer<br>
-2. Make contract length an injected value.
-4. Add more tests (makePayment, takeAssets, transferInvestment, saveInvestment, deleteInvestment)<br>
+ 1. Strange bug with far too much investment transfer<br>
+ 2. Make contract length an injected value.<br>
+ 3. Add more tests (makePayment, takeAssets, transferInvestment, saveInvestment, deleteInvestment)<br>
     b. Test Statistic Service<br>
     c. Test CompanyDao<br>
     d. Test CashDepositDao<br>
@@ -37,10 +37,10 @@ The view is the smallest part of the application. Because the Angular app rests 
     g. RequestService.takeAssets AND RequestService.mergeInvestments<br>
     h. ContractService.makePayment and ContractService.getContractPrice<br>
     i. Other InvestmentService methods<br>
-5. Improve speed of everything<br>
-6. Change deleted to table field<br>
-7. Add stuff about locking and transactions<br>
-9. Add contract approval
-10. Add investor approval
-11. Make RAML<br>
-12. Remove all magic numbers
+ 4. Improve speed of everything<br>
+ 5. Change deleted to table field<br>
+ 6. Add stuff about locking and transactions<br>
+ 7. Add contract approval<br>
+ 8. Add investor approval<br>
+ 9. Make RAML<br><br>
+ 10. Remove all magic numbers<br>

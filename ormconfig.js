@@ -9,7 +9,7 @@ const toExport = {
     entities: [process.env.NODE_ENV === 'production' ? './dist/entities/**/*.js' : './src/entities/**/*.ts'],
     migrations: ['db/migration/*.js'],
     insecureAuth: true,
-}
+};
 
 
 if (process.env.IS_TRAVIS === 'false') {
