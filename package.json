@@ -58,7 +58,7 @@
     "@types/sinon-chai": "^3.2.3",
     "@types/supertest": "^2.0.8",
     "chai": "^4.2.0",
-    "codecov": "^3.6.1",
+    "codecov": "^3.7.1",
     "find": "^0.3.0",
     "fs-extra": "^8.1.0",
     "jsonfile": "^5.0.0",
